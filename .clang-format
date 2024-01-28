@@ -1,0 +1,25 @@
+BasedOnStyle: Google
+IndentWidth: 4
+
+Language: Cpp
+DerivePointerAlignment: false
+PointerAlignment: Left
+BreakConstructorInitializers: AfterColon
+BreakBeforeBraces: Allman
+
+AllowShortIfStatementsOnASingleLine: true
+AlwaysBreakTemplateDeclarations: false
+AlignConsecutiveAssignments: true
+AllowShortBlocksOnASingleLine: Always
+AllowShortFunctionsOnASingleLine: All
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
+AllowShortLambdasOnASingleLine: All
+
+SpacesInAngles: true
+AccessModifierOffset: -4
+
+SpacesInParens: Custom
+SpacesInParensOptions:
+  InConditionalStatements: true
+  Other: true
