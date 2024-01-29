@@ -1,7 +1,6 @@
 /**
  * @file Black_Scholes.hpp
- * @brief This includes definitions and implementations of analytical
- * calculators relating to Black Scholes Model.
+ * @brief This defines analytical calculators relating to Black Scholes Model.
  * @author kakune
  * @date 1/29/2024
  */
@@ -65,40 +64,6 @@ struct Model
      */
     double europeanPutOptionPrice();
 };
-
-double Model::europeanCallOptionPrice()
-{
-    double lD1 = ( std::log( mInitS / mStrike ) +
-                   ( mRate + 0.5 * mVol * mVol ) * mTMat ) /
-                 ( mVol * std::sqrt( mTMat ) );
-    double lD2 = lD1 - mVol * std::sqrt( mTMat );
-    return mInitS * Math::SpecialFunctions::normalCDF( lD1 ) -
-           mStrike * std::exp( -mRate * mTMat ) *
-               Math::SpecialFunctions::normalCDF( lD2 );
-}
-double Model::europeanPutOptionPrice()
-{
-    double lD1 = ( std::log( mInitS / mStrike ) +
-                   ( mRate + 0.5 * mVol * mVol ) * mTMat ) /
-                 ( mVol * std::sqrt( mTMat ) );
-    double lD2 = lD1 - mVol * std::sqrt( mTMat );
-    return -mInitS * Math::SpecialFunctions::normalCDF( -lD1 ) +
-           mStrike * std::exp( -mRate * mTMat ) *
-               Math::SpecialFunctions::normalCDF( -lD2 );
-}
-
-double europeanCallOptionPrice( double inInitS, double inStrike, double inRate,
-                                double inVol, double inTMat )
-{
-    Model lObj{ inInitS, inStrike, inRate, inVol, inTMat };
-    return lObj.europeanCallOptionPrice();
-}
-double europeanPutOptionPrice( double inInitS, double inStrike, double inRate,
-                               double inVol, double inTMat )
-{
-    Model lObj{ inInitS, inStrike, inRate, inVol, inTMat };
-    return lObj.europeanPutOptionPrice();
-}
 
 }  // namespace BlackScholes
 }  // namespace Analytical
