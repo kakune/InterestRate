@@ -15,7 +15,6 @@
 
 namespace Analytical
 {
-
 namespace BlackScholes
 {
 
@@ -102,7 +101,6 @@ double europeanPutOptionPrice( double inInitS, double inStrike, double inRate,
 }
 
 }  // namespace BlackScholes
-
 }  // namespace Analytical
 
 #endif

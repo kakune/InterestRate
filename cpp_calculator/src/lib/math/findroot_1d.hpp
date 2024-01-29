@@ -9,7 +9,6 @@
 #define MATH_FINDROOT_1D_HPP
 
 #include <cmath>
-// #include <functional>
 #include <iostream>
 
 namespace Math
@@ -26,8 +25,8 @@ namespace FindRoot1D
  * @param inTol allowable limit of error
  * @return double the value of root
  */
-template < typename Func >
-double Brent( Func inF, double inLowerBound, double inUpperBound,
+template < typename Func_ >
+double Brent( Func_ inF, double inLowerBound, double inUpperBound,
               double inTol = 1e-6 )
 {
     double lFa = inF( inLowerBound );
