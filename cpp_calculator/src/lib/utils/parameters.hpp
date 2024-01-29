@@ -14,7 +14,6 @@ namespace Utils
 {
 
 /**
- * @class Parameters
  * @brief This stores parameters in map.
  * @details Parameters[S][T] is a double variable T in section S.
  * S and T are std::string.
@@ -34,14 +33,12 @@ private:
 
 public:
     /**
-     * @fn readParameters ( const std::string& )
      * @brief This reads ini file.
      * @param inFilePath The path to ini file to read
      */
     void readParameters( const std::string& inFilePath );
 
     /**
-     * @fn operator[] ( const std::string& ) const
      * @brief This accesses the map of each section.
      * @param inSectionName Name of section
      * @return const std::map< std::string, double >&
@@ -53,7 +50,6 @@ public:
     }
 
     /**
-     * @fn operator[] ( const std::string& )
      * @brief This accesses the map of each section.
      * @param inSectionName Name of section
      * @return std::map< std::string, double >&
@@ -65,7 +61,6 @@ public:
     }
 
     /**
-     * @fn operator() (const std::string& )
      * @brief This accesses the parameter using mCurrentSectionName and
      * mCommonSectionName.
      * @details Return parameters in mCurrentSectionName.
@@ -85,7 +80,6 @@ public:
     }
 
     /**
-     * @fn operator() ( const std::string& ) const
      * @brief This accesses the parameter using mCurrentSectionName and
      * mCommonSectionName.
      * @details Return parameters in mCurrentSectionName.
@@ -104,10 +98,18 @@ public:
         return mData.at( mCurrentSectionName ).at( inParameterName );
     }
 
+    /**
+     * @brief This sets the mCommonSectionName
+     * @param inCommonSectionName
+     */
     void setCommonSectionName( const std::string& inCommonSectionName )
     {
         mCommonSectionName = inCommonSectionName;
     }
+    /**
+     * @brief This sets the mCurrentSectionName
+     * @param inCommonSectionName
+     */
     void setCurrentSectionName( const std::string& inCurrentSectionName )
     {
         mCurrentSectionName = inCurrentSectionName;
