@@ -13,7 +13,7 @@
         {
             "label": "test_run",
             "type": "shell",
-            "command": "sh scripts/test_run.sh ${workspaceFolder}/cpp_calculator ${file}",
+            "command": "sh scripts/cpp_test.sh ${workspaceFolder}/cpp_calculator ${file}",
             "group": {
                 "kind": "test",
                 "isDefault": true
