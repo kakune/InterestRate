@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <vector>
@@ -7,15 +8,16 @@
 
 int main( int argc, char* argv[] )
 {
-    std::string lFilePath    = argv[1];
+    std::string lPathParam   = argv[1];
     std::string lSectionName = argv[2];
+    std::string lPathOutput  = argv[3];
+
     Utils::Parameters lParams;
-    lParams.readParameters( lFilePath );
+    lParams.readParameters( lPathParam );
     lParams.setCommonSectionName( "COMMON" );
     lParams.setCurrentSectionName( lSectionName );
-    std::size_t lNTerms = lParams( "NTerms" );
-    std::size_t lNPath  = 1000000;
-    double lDt          = 1.0 / double( lNTerms );
+    std::size_t lNTerms = std::size_t( lParams( "NTerms" ) );
+    double lDt          = lParams( "TimeMaturity" ) / double( lNTerms );
     std::vector< double > lTerms( lNTerms, 0 );
     for ( std::size_t iTerm = 1; iTerm < lNTerms; ++iTerm )
     {
@@ -34,12 +36,26 @@ int main( int argc, char* argv[] )
 
     auto lSABRObj = lSABRBuilder.build();
 
-    for ( double lStrike = 40.0; lStrike < 160.0; lStrike += 1.0 )
+    std::ofstream lFileOutput( lPathOutput );
+
+    if ( lFileOutput.is_open() )
     {
-        std::cout << lStrike << "," << std::setprecision( 12 )
-                  << lSABRObj.impliedVolatility( lStrike, lNTerms - 1 )
+        lFileOutput << "Strike,ImpVol" << std::endl;
+        for ( double lStrike = lParams( "MinStrike" );
+              lStrike < lParams( "MaxStrike" );
+              lStrike += lParams( "DStrike" ) )
+        {
+            lFileOutput << lStrike << "," << std::setprecision( 12 )
+                        << lSABRObj.impliedVolatility( lStrike, lNTerms - 1 )
+                        << std::endl;
+        }
+        lFileOutput.close();
+    }
+    else
+    {
+        std::cerr << "Could not open parameter file: " << lPathOutput
                   << std::endl;
     }
-    std::cout << std::endl;
+
     return 0;
 }
