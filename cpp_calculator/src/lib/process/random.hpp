@@ -62,7 +62,11 @@ public:
      * @brief This makes random path.
      */
     virtual void makePath() = 0;
-    virtual ~PathAbstract() = default;
+    /**
+     * @brief This makes random variables, NOT path.
+     */
+    virtual void makeRandomVariables() = 0;
+    virtual ~PathAbstract()            = default;
 };
 
 /**
@@ -77,6 +81,7 @@ public:
     {
     }
     void makePath() override;
+    void makeRandomVariables() override;
 };
 
 /**
@@ -93,6 +98,7 @@ public:
     {
     }
     void makePath() override;
+    void makeRandomVariables() override;
 };
 
 }  // namespace Random

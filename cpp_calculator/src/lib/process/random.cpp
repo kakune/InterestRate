@@ -38,6 +38,24 @@ void PathBrownPlain::makePath()
     }
 }
 
+void PathBrownPlain::makeRandomVariables()
+{
+    std::random_device lDevice;
+    std::mt19937 lGenerator( lDevice() );
+    std::normal_distribution< double > lDistribution( 0.0, 1.0 );
+
+    for ( std::size_t iTerm = 1; iTerm < msTerms->size(); ++iTerm )
+    {
+        double lSqrtInterval =
+            std::sqrt( msTerms->at( iTerm ) - msTerms->at( iTerm - 1 ) );
+        for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
+        {
+            mRandomValues[iPath][iTerm] =
+                lDistribution( lGenerator ) * lSqrtInterval;
+        }
+    }
+}
+
 void PathBrownAntithetic::makePath()
 {
     std::random_device lDevice;
@@ -52,6 +70,28 @@ void PathBrownAntithetic::makePath()
         {
             mRandomValues[iPath][iTerm] =
                 mRandomValues[iPath][iTerm - 1] +
+                lDistribution( lGenerator ) * lSqrtInterval;
+            if ( iPath < mNPath - 1 )
+            {
+                mRandomValues[iPath + 1][iTerm] = -mRandomValues[iPath][iTerm];
+            }
+        }
+    }
+}
+
+void PathBrownAntithetic::makeRandomVariables()
+{
+    std::random_device lDevice;
+    std::mt19937 lGenerator( lDevice() );
+    std::normal_distribution< double > lDistribution( 0.0, 1.0 );
+
+    for ( std::size_t iTerm = 1; iTerm < msTerms->size(); ++iTerm )
+    {
+        double lSqrtInterval =
+            std::sqrt( msTerms->at( iTerm ) - msTerms->at( iTerm - 1 ) );
+        for ( std::size_t iPath = 0; iPath < mNPath; iPath += 2 )
+        {
+            mRandomValues[iPath][iTerm] =
                 lDistribution( lGenerator ) * lSqrtInterval;
             if ( iPath < mNPath - 1 )
             {

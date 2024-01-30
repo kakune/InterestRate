@@ -55,5 +55,14 @@ double ModelAbstract::forwardRate( double inStartTime, double inTerminalTime )
            lDTime;
 }
 
+double ConstantRate::priceZCB( double inStartTime, double inMaturityTime )
+{
+    return std::exp( -( inMaturityTime - inStartTime ) * mRate );
+}
+double ConstantRate::forwardRate( double inStartTime, double inTerminalTime )
+{
+    return mRate;
+}
+
 }  // namespace ShortRate
 }  // namespace Process

@@ -34,9 +34,12 @@ double Brent( Func_ inF, double inLowerBound, double inUpperBound,
 
     if ( lFa * lFb >= 0 )
     {
-        std::cerr << "Error: The function must have different signs at "
-                     "inLowerBound and inUpperBound."
-                  << std::endl;
+        std::cerr
+            << "Error: Math::FindRoot1D::Brent<Func_>(Func_, double, double)"
+            << std::endl
+            << "The function must have different signs at LowerBound and "
+               "UpperBound."
+            << std::endl;
         return std::numeric_limits< double >::quiet_NaN();
     }
 

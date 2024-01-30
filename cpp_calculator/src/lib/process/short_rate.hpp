@@ -27,8 +27,6 @@ class ModelAbstract
 protected:
     std::size_t mNPath;  //! the number of Path
     std::shared_ptr< const std::vector< double > > msTerms;  //! term structure
-    std::unique_ptr< Process::Random::PathAbstract >
-        muRandomPath;  //! random path
     std::vector< std::vector< double > >
         mSpotRates;              //! calcurated interest rate
     std::vector< double > mZCB;  //! price of zero-coupon bond
@@ -45,16 +43,11 @@ public:
      * @brief This constructs a ModelAbstract.
      * @param inNPath the number of Path
      * @param insTerms term structure
-     * @param inuRandomPath unique_ptr of class deriving
-     * Process::Random::PathAbstract
      */
-    ModelAbstract(
-        std::size_t inNPath,
-        std::shared_ptr< const std::vector< double > > insTerms,
-        std::unique_ptr< Process::Random::PathAbstract > inuRandomPath ) :
+    ModelAbstract( std::size_t inNPath,
+                   std::shared_ptr< const std::vector< double > > insTerms ) :
         mNPath( inNPath ),
         msTerms( insTerms ),
-        muRandomPath( std::move( inuRandomPath ) ),
         mSpotRates( mNPath, std::vector< double >( insTerms->size(), 0 ) ),
         mZCB( insTerms->size(), 1.0 ),
         mInterpZCB( 3 )
@@ -63,7 +56,7 @@ public:
     /**
      * @brief This calculates ZCB price.
      */
-    void calcZCB();
+    virtual void calcZCB();
     /**
      * @brief This calculates ZCB price within arbitrary interval observed at
      * Terms[0].
@@ -71,17 +64,16 @@ public:
      * @param inMaturityTime maturity time of ZCB
      * @return double P(inStartTime, inMaturityTime)
      */
-    double priceZCB( double inStartTime, double inMaturityTime );
+    virtual double priceZCB( double inStartTime, double inMaturityTime );
 
     /**
      * @brief This calculates forward rate within arbitary interval observed at
      * Terms[0].
-     *
      * @param inStartTime start time of forward rate
      * @param inTerminalTime terminal time of forward rate
      * @return double f(inStartTime, inTerminalTime)
      */
-    double forwardRate( double inStartTime, double inTerminalTime );
+    virtual double forwardRate( double inStartTime, double inTerminalTime );
 };
 
 /**
@@ -92,8 +84,6 @@ class ModelAbstractBuilder
 protected:
     std::size_t mNPath;  //! the number of Path
     std::shared_ptr< const std::vector< double > > msTerms;  //! term structure
-    std::unique_ptr< Process::Random::PathAbstract >
-        muRandomPath;  //! random path
 public:
     ModelAbstractBuilder& setNPath( std::size_t inNPath )
     {
@@ -106,13 +96,24 @@ public:
         msTerms = insTerms;
         return *this;
     }
-    ModelAbstractBuilder& setRandomPath(
-        std::unique_ptr< Process::Random::PathAbstract > inuRandomPath )
-    {
-        muRandomPath = std::move( inuRandomPath );
-        return *this;
-    }
     virtual ~ModelAbstractBuilder() = default;
+};
+
+class ConstantRate : public ModelAbstract
+{
+private:
+    double mRate;
+    void calcEachRates() override {}
+
+public:
+    ConstantRate( std::shared_ptr< const std::vector< double > > insTerms,
+                  double inRate ) :
+        ModelAbstract( 1, insTerms ), mRate( inRate )
+    {
+    }
+    void calcZCB() override {}
+    double priceZCB( double inStartTime, double inMaturityTime ) override;
+    double forwardRate( double inStartTime, double inTerminalTime ) override;
 };
 
 }  // namespace ShortRate
