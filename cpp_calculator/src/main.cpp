@@ -14,8 +14,8 @@ int main( int argc, char* argv[] )
 
     Utils::Parameters lParams;
     lParams.readParameters( lPathParam );
-    lParams.setCommonSectionName( "COMMON" );
-    lParams.setCurrentSectionName( lSectionName );
+    lParams.setNameCommonSection( "COMMON" );
+    lParams.setNameCurrentSection( lSectionName );
     std::size_t lNTerms = std::size_t( lParams( "NTerms" ) );
     double lDt          = lParams( "TimeMaturity" ) / double( lNTerms );
     std::vector< double > lTerms( lNTerms, 0 );

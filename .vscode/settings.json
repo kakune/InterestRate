@@ -76,4 +76,5 @@
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/cpp_calculator/src/lib"
     ],
+    "python.defaultInterpreterPath": "${workspaceFolder}/python_wrapper/.venv/bin/python",
 }

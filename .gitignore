@@ -34,5 +34,9 @@
 # Build Files
 build
 
-# Python env
+# Python
 .venv
+__pycache__
+
+# Output Files
+output 

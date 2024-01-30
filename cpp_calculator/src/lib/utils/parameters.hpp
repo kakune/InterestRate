@@ -26,10 +26,10 @@ private:
     //! data read from ini file
     std::map< std::string, std::map< std::string, double > > mData;
     //! name of section that used operator()
-    std::string mCurrentSectionName;
+    std::string mNameCurrentSection;
     //! name of section that used if current section has no corresponding
     //! parameters
-    std::string mCommonSectionName = "DEFAULT";
+    std::string mNameCommonSection = "DEFAULT";
 
 public:
     /**
@@ -61,58 +61,58 @@ public:
     }
 
     /**
-     * @brief This accesses the parameter using mCurrentSectionName and
-     * mCommonSectionName.
-     * @details Return parameters in mCurrentSectionName.
+     * @brief This accesses the parameter using mNameCurrentSection and
+     * mNameCommonSection.
+     * @details Return parameters in mNameCurrentSection.
      * If there is no parameter corresponding to that section,
-     * return the parameter in mCommonSectionName.
+     * return the parameter in mNameCommonSection.
      * @param inParameterName
      * @return double
      */
     double operator()( const std::string& inParameterName )
     {
-        if ( mData[mCurrentSectionName].find( inParameterName ) ==
-             mData[mCurrentSectionName].end() )
+        if ( mData[mNameCurrentSection].find( inParameterName ) ==
+             mData[mNameCurrentSection].end() )
         {
-            return mData[mCommonSectionName][inParameterName];
+            return mData[mNameCommonSection][inParameterName];
         }
-        return mData[mCurrentSectionName][inParameterName];
+        return mData[mNameCurrentSection][inParameterName];
     }
 
     /**
-     * @brief This accesses the parameter using mCurrentSectionName and
-     * mCommonSectionName.
-     * @details Return parameters in mCurrentSectionName.
+     * @brief This accesses the parameter using mNameCurrentSection and
+     * mNameCommonSection.
+     * @details Return parameters in mNameCurrentSection.
      * If there is no parameter corresponding to that section,
-     * return the parameter in mCommonSectionName.
+     * return the parameter in mNameCommonSection.
      * @param inParameterName
      * @return const double
      */
     const double operator()( const std::string& inParameterName ) const
     {
-        if ( mData.at( mCurrentSectionName ).find( inParameterName ) ==
-             mData.at( mCurrentSectionName ).end() )
+        if ( mData.at( mNameCurrentSection ).find( inParameterName ) ==
+             mData.at( mNameCurrentSection ).end() )
         {
-            return mData.at( mCommonSectionName ).at( inParameterName );
+            return mData.at( mNameCommonSection ).at( inParameterName );
         }
-        return mData.at( mCurrentSectionName ).at( inParameterName );
+        return mData.at( mNameCurrentSection ).at( inParameterName );
     }
 
     /**
-     * @brief This sets the mCommonSectionName
-     * @param inCommonSectionName
+     * @brief This sets the mNameCommonSection
+     * @param inNameCommonSection
      */
-    void setCommonSectionName( const std::string& inCommonSectionName )
+    void setNameCommonSection( const std::string& inNameCommonSection )
     {
-        mCommonSectionName = inCommonSectionName;
+        mNameCommonSection = inNameCommonSection;
     }
     /**
-     * @brief This sets the mCurrentSectionName
-     * @param inCommonSectionName
+     * @brief This sets the mNameCurrentSection
+     * @param inNameCurrentSection
      */
-    void setCurrentSectionName( const std::string& inCurrentSectionName )
+    void setNameCurrentSection( const std::string& inNameCurrentSection )
     {
-        mCurrentSectionName = inCurrentSectionName;
+        mNameCurrentSection = inNameCurrentSection;
     }
 };
 
