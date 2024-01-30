@@ -30,6 +30,5 @@ int main( int argc, char* argv[] )
         }
         std::cout << std::endl;
     }
-    std::cout << lPathObj( 0, dt * 0.1 ) << std::endl;
     return 0;
 }

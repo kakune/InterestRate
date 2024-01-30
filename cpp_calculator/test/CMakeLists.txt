@@ -10,6 +10,9 @@ target_link_libraries(test_Black_Scholes LibAnalytical)
 add_executable(test_random test_random.cpp)
 target_link_libraries(test_random LibProcess)
 
+add_executable(test_interpolate_1D test_interpolate_1D.cpp)
+target_link_libraries(test_interpolate_1D LibMath)
+
 # target_link_libraries(test_executable main_executable)
 
 # add_test(NAME Test COMMAND test_parameters)

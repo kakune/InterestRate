@@ -17,7 +17,7 @@ namespace Random
 {
 
 /**
- * @brief This is the interface of random paths.
+ * @brief This is the abstract class for random path classes.
  */
 class PathAbstract
 {
@@ -59,16 +59,10 @@ public:
         return mRandomValues.at( inIndPath );
     }
     /**
-     * @brief This calculate the nth path value at arbital time.
-     * @param inIndPath index of path
-     * @param inTime time that must be within Terms.
-     * @return double the nth path value at time
-     */
-    double operator()( std::size_t inIndPath, double inTime );
-    /**
      * @brief This makes random path.
      */
     virtual void makePath() = 0;
+    virtual ~PathAbstract() = default;
 };
 
 /**

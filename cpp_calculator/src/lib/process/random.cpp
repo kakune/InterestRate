@@ -12,34 +12,12 @@
 #include <iostream>
 #include <random>
 
+#include "math/interpolate_1d.hpp"
+
 namespace Process
 {
 namespace Random
 {
-
-double PathAbstract::operator()( std::size_t inIndPath, double inTime )
-{
-    if ( inTime < msTerms->front() || inTime > msTerms->back() )
-    {
-        std::cerr << "Error: The function must have different signs at "
-                     "inLowerBound and inUpperBound."
-                  << std::endl;
-        return std::numeric_limits< double >::quiet_NaN();
-    }
-    auto lItrL = std::lower_bound( msTerms->begin(), msTerms->end(), inTime );
-    if ( lItrL == msTerms->begin() )
-    {
-        return mRandomValues.at( inIndPath ).front();
-    }
-    auto lItrR = lItrL;
-    --lItrL;
-    double lSlope =
-        ( mRandomValues.at( inIndPath ).at( lItrR - msTerms->begin() ) -
-          mRandomValues.at( inIndPath ).at( lItrL - msTerms->begin() ) ) /
-        ( *lItrR - *lItrL );
-    return mRandomValues.at( inIndPath ).at( lItrL - msTerms->begin() ) +
-           lSlope * ( inTime - *lItrL );
-}
 
 void PathBrownPlain::makePath()
 {
