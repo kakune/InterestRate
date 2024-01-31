@@ -28,8 +28,12 @@ InterestRate
 ### SABR_implied_volatility
 
 $$
-\mathrm{d} F_{t}(T) = \sigma_{t}(F_{t}(T))^{\beta} \mathrm{d} W_{t}^{1} \\
-\mathrm{d} \sigma_{t} = \nu \sigma_{t} \mathrm{d} W_{t}^{2} \\
+\mathrm{d} F_{t}(T) = \sigma_{t}(F_{t}(T))^{\beta} \mathrm{d} W_{t}^{1}
+$$
+$$
+\mathrm{d} \sigma_{t} = \nu \sigma_{t} \mathrm{d} W_{t}^{2}
+$$
+$$
 \mathrm{d} W_{t}^{1}\mathrm{d} W_{t}^{2} = \rho \mathrm{d}t
 $$
 に従うフォワード価格$F_{t}(T)$のimplied volatilityを計算する。
@@ -66,8 +70,12 @@ $$
     - 出力されたcsvファイルのimplied volatilityに以下の近似解を重ねて描画し、gPathGraphに出力する。
 
 $$
-    \sigma_{t}^{\mathrm{IB}} \simeq \frac{\alpha}{(fK)^{(1-\beta)/2}} \frac{1 + \left( \frac{(1-\beta)^{2}\alpha^{2}}{24(1-\beta)^{2}} + \frac{\rho\beta\nu\alpha}{4(fK)^{(1-\beta)/2}} + \frac{(2-3\rho^{2})\nu^{2}}{24}\right)}{1 + \frac{(1-\beta)^{2}}{24}\left(\log \frac{f}{K}\right)^{2} + \frac{(1-\beta)^{4}}{1920}\left(\log \frac{f}{K}\right)^{4}} \frac{\zeta}{\chi(\zeta)} \\
-    \zeta = \frac{\nu}{\alpha} (fK)^{(1-\beta)/2} \log \frac{f}{K} \\
+    \sigma_{t}^{\mathrm{IB}} \simeq \frac{\alpha}{(fK)^{(1-\beta)/2}} \frac{1 + \left( \frac{(1-\beta)^{2}\alpha^{2}}{24(1-\beta)^{2}} + \frac{\rho\beta\nu\alpha}{4(fK)^{(1-\beta)/2}} + \frac{(2-3\rho^{2})\nu^{2}}{24}\right)}{1 + \frac{(1-\beta)^{2}}{24}\left(\log \frac{f}{K}\right)^{2} + \frac{(1-\beta)^{4}}{1920}\left(\log \frac{f}{K}\right)^{4}} \frac{\zeta}{\chi(\zeta)}
+$$
+$$
+    \zeta = \frac{\nu}{\alpha} (fK)^{(1-\beta)/2} \log \frac{f}{K}
+$$
+$$
     \chi(\zeta) = \log \left( \frac{\sqrt{1-2\rho \zeta + \zeta^{2}} + \zeta - \rho}{1 - \rho}\right)
 $$
 
