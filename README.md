@@ -38,6 +38,7 @@ $$
 $$
 \mathrm{d} W_{t}^{1}\mathrm{d} W_{t}^{2} = \rho \mathrm{d}t
 $$
+
 に従うフォワード価格$F_{t}(T)$のimplied volatilityを計算する。
 ただし、$\log F_{t}(T)$および$\log \sigma_{t}$についてのSDEにより実装されている。  
 パラメータは以下の通り。
