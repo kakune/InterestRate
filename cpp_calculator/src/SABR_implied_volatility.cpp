@@ -16,23 +16,26 @@ int main( int argc, char* argv[] )
     lParams.readParameters( lPathParam );
     lParams.setNameCommonSection( "COMMON" );
     lParams.setNameCurrentSection( lSectionName );
+
     std::size_t lNTerms = std::size_t( lParams( "NTerms" ) );
-    double lDt          = lParams( "TimeMaturity" ) / double( lNTerms );
     std::vector< double > lTerms( lNTerms, 0 );
+
+    double lDt = lParams( "TimeMaturity" ) / double( lNTerms );
     for ( std::size_t iTerm = 1; iTerm < lNTerms; ++iTerm )
     {
         lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
     }
+
     auto lsTerms = std::make_shared< std::vector< double > >( lTerms );
 
     Process::Asset::SABRWithLogForwardBuilder lSABRBuilder;
     lSABRBuilder.setNPath( lParams( "NPath" ) );
     lSABRBuilder.setTerms( lsTerms );
-    lSABRBuilder.setInitVol( lParams( "InitVol" ) );
     lSABRBuilder.setInitPrice( lParams( "InitPrice" ) );
-    lSABRBuilder.setVolvol( lParams( "Volvol" ) );
-    lSABRBuilder.setExponent( lParams( "Exponent" ) );
+    lSABRBuilder.setInitVol( lParams( "InitVol" ) );
     lSABRBuilder.setCorr( lParams( "Corr" ) );
+    lSABRBuilder.setExponent( lParams( "Exponent" ) );
+    lSABRBuilder.setVolvol( lParams( "Volvol" ) );
 
     auto lSABRObj = lSABRBuilder.build();
 

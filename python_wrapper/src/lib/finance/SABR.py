@@ -1,7 +1,15 @@
 import numpy as np
 
 
-def approxImpVol(inVolvol, inExponent, inCorr, inInitPrice, inInitVol, inStrike, inTimeMaturity):
+def approxImpVol(
+    inStrike: float,
+    inInitPrice: float,
+    inInitVol: float,
+    inCorr: float,
+    inExponent: float,
+    inVolvol: float,
+    inTimeMaturity: float
+):
     lFK = (inInitPrice * inStrike) ** ((1.0 - inExponent) * 0.5)
     lLogFK = np.log(inInitPrice / inStrike)
     lZeta = inVolvol * lFK * lLogFK / inInitVol

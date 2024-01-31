@@ -71,7 +71,8 @@
         "list": "cpp",
         "variant": "cpp",
         "typeindex": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "charconv": "cpp"
     },
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/cpp_calculator/src/lib"

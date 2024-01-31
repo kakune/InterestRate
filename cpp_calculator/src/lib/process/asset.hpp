@@ -330,6 +330,9 @@ public:
     }
 };
 
+/**
+ * @brief This is calculator for SABR.
+ */
 class SABRForward : public StochasticVolatilityForwardAbstract
 {
 private:
@@ -397,6 +400,10 @@ public:
     }
 };
 
+/**
+ * @brief This is calculator for SABR using SDE of log(forward price) and
+ * log(volatility).
+ */
 class SABRWithLogForward : public StochasticVolatilityWithLogForwardAbstract
 {
 private:

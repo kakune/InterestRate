@@ -39,4 +39,4 @@ build
 __pycache__
 
 # Output Files
-output 
+output/*

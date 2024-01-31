@@ -4,7 +4,7 @@
         {
             "label": "cpp_run",
             "type": "shell",
-            "command": "sh scripts/cpp_run.sh ${workspaceFolder}/cpp_calculator",
+            "command": "sh scripts/cmake_debug_run_main.sh ${workspaceFolder}/cpp_calculator",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -13,7 +13,7 @@
         {
             "label": "test_run",
             "type": "shell",
-            "command": "sh scripts/cpp_test.sh ${workspaceFolder}/cpp_calculator ${file}",
+            "command": "sh scripts/cmake_test.sh ${workspaceFolder}/cpp_calculator ${file}",
             "group": {
                 "kind": "test",
                 "isDefault": true
