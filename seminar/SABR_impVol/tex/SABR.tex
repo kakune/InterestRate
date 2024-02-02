@@ -1,0 +1,133 @@
+\documentclass[dvipdfmx,9pt]{beamer}
+\input{main_preamble}
+
+\title{SABR ModelのImplied Volatility}
+
+\author{kakune}
+\subject{\LaTeX{}+Beamer}
+
+\begin{document}
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}<beamer>
+  \frametitle{Agenda}
+  \tableofcontents
+\end{frame}
+
+\begin{frame}{Introduction}
+  \begin{alertblock}{本スライドの目的と注意}
+    \begin{itemize}
+      \item 本スライドは、Volatilityが変動するモデルにおける、Implied Volatilityの概念・振る舞い・近似式の導出を理解することを目的とする。
+      \item 特に近似式の導出は、よい計算練習になる。
+      \item もともと手書きノートで行う予定だったが、やたらmessyになってしまったので、補助としてこのスライドを作成した。
+      \item すべての確率変数は$T$-Forward measureの下であるとする。
+      \item このスライドは、主に N. Zhang "Properties of the SABR model"に基づく。
+    \end{itemize}
+  \end{alertblock}
+\end{frame}
+
+\section{Introduction}
+\begin{frame}{Introduction}
+  \begin{block}{Implied Volatility}
+    \begin{itemize}
+      \item Black-Scholesモデルでは、assetのForward価格は、以下のSDEに従う。
+            \begin{equation}
+              \dd F_{t} = \sigma^{\mathrm{BS}} \dd W_{t}
+            \end{equation}
+      \item このモデルを仮定すれば、市場のオプション価格から、quoteするvolを逆算できる。
+      \item これを\textbf{Implied Volatility (IV)}と呼ぶ。
+    \end{itemize}
+  \end{block}
+  \begin{block}{BSモデルの限界と改良}
+    \begin{itemize}
+      \item しかし、実際に計算してみると、オプションのストライクに依存してIVが変化することがわかる。
+            \begin{itemize}
+              \item Volatility Skew や Volatility Smile。
+            \end{itemize}
+      \item すなわち、Black-Scholesモデルは市場を再現できていないことになる。
+      \item そこで、よりよいモデルとして、Volatilityが変動するモデルが考案された。
+            \begin{itemize}
+              \item \textbf{Local Volatility (LV) Model}: Volが現在価格のdeteministicな関数とするモデル。
+              \item \textbf{Stochastic Volatility (SV) Model}: Volが確率変動するモデル。
+            \end{itemize}
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\section{Black-Scholes Model}
+\begin{frame}{Black-Scholes Model}
+  \begin{block}{Model}
+    Forward price $F_{t}(T)$が、
+    \begin{equation}
+      \dd F_{t}(T) = \sigma^{\mathrm{BS}} \dd W_{t}
+    \end{equation}
+    に従うとするModel\footnote{以降、$(T)$はしばしば省略する。}。
+    これは解くことができて、 ($s \leq t\leq T$)として$F_{t}(T) = F_{s}(T)\expi{\sigma^{\mathrm{BS}}(W_{t} - W_{s})-\frac{\pqty{\sigma^{\mathrm{BS}}}^{2}}{2}(t-s)}$となる。
+  \end{block}
+  \begin{block}{European Call Optionの価格}
+    時刻$T>0$に行使し、時刻$\tau >T$で受け取るstrike $K$のeuropean call optionの時刻$t$での価格は、
+    \begin{equation}
+      C_{t}(T,\tau) = P_{t}(t,\tau)\exv[t]{\pqty{F_{t}(T) - K}^{+}}
+    \end{equation}
+    ブラウン運動の確率分布を考えて解くと、
+    \begin{align}
+      C_{t}(T,\tau) & = P_{t}(t,\tau) \pqty{F_{t} N(d_{t}^{+}) - KN(d_{t}^{-})}                                                                    \\
+      d_{t}^{\pm}   & = \frac{1}{\sigma^{\mathrm{BS}}\sqrt{T-t}}\pqty{\log\pqty{\frac{F_{t}}{K}}\pm\frac{\pqty{\sigma^{\mathrm{BS}}}^{2}}{2}(T-t)}
+    \end{align}
+    この価格は、$\sigma^{\mathrm{BS}}$について単調増加である。
+  \end{block}
+\end{frame}
+
+\section{Local Volatility Model}
+\begin{frame}{Local Volatility Model}
+  \begin{block}{Model}
+    Forward price $F_{t}(T)$が、
+    \begin{equation}
+      \dd F_{t}(T) = \sigma^{loc}(t,F_{t}(T)) F_{t} \dd W_{t}
+    \end{equation}
+    に従うとするModel\footnote{C++のコードでは、汎用性のため、係数の$F_{t}$を入れていない。}。ここで、$\sigma^{loc}$はdeterministicな関数。
+  \end{block}
+  \begin{block}{European Call Optionの価格}
+    当然一般に解くことはできないので、$\sigma^{loc} = \alpha(t)A(f)/f$、$Q(t,f) = \exv[]{(F_{T} - K)^{+}|F_{t}=f}$として、以下のような手順で解く。
+    \begin{enumerate}
+      \item Feynman-Kacにより、$Q$の満たす偏微分方程式を求める。
+      \item 変数変換を行い、$\tilde{Q}(\tau,x)$とする。
+      \item $\tilde{Q},A$に対して漸近展開を行う。
+      \item 漸近展開を行った各次数に対して偏微分方程式を導く。
+    \end{enumerate}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \begin{block}{IVの求め方}
+    さらに、BSモデルとの比較を行うことにより、implied volatilityを求める。
+    \begin{enumerate}
+      \setcounter{enumi}{4}
+      \item 漸近形を整理して、（実質的に）一変数関数にする。
+      \item BSモデルにおける、その変数の値を計算する。
+      \item LVモデルでの変数を計算し、それをBSモデルのものと比較することで、IVを求める。
+    \end{enumerate}
+    具体的に計算すると、
+    \begin{equation}
+      \sigma^{\mathrm{IV}} \simeq \sigma^{\mathrm{loc}}\pqty{\frac{f+K}{2}}\pqty{1 + \frac{\sigma^{\mathrm{loc}~\prime\prime}\pqty{\frac{f+K}{2}}}{\sigma^{\mathrm{loc}}\pqty{\frac{f+K}{2}}}}
+    \end{equation}
+  \end{block}
+\end{frame}
+
+\begin{frame}{LVの限界}
+  \begin{block}{LVの限界}
+    Marketで観測されるIVが$\sigma^{\mathrm{M}}(F_{0},K)$であるとする。現在のMarketに合うように最低次を考えて$\sigma^{\mathrm{loc}}$のcalibrationを行うと、
+    \begin{equation}
+      \sigma^{\mathrm{M}}(F_{0},K) = \sigma^{\mathrm{loc}}\pqty{\frac{F_{0}+K}{2}}
+    \end{equation}
+    となる。ここで、calibrationの直後にforward priceが$F_{0} \to f$と変化したとしよう。すると、そのときのVolは、
+    \begin{equation}
+      \sigma^{\mathrm{loc}}\pqty{\frac{f+K}{2}} = \sigma^{\mathrm{M}}(F_{0},K+f-F_{0})
+    \end{equation}
+    となる。例えば$f>F_{0}$とすれば、Volatility curveは左に動くことになる。これは、期待される動きと逆である（Forward priceが右に動いたのだから、curveも右に動いてほしい）。以上が、LVが将来のVolを再現できないと言われる所以である。
+  \end{block}
+\end{frame}
+
+\end{document}

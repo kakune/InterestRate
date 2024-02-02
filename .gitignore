@@ -40,3 +40,10 @@ __pycache__
 
 # Output Files
 output/*
+
+# TeX Files
+*.fmt
+*.log
+*.nsm
+*.nav
+*.synctex.gz
