@@ -70,14 +70,14 @@ double ModelForwardAbstract::impliedVolatility( double inStrike,
 
 void LocalVolatilityForwardAbstract::calcEachForwardPrice()
 {
-    muRandomPath->makeRandomVariables();
-    for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
+    for ( std::size_t iTime = 1; iTime < msTerms->size(); ++iTime )
     {
-        for ( std::size_t iTime = 1; iTime < msTerms->size(); ++iTime )
+        muRandomPath->setIndexTime( iTime );
+        for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
         {
             mForwardPrice.at( iPath ).at( iTime ) =
                 mForwardPrice.at( iPath ).at( iTime - 1 ) +
-                muRandomPath->at( iPath ).at( iTime ) *
+                muRandomPath->generateRandomVal() *
                     localVolatility( mForwardPrice.at( iPath ).at( iTime - 1 ),
                                      msTerms->at( iTime - 1 ) );
         }
@@ -91,22 +91,23 @@ double BlackSholesForward::localVolatility( double inPrice, double inTime )
 
 void StochasticVolatilityForwardAbstract::calcEachForwardPrice()
 {
-    muRandomPath->makeRandomVariables();
-    muRandomVol->makeRandomVariables();
-    for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
+    for ( std::size_t iTime = 1; iTime < msTerms->size(); ++iTime )
     {
-        for ( std::size_t iTime = 1; iTime < msTerms->size(); ++iTime )
+        muRandomPath->setIndexTime( iTime );
+        muRandomVol->setIndexTime( iTime );
+        for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
         {
+            double lW1 = muRandomPath->generateRandomVal();
+            double lW2 = muRandomVol->generateRandomVal();
+
             mVolatility.at( iPath ).at( iTime ) =
                 mVolatility.at( iPath ).at( iTime - 1 ) +
-                muRandomVol->at( iPath ).at( iTime ) *
-                    volVolatility( mVolatility.at( iPath ).at( iTime - 1 ),
-                                   msTerms->at( iTime - 1 ) );
+                lW2 * volVolatility( mVolatility.at( iPath ).at( iTime - 1 ),
+                                     msTerms->at( iTime - 1 ) );
 
             mForwardPrice.at( iPath ).at( iTime ) =
                 mForwardPrice.at( iPath ).at( iTime - 1 ) +
-                ( muRandomVol->at( iPath ).at( iTime ) * mCorr +
-                  muRandomPath->at( iPath ).at( iTime ) * mAuxCorr ) *
+                ( lW2 * mCorr + lW1 * mAuxCorr ) *
                     volForward( mForwardPrice.at( iPath ).at( iTime - 1 ),
                                 mVolatility.at( iPath ).at( iTime - 1 ),
                                 msTerms->at( iTime - 1 ) );
@@ -153,18 +154,21 @@ double SABRWithLogForward::driftVolatility( double inVol, double inTime )
 
 void StochasticVolatilityWithLogForwardAbstract::calcEachForwardPrice()
 {
-    muRandomPath->makeRandomVariables();
-    muRandomVol->makeRandomVariables();
-    for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
+    for ( std::size_t iTime = 1; iTime < msTerms->size(); ++iTime )
     {
-        for ( std::size_t iTime = 1; iTime < msTerms->size(); ++iTime )
+        muRandomPath->setIndexTime( iTime );
+        muRandomVol->setIndexTime( iTime );
+        for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
         {
+            double lW1 = muRandomPath->generateRandomVal();
+            double lW2 = muRandomVol->generateRandomVal();
+
             double lTerm = msTerms->at( iTime ) - msTerms->at( iTime - 1 );
             double lLogVol =
                 std::log( mVolatility.at( iPath ).at( iTime - 1 ) );
-            lLogVol += muRandomVol->at( iPath ).at( iTime ) *
-                       volVolatility( mVolatility.at( iPath ).at( iTime - 1 ),
-                                      msTerms->at( iTime - 1 ) );
+            lLogVol +=
+                lW2 * volVolatility( mVolatility.at( iPath ).at( iTime - 1 ),
+                                     msTerms->at( iTime - 1 ) );
             lLogVol += lTerm *
                        driftVolatility( mVolatility.at( iPath ).at( iTime - 1 ),
                                         msTerms->at( iTime - 1 ) );
@@ -173,8 +177,7 @@ void StochasticVolatilityWithLogForwardAbstract::calcEachForwardPrice()
             double lLogForward =
                 std::log( mForwardPrice.at( iPath ).at( iTime - 1 ) );
             lLogForward +=
-                ( muRandomVol->at( iPath ).at( iTime ) * mCorr +
-                  muRandomPath->at( iPath ).at( iTime ) * mAuxCorr ) *
+                ( lW2 * mCorr + lW1 * mAuxCorr ) *
                 volForward( mForwardPrice.at( iPath ).at( iTime - 1 ),
                             mVolatility.at( iPath ).at( iTime - 1 ),
                             msTerms->at( iTime - 1 ) );
