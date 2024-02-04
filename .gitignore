@@ -44,6 +44,6 @@ output/*
 # TeX Files
 *.fmt
 *.log
-*.nsm
+*.snm
 *.nav
 *.synctex.gz
