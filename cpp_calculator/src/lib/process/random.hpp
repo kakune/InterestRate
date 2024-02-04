@@ -9,6 +9,7 @@
 #define PROCESS_RANDOM_HPP
 
 #include <memory>
+#include <random>
 #include <vector>
 
 namespace Process
@@ -25,7 +26,8 @@ protected:
     std::size_t mNPath;  //! the number of Path
     std::shared_ptr< const std::vector< double > > msTerms;  //! term structure
     std::vector< std::vector< double > >
-        mRandomValues;  //! generated random values
+        mRandomValues;        //! generated random values
+    std::size_t mIndTmpTime;  //! the index of temporary time
 public:
     /**
      * @brief This constructs a new PathAbstract.
@@ -34,10 +36,7 @@ public:
      */
     PathAbstract( std::size_t inNPath,
                   std::shared_ptr< const std::vector< double > > insTerms ) :
-        mNPath( inNPath ),
-        msTerms( insTerms ),
-        mRandomValues( std::vector< std::vector< double > >(
-            inNPath, std::vector< double >( insTerms->size(), 0 ) ) )
+        mNPath( inNPath ), msTerms( insTerms )
     {
     }
     /**
@@ -59,14 +58,28 @@ public:
         return mRandomValues.at( inIndPath );
     }
     /**
+     * @brief This initialize mRandomValues.
+     */
+    void initRandomValues();
+    /**
+     * @brief This sets the Time Index before generating random variable.
+     * @param inIndex index of time
+     */
+    virtual void setIndexTime( std::size_t inIndex ) { mIndTmpTime = inIndex; }
+    /**
+     * @brief This generates the random value.
+     * @return double random value
+     */
+    virtual double generateRandomVal() = 0;
+    /**
      * @brief This makes random path.
      */
-    virtual void makePath() = 0;
+    virtual void makePath();
     /**
      * @brief This makes random variables, NOT path.
      */
-    virtual void makeRandomVariables() = 0;
-    virtual ~PathAbstract()            = default;
+    virtual void makeRandomVariables();
+    virtual ~PathAbstract() = default;
 };
 
 /**
@@ -74,14 +87,27 @@ public:
  */
 class PathBrownPlain : public PathAbstract
 {
+private:
+    double mTmpSqrtInterval;
+    std::random_device mDevice;
+    std::mt19937 mGenerator;
+    std::normal_distribution< double > mDistribution;
+
 public:
     PathBrownPlain( std::size_t inNPath,
                     std::shared_ptr< const std::vector< double > > insTerms ) :
-        PathAbstract( inNPath, insTerms )
+        PathAbstract( inNPath, insTerms ),
+        mGenerator( mDevice() ),
+        mDistribution( 0.0, 1.0 )
     {
     }
-    void makePath() override;
-    void makeRandomVariables() override;
+    void setIndexTime( std::size_t inIndex ) override
+    {
+        PathAbstract::setIndexTime( inIndex );
+        mTmpSqrtInterval =
+            std::sqrt( msTerms->at( inIndex ) - msTerms->at( inIndex - 1 ) );
+    }
+    double generateRandomVal() override;
 };
 
 /**
@@ -90,15 +116,32 @@ public:
  */
 class PathBrownAntithetic : public PathAbstract
 {
+private:
+    double mTmpSqrtInterval;
+    bool mIsNextNew = true;
+    double mPrevRandomValue;
+    std::random_device mDevice;
+    std::mt19937 mGenerator;
+    std::normal_distribution< double > mDistribution;
+
 public:
     PathBrownAntithetic(
         std::size_t inNPath,
         std::shared_ptr< const std::vector< double > > insTerms ) :
-        PathAbstract( inNPath, insTerms )
+        PathAbstract( inNPath, insTerms ),
+        mIsNextNew( true ),
+        mGenerator( mDevice() ),
+        mDistribution( 0.0, 1.0 )
     {
     }
-    void makePath() override;
-    void makeRandomVariables() override;
+    void setIndexTime( std::size_t inIndex ) override
+    {
+        PathAbstract::setIndexTime( inIndex );
+        mTmpSqrtInterval =
+            std::sqrt( msTerms->at( inIndex ) - msTerms->at( inIndex - 1 ) );
+        mIsNextNew = true;
+    }
+    double generateRandomVal() override;
 };
 
 }  // namespace Random
