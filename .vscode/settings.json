@@ -126,5 +126,7 @@
         "*.log",
         "*.fdb_latexmk",
         "*.dvi",
+        "*.nav",
+        "*.snm",
     ],
 }
