@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from lib.cpp.cmake import buildCmakeRelease, runExe
 from lib.plot.graph import plotGraph
-from lib.finance.SABR import approxImpVol
+from lib.finance.exercise import approxImpVol
 from lib.utils.parameters import Parameters
 
 gPathCurrent = os.path.abspath(__file__)
@@ -11,14 +11,14 @@ gPathProject = os.path.split(os.path.split(
     os.path.split(gPathCurrent)[0])[0])[0]
 gPathCppDir = os.path.join(gPathProject, "cpp_calculator")
 gPathCppExe = os.path.join(
-    gPathCppDir, "build", "src", "SABR_implied_volatility")
+    gPathCppDir, "build", "src", "exercise_implied_volatility")
 
-gNameParam = "SABR.ini"
+gNameParam = "exercise.ini"
 gPathParam = os.path.join(gPathProject, "parameters", gNameParam)
 
-gNameOutput = "SABR_output.csv"
+gNameOutput = "exercise_output.csv"
 gPathOutput = os.path.join(gPathProject, "output", gNameOutput)
-gNameGraph = "SABR_graph.png"
+gNameGraph = "exercise_graph.png"
 gPathGraph = os.path.join(gPathProject, "output", gNameGraph)
 
 gNameSection = "PARAM1"
@@ -49,6 +49,8 @@ if __name__ == '__main__':
             inInitVol=lParam("InitVol"),
             inCorr=lParam("Corr"),
             inExponent=lParam("Exponent"),
+            inShift=lParam("Shift"),
+            inStandard=lParam("Standard"),
             inVolvol=lParam("Volvol"),
             inTimeMaturity=lParam("TimeMaturity")
         )

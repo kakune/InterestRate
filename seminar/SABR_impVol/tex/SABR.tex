@@ -164,11 +164,14 @@
       \item $F_{t},\alpha_{t}$の同時確率分布$p$について、Focker-Planckの議論でPDEを導く。
       \item Option価格を、$p$のあるの汎関数$P$で表す。
       \item この$P$を変数変換と漸近展開を繰り返して解く。
+      \item $P$を用いてOption価格の一般式を出す。
     \end{enumerate}
   \end{block}
+\end{frame}
+\begin{frame}{SABRのIVの漸近形}
   \begin{block}{IVの導出の概要}
     \begin{enumerate}
-      \setcounter{enumi}{3}
+      \setcounter{enumi}{4}
       \item Normal Model $C(f) = 1, \ep\alpha_{t} = \sigma^{\mathrm{N}},\nu = 0$に対して漸近展開形を求める。
       \item Black-Scholes Model $C(f) = f, \alpha_{t} = \sigma^{\mathrm{BS}},\nu = 0$に対して漸近展開形を求め、前項の内容と比較して対応する$\sigma^{\mathrm{N,BS}}$を求める。
       \item SABR Modelに対しても同様にして、$\sigma^{\mathrm{N,SABR}}$を求める。
@@ -192,7 +195,7 @@
             \end{equation}
       \item
             \begin{equation}
-              z = \frac{1}{\ep\alpha}\int^{f}_{K}\frac{\dd g}{C(g)} , \quad \hat{P}(\tau,z,\alpha) := P(\tau,f,\alpha,K)
+              z = \frac{1}{\ep\alpha}\int^{f}_{K}\frac{\dd g}{C(g)} , \quad \hat{P}(\tau,z,\alpha) := \frac{\ep C(K)}{\alpha} P(\tau,f,\alpha,K)
             \end{equation}
       \item \begin{equation}
               H(\tau,z,\alpha) := \sqrt{\frac{C(K)}{C(f)}}\hat{P}(\tau,z,\alpha)
@@ -218,6 +221,76 @@
             \end{equation}
     \end{enumerate}
   \end{block}
+\end{frame}
+
+\section{Exercise}
+\begin{frame}{Exercise}
+  SABRモデルのIVの導出方法を学んだkakuneくんは、他のモデルでも同様のことができるか試したくなった。
+  また同時に、SABRモデルではforward priceが大きくなったときにpriceの振動が大きくなりすぎる点を改善したくなった（本当にこれが問題たり得るのかは知らない）。
+  そこで、次のようなSVモデルを考えた。
+  \begin{align}
+    \dd F_{t}                   & = S\frac{F_{t}^{\beta}}{F_{t}^{\beta} + \theta^{\beta}} \alpha_{t} \dd W_{t}^{1} \\
+    \dd \alpha_{t}              & = \nu \alpha_{t} \dd W_{t}^{2}                                                   \\
+    \dd W_{t}^{1} \dd W_{t}^{2} & = \rho \dd t
+  \end{align}
+  ただし、$S,\theta,\beta$は定数である（$S$は不要だが、SABRの漸近展開との対応のためにつけた）。このモデルに対して、IVを求めてみよう。
+  \begin{enumerate}
+    \item 対応する$C(f)$を書け。
+    \item $z$を$f,K$を用いて書け。また、$z$を、SABRと同様に$f^{av},\log (f/K)$を用いて展開せよ。
+    \item $\gamma^{(1)},\gamma^{(2)}$を求めよ。
+    \item IVを求めよ。
+  \end{enumerate}
+  さらに、ここで求めた漸近形が正しいかどうか、数値的に確かめよう。
+  \begin{enumerate}
+    \setcounter{enumi}{4}
+    \item $\log F_{t} , \log \alpha_{t}$についてのSDEを求めよ。
+    \item 上で求めたSDEを用いて、IVを数値的に求めるプログラムを書け。
+    \item 上で数値的に求めたIVと漸近形を比較し、グラフに示せ。
+  \end{enumerate}
+
+\end{frame}
+
+
+\begin{frame}{Exercise:Answer}
+  以下では、$\ep = 1$として解答を示す。
+  \begin{enumerate}
+    \item
+          \begin{equation}
+            C(f) =  S\frac{f}{f^{\beta} + \theta^{\beta}}
+          \end{equation}
+    \item
+          \begin{align}
+            z           & = \frac{1}{\alpha}\int_{K}^{f} \pqty{1 + \pqty{\frac{f'}{\theta}}^{-\beta}} \dd f'
+            = \frac{1}{\alpha} \pqty{\pqty{f-K} + \frac{\theta^{\beta}}{1-\beta}\pqty{f^{1-\beta} - K^{1-\beta}}}                                                                                    \\
+            \frac{z}{L} & \simeq f^{av}\pqty{1 + \frac{L^{2}}{24} + \frac{L^{4}}{1920}} + \theta^{\beta}(f^{av})^{1-\beta}\pqty{1 + \frac{(1-\beta)^{2}L^{2}}{24} + \frac{(1-\beta)^{4}L^{4}}{1920}}
+          \end{align}
+          ただし、$L = \log(f/K)$。
+    \item
+          \begin{equation}
+            \gamma^{(1)}=\frac{\beta \theta^{\beta}}{f^{av}\pqty{(f^{av})^{\beta} + \theta^{\beta}}}, \quad
+            \gamma^{(2)}=-\frac{\beta \theta^{\beta}\pqty{(1+\beta)(f^{av})^{\beta} + (1-\beta)\theta^{\beta}}}{(f^{av})^{2}\pqty{(f^{av})^{\beta} + \theta^{\beta}}^{2}}
+          \end{equation}
+  \end{enumerate}
+\end{frame}
+\begin{frame}{Exercise:Answer}
+  \begin{enumerate}\setcounter{enumi}{3}
+    \item
+          \begin{equation}
+            \phi := \pqty{2\gamma^{(2)} - (\gamma^{(1)})^{2}}(C(f^{av}))^{2}
+            = -S^{2}\beta \theta^{\beta}\frac{2(1+\beta)(f^{av})^{\beta} + (2-\beta)\theta^{\beta}}{(f^{av})^{2-2\beta}\pqty{(f^{av})^{\beta} + \theta^{\beta}}^{4}}
+          \end{equation}
+          および$\zeta = \nu (f-K) / \alpha C(f^{av})$を使えば、解くべき方程式は、
+          {\tiny
+          \begin{equation}
+            \frac{\sigma^{\mathrm{IV}}(f-K)}{L} \pqty{1 - \frac{(\sigma^{\mathrm{IV}})^{2}\tau^{\mathrm{ex}}}{24}} = \frac{S \alpha (f-K)}{z}\frac{\zeta}{x(\zeta)} \pqty{ 1 + \frac{\tau^{\mathrm{ex}}\alpha^{2}\phi}{24} + \frac{\tau^{\mathrm{ex}}\rho\nu\alpha\gamma^{(1)}C(f^{av})}{4} + \frac{(2-3\rho^{2})\tau^{\mathrm{ex}}\nu^{2}}{24}}
+          \end{equation}
+          }
+          まず、最低次を求めると、$\sigma^{(0)} = S\alpha /(f^{av} + \theta^{\beta}(f^{av})^{1-\beta})$となる。これを左辺括弧内に代入して展開し、次を得る。
+          \begin{equation}
+            \sigma^{\mathrm{IV}} \simeq \frac{S\alpha}{z/L} \frac{\zeta}{x(\zeta)}\pqty{ 1 + \frac{\tau^{\mathrm{ex}}\pqty{\alpha^{2}\phi + (\sigma^{(0)})^{2}}}{24} + \frac{\tau^{\mathrm{ex}}\rho\nu\alpha\gamma^{(1)}C(f^{av})}{4} + \frac{(2-3\rho^{2})\tau^{\mathrm{ex}}\nu^{2}}{24}}
+          \end{equation}
+  \end{enumerate}
+  数値計算パートのコードは、リポジトリ内にある。
 \end{frame}
 
 \end{document}

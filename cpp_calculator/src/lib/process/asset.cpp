@@ -43,7 +43,7 @@ double ModelForwardAbstract::pricePutOption( double inStrike,
 double ModelForwardAbstract::impliedVolatility( double inStrike,
                                                 std::size_t inIndTime )
 {
-    if ( inStrike > mInitPrice )
+    // if ( inStrike > mInitPrice )
     {
         double lCallPrice    = priceCallOption( inStrike, inIndTime );
         double lTimeMaturity = msTerms->at( inIndTime ) - msTerms->front();
