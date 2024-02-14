@@ -48,7 +48,7 @@ if __name__ == '__main__':
             label=r"N: $S_{0} = $"+str(lParam("InitPrice")),
             title=r"$\beta = $"+str(lParam("Exponent")),
             xlabel=r"Strike $K$",
-            ylabel=r"ImpVol $\sigma ~ \mathrm{\%}$",
+            ylabel=r"ImpVol $\sigma ~ (\mathrm{\%})$",
             fig=fig,
             ax=ax
         )
