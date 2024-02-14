@@ -28,11 +28,11 @@ private:
 public:
     ExerciseWithLogForward(
         std::size_t inNPath,
-        std::shared_ptr< const std::vector< double > > insTerms,
+        std::shared_ptr<const std::vector<double> > insTerms,
         double inInitPrice,
-        std::unique_ptr< Process::Random::PathAbstract > inuRandomPath,
+        std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
         double inInitVol,
-        std::unique_ptr< Process::Random::PathAbstract > inuRandomVol,
+        std::unique_ptr<Process::Random::PathAbstract> inuRandomVol,
         double inCorr, double inExponent, double inShift, double inStandard,
         double inVolvol ) :
         StochasticVolatilityWithLogForwardAbstract(
@@ -83,13 +83,13 @@ public:
         if ( muRandomPath == nullptr )
         {
             muRandomPath =
-                std::make_unique< Process::Random::PathBrownAntithetic >(
+                std::make_unique<Process::Random::PathBrownAntithetic>(
                     mNPath, msTerms );
         }
         if ( muRandomVol == nullptr )
         {
             muRandomVol =
-                std::make_unique< Process::Random::PathBrownAntithetic >(
+                std::make_unique<Process::Random::PathBrownAntithetic>(
                     mNPath, msTerms );
         }
         return ExerciseWithLogForward( mNPath, msTerms, mInitPrice,
@@ -135,15 +135,15 @@ int main( int argc, char* argv[] )
     lParams.setNameCurrentSection( lSectionName );
 
     std::size_t lNTerms = std::size_t( lParams( "NTerms" ) );
-    std::vector< double > lTerms( lNTerms, 0 );
+    std::vector<double> lTerms( lNTerms, 0 );
 
-    double lDt = lParams( "TimeMaturity" ) / double( lNTerms );
+    double lDt = lParams( "TimeMaturity" ) / double( lNTerms - 1 );
     for ( std::size_t iTerm = 1; iTerm < lNTerms; ++iTerm )
     {
         lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
     }
 
-    auto lsTerms = std::make_shared< std::vector< double > >( lTerms );
+    auto lsTerms = std::make_shared<std::vector<double> >( lTerms );
 
     Process::Asset::ExerciseWithLogForwardBuilder lExerciseBuilder;
     lExerciseBuilder.setNPath( lParams( "NPath" ) );

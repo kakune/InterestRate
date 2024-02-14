@@ -72,10 +72,13 @@
         "variant": "cpp",
         "typeindex": "cpp",
         "valarray": "cpp",
-        "charconv": "cpp"
+        "charconv": "cpp",
+        "codecvt": "cpp",
+        "__nullptr": "cpp"
     },
     "C_Cpp.default.includePath": [
-        "${workspaceFolder}/cpp_calculator/src/lib"
+        "${workspaceFolder}/cpp_calculator/src/lib",
+        "/usr/local/cuda/include"
     ],
     "python.defaultInterpreterPath": "${workspaceFolder}/python_wrapper/.venv/bin/python",
     // tex settings

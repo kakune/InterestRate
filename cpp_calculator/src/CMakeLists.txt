@@ -1,6 +1,12 @@
 add_subdirectory(lib)
+
 add_executable(SABR_implied_volatility SABR_implied_volatility.cpp)
 target_link_libraries(SABR_implied_volatility LibUtils LibProcess)
 
 add_executable(exercise_implied_volatility exercise_implied_volatility.cpp)
 target_link_libraries(exercise_implied_volatility LibUtils LibProcess)
+
+if(CUDA_ENABLED)
+    add_executable(SABR_implied_volatility_cuda SABR_implied_volatility_cuda.cpp)
+    target_link_libraries(SABR_implied_volatility_cuda LibUtils LibProcessCUDA)
+endif()

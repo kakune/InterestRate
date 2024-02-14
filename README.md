@@ -4,11 +4,12 @@
 
 
 ## 実行環境
-- Intel C++ Compiler
-    - 他のCompilerでも良いが、cpp_calculator/CMakeLists.txtを書き換える必要がある。
+- C++ Compiler および CMake
 - Python 3.11.5  
     - `python_wrapper/.venv`にvenv環境を作成することを推奨。
     - 必要なライブラリは`python_wrapper/requirements.txt`。
+- CUDA
+    - `cpp_calculator/lib/process_cuda`およびそれを実行するpython wrapperを使わない場合は不要。
 - Visual Studio Code
     - このリポジトリをcloneして、ワークスペースに読み込めば、Linux環境であればそのまま動作すると思われる。
 
@@ -102,6 +103,7 @@ $$
 - 変数名はUpperCamelCaseの語頭に次のような接頭辞を上から順につけて定義される。
     - ローカル変数の場合`l`、グローバル変数の場合`g`、引数の場合`in`、メンバ変数の場合`m`、ループにおける一時変数の場合`i`
     - 生ポインタの場合`p`、shared_ptrの場合`s`、unique_ptrの場合`u`
+    - GPU上の変数の場合`c`
 - template変数名はUpperCamelCalseの接尾辞に`_`をつけて定義される。
 
 
@@ -126,6 +128,10 @@ $$
     - SDEに従う原資産モデル。
 - short_rate
     - 金利のshort rateモデル。
+
+#### process_cuda
+- asset
+    - processのassetをCUDAを用いてチューニングしたバージョン。
 
 #### utils  
 - parameters

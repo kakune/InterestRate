@@ -1,4 +1,4 @@
-cmake -S $1 -B $1/build -DCMAKE_BUILD_TYPE=Debug
+cmake -S $1 -B $1/build -DCMAKE_BUILD_TYPE=Release -DCUDA_ENABLED=1
 cmake --build $1/build
 
 PROJECT_ROOT="$1"

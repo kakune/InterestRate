@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-#include "process/asset.hpp"
+#include "process_cuda/asset.hpp"
 #include "utils/parameters.hpp"
 
 int main( int argc, char* argv[] )
@@ -20,7 +20,7 @@ int main( int argc, char* argv[] )
     std::size_t lNTerms = std::size_t( lParams( "NTerms" ) );
     std::vector<double> lTerms( lNTerms, 0 );
 
-    double lDt = lParams( "TimeMaturity" ) / double( lNTerms - 1 );
+    double lDt = lParams( "TimeMaturity" ) / double( lNTerms );
     for ( std::size_t iTerm = 1; iTerm < lNTerms; ++iTerm )
     {
         lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
@@ -28,7 +28,7 @@ int main( int argc, char* argv[] )
 
     auto lsTerms = std::make_shared<std::vector<double> >( lTerms );
 
-    Process::Asset::SABRWithLogForwardBuilder lSABRBuilder;
+    ProcessCUDA::Asset::SABRForwardBuilder lSABRBuilder;
     lSABRBuilder.setNPath( lParams( "NPath" ) );
     lSABRBuilder.setTerms( lsTerms );
     lSABRBuilder.setInitPrice( lParams( "InitPrice" ) );
@@ -49,8 +49,7 @@ int main( int argc, char* argv[] )
               lStrike += lParams( "DStrike" ) )
         {
             lFileOutput << lStrike << "," << std::setprecision( 12 )
-                        << lSABRObj.impliedVolatility( lStrike, lNTerms - 1 )
-                        << std::endl;
+                        << lSABRObj.impliedVolatility( lStrike ) << std::endl;
         }
         lFileOutput.close();
     }

@@ -22,6 +22,15 @@ target_link_libraries(test_short_rate LibProcess)
 add_executable(test_asset test_asset.cpp)
 target_link_libraries(test_asset LibProcess)
 
+
+if(CUDA_ENABLED)
+    # add_executable(test_random_cuda test_random_cuda.cpp)
+    # target_link_libraries(test_random_cuda LibProcess LibProcessCUDA)
+
+    add_executable(test_asset_cuda test_asset_cuda.cpp)
+    target_link_libraries(test_asset_cuda LibProcess LibProcessCUDA)
+endif()
+
 # target_link_libraries(test_executable main_executable)
 
 # add_test(NAME Test COMMAND test_parameters)

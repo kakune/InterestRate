@@ -16,7 +16,7 @@ AllowShortCaseLabelsOnASingleLine: true
 AllowShortEnumsOnASingleLine: true
 AllowShortLambdasOnASingleLine: All
 
-SpacesInAngles: true
+# SpacesInAngles: true
 AccessModifierOffset: -4
 
 SpacesInParens: Custom
