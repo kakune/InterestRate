@@ -46,7 +46,7 @@ if __name__ == '__main__':
             xs=lDataFrame["Strike"],
             ys=lDataFrame["ImpVol"] * 100,
             label=r"N: $S_{0} = $"+str(lParam("InitPrice")),
-            title=r"$\beta = $"+str(lParam("Exponent")),
+            title=r"$\rho = $"+str(lParam("Corr")),
             xlabel=r"Strike $K$",
             ylabel=r"ImpVol $\sigma ~ (\mathrm{\%})$",
             fig=fig,

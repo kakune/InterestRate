@@ -19,7 +19,7 @@
 \begin{frame}{Introduction}
   \begin{alertblock}{本スライドの目的と注意}
     \begin{itemize}
-      \item 本スライドは、Volatilityが変動するモデルにおける、Implied Volatilityの概念・振る舞い・近似式の導出を理解することを目的とする。
+      \item 本スライドは、Volatilityが変動するModelにおける、Implied Volatilityの概念・振る舞い・近似式の導出を理解することを目的とする。
       \item 特に近似式の導出は、よい計算練習になる。
       \item もともと手書きノートで行う予定だったが、やたらmessyになってしまったので、補助としてこのスライドを作成した。
       \item すべての確率変数は$T$-Forward measureの下であるとする。
@@ -29,42 +29,43 @@
 \end{frame}
 
 \section{Introduction}
+\subsection{Implied Volatility}
 \begin{frame}{Introduction}
   \begin{block}{Implied Volatility}
     \begin{itemize}
-      \item Black-Scholesモデルでは、assetのForward価格は、以下のSDEに従う。
+      \item Black Modelでは、assetのForward価格は、以下のSDEに従う。
             \begin{equation}
-              \dd F_{t} = \sigma^{\mathrm{BS}} \dd W_{t}
+              \dd F_{t} = \sigma^{\mathrm{B}} \dd W_{t}
             \end{equation}
-      \item このモデルを仮定すれば、市場のオプション価格から、quoteするvolを逆算できる。
+      \item このModelを仮定すれば、市場のオプション価格から、quoteするvolを逆算できる。
       \item これを\textbf{Implied Volatility (IV)}と呼ぶ。
     \end{itemize}
   \end{block}
-  \begin{block}{BSモデルの限界と改良}
+  \begin{block}{Black Modelの限界と改良}
     \begin{itemize}
       \item しかし、実際に計算してみると、オプションのストライクに依存してIVが変化することがわかる。
             \begin{itemize}
               \item Volatility Skew や Volatility Smile。
             \end{itemize}
-      \item すなわち、Black-Scholesモデルは市場を再現できていないことになる。
-      \item そこで、よりよいモデルとして、Volatilityが変動するモデルが考案された。
+      \item すなわち、Black Modelは市場を再現できていないことになる。
+      \item そこで、よりよいModelとして、Volatilityが変動するModelが考案された。
             \begin{itemize}
-              \item \textbf{Local Volatility (LV) Model}: Volが現在価格のdeteministicな関数とするモデル。
-              \item \textbf{Stochastic Volatility (SV) Model}: Volが確率変動するモデル。
+              \item \textbf{Local Volatility (LV) Model}: Volが現在価格のdeteministicな関数とするModel。
+              \item \textbf{Stochastic Volatility (SV) Model}: Volが確率変動するModel。
             \end{itemize}
     \end{itemize}
   \end{block}
 \end{frame}
 
-\section{Black-Scholes Model}
-\begin{frame}{Black-Scholes Model}
+\subsection{Black Model}
+\begin{frame}{Black Model}
   \begin{block}{Model}
     Forward price $F_{t}(T)$が、
     \begin{equation}
-      \dd F_{t}(T) = \sigma^{\mathrm{BS}} \dd W_{t}
+      \dd F_{t}(T) = \sigma^{\mathrm{B}} \dd W_{t}
     \end{equation}
     に従うとするModel\footnote{以降、$(T)$はしばしば省略する。}。
-    これは解くことができて、 ($s \leq t\leq T$)として$F_{t}(T) = F_{s}(T)\expi{\sigma^{\mathrm{BS}}(W_{t} - W_{s})-\frac{\pqty{\sigma^{\mathrm{BS}}}^{2}}{2}(t-s)}$となる。
+    これは解くことができて、 ($s \leq t\leq T$)として$F_{t}(T) = F_{s}(T)\expi{\sigma^{\mathrm{B}}(W_{t} - W_{s})-\frac{\pqty{\sigma^{\mathrm{B}}}^{2}}{2}(t-s)}$となる。
   \end{block}
   \begin{block}{European Call Optionの価格}
     時刻$T>0$に行使し、時刻$\tau >T$で受け取るstrike $K$のeuropean call optionの時刻$t$での価格は、
@@ -73,10 +74,10 @@
     \end{equation}
     ブラウン運動の確率分布を考えて解くと、
     \begin{align}
-      C_{t}(T,\tau) & = P_{t}(t,\tau) \pqty{F_{t} N(d_{t}^{+}) - KN(d_{t}^{-})}                                                                    \\
-      d_{t}^{\pm}   & = \frac{1}{\sigma^{\mathrm{BS}}\sqrt{T-t}}\pqty{\log\pqty{\frac{F_{t}}{K}}\pm\frac{\pqty{\sigma^{\mathrm{BS}}}^{2}}{2}(T-t)}
+      C_{t}(T,\tau) & = P_{t}(t,\tau) \pqty{F_{t} N(d_{t}^{+}) - KN(d_{t}^{-})}                                                                  \\
+      d_{t}^{\pm}   & = \frac{1}{\sigma^{\mathrm{B}}\sqrt{T-t}}\pqty{\log\pqty{\frac{F_{t}}{K}}\pm\frac{\pqty{\sigma^{\mathrm{B}}}^{2}}{2}(T-t)}
     \end{align}
-    この価格は、$\sigma^{\mathrm{BS}}$について単調増加である。
+    この価格は、$\sigma^{\mathrm{B}}$について単調増加である。
   \end{block}
 \end{frame}
 
@@ -102,12 +103,12 @@
 
 \begin{frame}
   \begin{block}{IVの求め方}
-    さらに、BSモデルとの比較を行うことにより、implied volatilityを求める。
+    さらに、Black Modelとの比較を行うことにより、implied volatilityを求める。
     \begin{enumerate}
       \setcounter{enumi}{4}
       \item 漸近形を整理して、（実質的に）一変数関数にする。
-      \item BSモデルにおける、その変数の値を計算する。
-      \item LVモデルでの変数を計算し、それをBSモデルのものと比較することで、IVを求める。
+      \item Black Modelにおける、その変数の値を計算する。
+      \item LV Modelでの変数を計算し、それをBlack Modelのものと比較することで、IVを求める。
     \end{enumerate}
     具体的に計算すると、
     \begin{equation}
@@ -173,9 +174,9 @@
     \begin{enumerate}
       \setcounter{enumi}{4}
       \item Normal Model $C(f) = 1, \ep\alpha_{t} = \sigma^{\mathrm{N}},\nu = 0$に対して漸近展開形を求める。
-      \item Black-Scholes Model $C(f) = f, \alpha_{t} = \sigma^{\mathrm{BS}},\nu = 0$に対して漸近展開形を求め、前項の内容と比較して対応する$\sigma^{\mathrm{N,BS}}$を求める。
+      \item Black Model $C(f) = f, \alpha_{t} = \sigma^{\mathrm{B}},\nu = 0$に対して漸近展開形を求め、前項の内容と比較して対応する$\sigma^{\mathrm{N,B}}$を求める。
       \item SABR Modelに対しても同様にして、$\sigma^{\mathrm{N,SABR}}$を求める。
-      \item $\sigma^{\mathrm{N,SABR}} = \sigma^{\mathrm{N,BS}}$を解いて、IVを求める。
+      \item $\sigma^{\mathrm{N,SABR}} = \sigma^{\mathrm{N,B}}$を解いて、IVを求める。
     \end{enumerate}
   \end{block}
 \end{frame}
@@ -227,8 +228,8 @@
 \begin{frame}{SABRのIVの漸近形}
   \begin{block}{SABRのIV}
     最終的に、求めるべきImplied (Normal) Volatilityは、
-    \begin{align}
-      \sigma_{t}^{\mathrm{IV}} \simeq
+    \begin{equation}
+      \sigma^{\mathrm{IV}} \simeq
       \frac{\alpha}{(fK)^{(1-\beta)/2}}
       \frac{1 + \left( \frac{(1-\beta)^{2}\alpha^{2}}{24(fK)^{1-\beta}}
         + \frac{\rho\beta\nu\alpha}{4(fK)^{(1-\beta)/2}}
@@ -236,22 +237,153 @@
         \left(\log \frac{f}{K}\right)^{2}
         + \frac{(1-\beta)^{4}}{1920}\left(\log \frac{f}{K}\right)^{4}}
       \frac{\zeta}{\chi(\zeta)}
-    \end{align}
+    \end{equation}
+    \begin{equation}
+      \begin{split}
+        \sigma^{\mathrm{INV}} & \simeq
+        \alpha(fK)^{\beta/2}
+        \frac{1 + \frac{1}{24}
+          \left(\log \frac{f}{K}\right)^{2}
+          + \frac{1}{1920}\left(\log \frac{f}{K}\right)^{4}}{1 + \frac{(1-\beta)^{2}}{24}
+          \left(\log \frac{f}{K}\right)^{2}
+          + \frac{(1-\beta)^{4}}{1920}\left(\log \frac{f}{K}\right)^{4}}
+        \frac{\zeta}{\chi(\zeta)} \\
+        & ~\times \pqty{
+          1 + \left( \frac{-\beta(2-\beta)\alpha^{2}}{24(fK)^{1-\beta}}
+          + \frac{\rho\beta\nu\alpha}{4(fK)^{(1-\beta)/2}}
+          + \frac{(2-3\rho^{2})\nu^{2}}{24}\right)\tau^{\mathrm{ex}}
+        }
+      \end{split}
+    \end{equation}
+    \begin{equation}
+      \zeta = \frac{\nu}{\alpha}(fK)^{(1-\beta)/2}\log \frac{f}{K}, \qquad \chi(\zeta) = \log \pqty{ \frac{\sqrt{1 - 2\rho\zeta + \zeta^{2}} - \rho + \zeta}{1-\rho}}
+    \end{equation}
   \end{block}
+\end{frame}
+
+\section{SABR IVのパラメータ依存性}
+\begin{frame}{SABR IVのパラメータ依存性}
+  めでたく漸近形が出たところで、パラメータ$\alpha(=\alpha_{0}),\beta,\rho,\nu$がそれぞれどういう意味を持つか理解しておこう。\\
+  まず、$\alpha$はVolの初期値であり、IVの全体の水準を定める。\\
+  $\beta$はスマイルの(backgroundの)傾きに影響する。図の通り(ただし、水準感が合うように$\alpha$を調整している)。
+
+  \begin{figure}
+    \begin{minipage}[b]{0.48\linewidth}
+      \raggedleft
+      \includegraphics[width=0.7\linewidth]{image/beta/SABR_graph_0.0.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+      \raggedright
+      \includegraphics[width=0.7\linewidth]{image/beta/SABR_graph_0.3.png}
+    \end{minipage}
+  \end{figure}
+
+  \begin{figure}
+    \begin{minipage}[b]{0.48\linewidth}
+      \raggedleft
+      \includegraphics[width=0.7\linewidth]{image/beta/SABR_graph_0.7.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+      \raggedright
+      \includegraphics[width=0.7\linewidth]{image/beta/SABR_graph_1.0.png}
+    \end{minipage}
+  \end{figure}
+
+\end{frame}
+
+\begin{frame}{SABR IVのパラメータ依存性}
+  $\nu$はVolの変動幅を表し、スマイルの曲率に影響する。
+  \begin{figure}
+    \begin{minipage}[b]{0.48\linewidth}
+      \raggedleft
+      \includegraphics[width=0.7\linewidth]{image/volvol/SABR_graph_0.0.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+      \raggedright
+      \includegraphics[width=0.7\linewidth]{image/volvol/SABR_graph_0.3.png}
+    \end{minipage}
+  \end{figure}
+
+  \begin{figure}
+    \begin{minipage}[b]{0.48\linewidth}
+      \raggedleft
+      \includegraphics[width=0.7\linewidth]{image/volvol/SABR_graph_0.7.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+      \raggedright
+      \includegraphics[width=0.7\linewidth]{image/volvol/SABR_graph_1.0.png}
+    \end{minipage}
+  \end{figure}
+
+\end{frame}
+
+\begin{frame}{SABR IVのパラメータ依存性}
+  $\rho$はフォワード価格とVolの相関を表し、スキューに影響する。
+  \begin{figure}
+    \begin{minipage}[b]{0.48\linewidth}
+      \raggedleft
+      \includegraphics[width=0.7\linewidth]{image/corr/SABR_graph_-0.7.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+      \raggedright
+      \includegraphics[width=0.7\linewidth]{image/corr/SABR_graph_-0.3.png}
+    \end{minipage}
+  \end{figure}
+
+  \begin{figure}
+    \begin{minipage}[b]{0.48\linewidth}
+      \raggedleft
+      \includegraphics[width=0.7\linewidth]{image/corr/SABR_graph_0.3.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+      \raggedright
+      \includegraphics[width=0.7\linewidth]{image/corr/SABR_graph_0.7.png}
+    \end{minipage}
+  \end{figure}
+
+\end{frame}
+
+\section{SV Modelのrobustness}
+\begin{frame}{SV Modelのrobustness}
+  SV Modelを導入したのは、将来のForward価格の変動に対応するためであった。
+  SABR Modelが確かに期待される振る舞いを持つことを見よう。
+  $\alpha,\nu \ll 1$とすると、
+  \begin{equation}
+    \sigma^{IV} \simeq \frac{\alpha}{(fK)^{(1-\beta)/2}}\frac{\zeta}{x(\zeta)}
+  \end{equation}
+  これに対して、極小条件$\pdv{\sigma^{IV}}{K} = 0$を求めると、$\log f/K$の1次まで考えれば、
+  \begin{equation}
+    \zeta - \log \frac{\zeta - \rho}{1 - \rho} = 0
+  \end{equation}
+  これは$\zeta$だけの関数であるので、$f$の変動に伴って、$\zeta$の値を保つように極小の$K$は変わる。ここで、
+  \begin{equation}
+    \dd \zeta \simeq \frac{\zeta}{f} \dd f - \frac{\zeta}{K} \dd K
+  \end{equation}
+  であるので、フォワード価格の変動に追随して極小のストライク価格も変わることがわかる。
+  \begin{alertblock}{そもそも直感的には......}
+    このModelは常識的な範囲のパラメータなら、いつもATM付近でsmileの極小が見える。
+    だから、$f$が変わったときに追従するのは当然といえば当然である。
+  \end{alertblock}
 \end{frame}
 
 
 \section{Exercise}
 \begin{frame}{Exercise}
-  SABRモデルのIVの導出方法を学んだkakuneくんは、他のモデルでも同様のことができるか試したくなった。
-  また同時に、SABRモデルではforward priceが大きくなったときにpriceの振動が大きくなりすぎる点を改善したくなった（本当にこれが問題たり得るのかは知らない）。
-  そこで、次のようなSVモデルを考えた。
+  SABR ModelのIVの導出方法を学んだkakuneくんは、他のModelでも同様のことができるか試したくなった。
+  また同時に、SABR Modelではforward priceが大きくなったときにpriceの振動が大きくなりすぎる点を改善したくなった（本当にこれが問題たり得るのかは知らない）。
+  そこで、次のようなSV Modelを考えた。
   \begin{align}
     \dd F_{t}                   & = S\frac{F_{t}^{\beta}}{F_{t}^{\beta} + \theta^{\beta}} \alpha_{t} \dd W_{t}^{1} \\
     \dd \alpha_{t}              & = \nu \alpha_{t} \dd W_{t}^{2}                                                   \\
     \dd W_{t}^{1} \dd W_{t}^{2} & = \rho \dd t
   \end{align}
-  ただし、$S,\theta,\beta$は定数である（$S$は不要だが、SABRの漸近展開との対応のためにつけた）。このモデルに対して、IVを求めてみよう。
+  ただし、$S,\theta,\beta$は定数である（$S$は不要だが、SABRの漸近展開との対応のためにつけた）。このModelに対して、IVを求めてみよう。
   \begin{enumerate}
     \item 対応する$C(f)$を書け。
     \item $z$を$f,K$を用いて書け。また、$z$を、SABRと同様に$f^{av},\log (f/K)$を用いて展開せよ。

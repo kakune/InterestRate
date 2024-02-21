@@ -74,7 +74,7 @@ $$
     - 出力されたcsvファイルのimplied volatilityに以下の近似解を重ねて描画し、gPathGraphに出力する。
 
 $$
-    \sigma_{t}^{\mathrm{IB}} \simeq \frac{\alpha}{(fK)^{(1-\beta)/2}} \frac{1 + \left( \frac{(1-\beta)^{2}\alpha^{2}}{24(fK)^{1-\beta}} + \frac{\rho\beta\nu\alpha}{4(fK)^{(1-\beta)/2}} + \frac{(2-3\rho^{2})\nu^{2}}{24}\right)\tau^{\mathrm{ex}}}{1 + \frac{(1-\beta)^{2}}{24}\left(\log \frac{f}{K}\right)^{2} + \frac{(1-\beta)^{4}}{1920}\left(\log \frac{f}{K}\right)^{4}} \frac{\zeta}{\chi(\zeta)}
+    \sigma^{\mathrm{IV}} \simeq \frac{\alpha}{(fK)^{(1-\beta)/2}} \frac{1 + \left( \frac{(1-\beta)^{2}\alpha^{2}}{24(fK)^{1-\beta}} + \frac{\rho\beta\nu\alpha}{4(fK)^{(1-\beta)/2}} + \frac{(2-3\rho^{2})\nu^{2}}{24}\right)\tau^{\mathrm{ex}}}{1 + \frac{(1-\beta)^{2}}{24}\left(\log \frac{f}{K}\right)^{2} + \frac{(1-\beta)^{4}}{1920}\left(\log \frac{f}{K}\right)^{4}} \frac{\zeta}{\chi(\zeta)}
 $$
 
 $$
