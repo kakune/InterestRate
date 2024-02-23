@@ -35,7 +35,7 @@
     \begin{itemize}
       \item Black Modelでは、assetのForward価格は、以下のSDEに従う。
             \begin{equation}
-              \dd F_{t} = \sigma^{\mathrm{B}} \dd W_{t}
+              \dd F_{t} = \sigma^{\mathrm{B}} F_{t}\dd W_{t}
             \end{equation}
       \item このModelを仮定すれば、市場のオプション価格から、quoteするvolを逆算できる。
       \item これを\textbf{Implied Volatility (IV)}と呼ぶ。
@@ -62,7 +62,7 @@
   \begin{block}{Model}
     Forward price $F_{t}(T)$が、
     \begin{equation}
-      \dd F_{t}(T) = \sigma^{\mathrm{B}} \dd W_{t}
+      \dd F_{t}(T) = \sigma^{\mathrm{B}} F_{t}\dd W_{t}
     \end{equation}
     に従うとするModel\footnote{以降、$(T)$はしばしば省略する。}。
     これは解くことができて、 ($s \leq t\leq T$)として$F_{t}(T) = F_{s}(T)\expi{\sigma^{\mathrm{B}}(W_{t} - W_{s})-\frac{\pqty{\sigma^{\mathrm{B}}}^{2}}{2}(t-s)}$となる。
@@ -70,7 +70,7 @@
   \begin{block}{European Call Optionの価格}
     時刻$T>0$に行使し、時刻$\tau >T$で受け取るstrike $K$のeuropean call optionの時刻$t$での価格は、
     \begin{equation}
-      C_{t}(T,\tau) = P_{t}(t,\tau)\exv[t]{\pqty{F_{t}(T) - K}^{+}}
+      C_{t}(T,\tau) = P_{t}(t,\tau)\exv[t]{\pqty{F_{T}(T) - K}^{+}}
     \end{equation}
     ブラウン運動の確率分布を考えて解くと、
     \begin{align}
@@ -82,7 +82,7 @@
 \end{frame}
 
 \section{Local Volatility Model}
-\subsection{Modelの概要}
+\subsection{Local Volatility Modelの概要}
 \begin{frame}{Modelの概要}
   \begin{block}{Model}
     Forward price $F_{t}(T)$が、
@@ -122,13 +122,16 @@
 \subsection{Modelの限界}
 \begin{frame}{LVの限界}
   \begin{block}{LVの限界}
-    Marketで観測されるIVが$\sigma^{\mathrm{M}}(F_{0},K)$であるとする。現在のMarketに合うように最低次を考えて$\sigma^{\mathrm{loc}}$のcalibrationを行うと、
+    Marketで観測されるIVが$\sigma^{\mathrm{M}}(K)$であるとする。現在のMarketに合うように最低次を考えて$\sigma^{\mathrm{loc}}$のcalibrationを行うと、
     \begin{equation}
-      \sigma^{\mathrm{M}}(F_{0},K) = \sigma^{\mathrm{loc}}\pqty{\frac{F_{0}+K}{2}}
+      \sigma^{\mathrm{M}}(K) = \sigma^{\mathrm{loc}}\pqty{\frac{F_{0}+K}{2}}
     \end{equation}
-    となる。ここで、calibrationの直後にforward priceが$F_{0} \to f$と変化したとしよう。すると、そのときのVolは、
     \begin{equation}
-      \sigma^{\mathrm{loc}}\pqty{\frac{f+K}{2}} = \sigma^{\mathrm{M}}(F_{0},K+f-F_{0})
+      \sigma^{\mathrm{loc}}\pqty{f} = \sigma^{\mathrm{M}}(2f - F_{0})
+    \end{equation}
+    となる。ここで、calibrationの直後にforward priceが$F_{0} \to f$と変化したとしよう。すると、そのときのIVのcurveは、
+    \begin{equation}
+      \sigma^{\mathrm{IV}}(K) = \sigma^{\mathrm{loc}}\pqty{\frac{f+K}{2}} = \sigma^{\mathrm{M}}(K+f-F_{0})
     \end{equation}
     となる。例えば$f>F_{0}$とすれば、Volatility curveは左に動くことになる。これは、期待される動きと逆である（Forward priceが右に動いたのだから、curveも右に動いてほしい）。以上が、LVが将来のVolを再現できないと言われる所以である。
   \end{block}
@@ -191,7 +194,7 @@
       \setbeamertemplate{enumerate item}{(\arabic{enumi})}
       \item
             \begin{equation}
-              P(\tau ; f,\alpha,K) := \int_{\infty}^{\infty} A^{2} p(t,f,\alpha ; t + \tau ,K,A) \dd A
+              P(\tau ; f,\alpha,K) := \int_{\infty}^{-\infty} A^{2} p(t,f,\alpha ; t + \tau ,K,A) \dd A
             \end{equation}
             は次のPDEを満たす︰
             \begin{equation}
@@ -358,9 +361,9 @@
   SABR Modelが確かに期待される振る舞いを持つことを見よう。
   $\alpha,\nu \ll 1$とすると、
   \begin{equation}
-    \sigma^{IV} \simeq \frac{\alpha}{(fK)^{(1-\beta)/2}}\frac{\zeta}{x(\zeta)}
+    \sigma^{\mathrm{IV}} \simeq \frac{\alpha}{(fK)^{(1-\beta)/2}}\frac{\zeta}{x(\zeta)}
   \end{equation}
-  これに対して、極小条件$\pdv{\sigma^{IV}}{K} = 0$を求めると、$\log f/K$の1次まで考えれば、
+  これに対して、極小条件$\pdv{\sigma^{\mathrm{IV}}}{K} = 0$を求めると、$\log f/K$の1次まで考えれば、
   \begin{equation}
     \zeta - \log \frac{\zeta - \rho}{1 - \rho} = 0
   \end{equation}
