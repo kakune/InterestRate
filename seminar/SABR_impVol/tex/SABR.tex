@@ -20,7 +20,7 @@
   \begin{alertblock}{本スライドの目的と注意}
     \begin{itemize}
       \item 本スライドは、Volatilityが変動するModelにおける、Implied Volatilityの概念・振る舞い・近似式の導出を理解することを目的とする。
-      \item 特に近似式の導出は、よい計算練習になる。
+      \item 特に近似式の導出は、よい計算練習になる。そのために、天下り的な記述をなるべく避け、発見的に計算が行われる（ように見える）よう工夫した。
       \item もともと手書きノートで行う予定だったが、やたらmessyになってしまったので、補助としてこのスライドを作成した。
       \item すべての確率変数は$T$-Forward measureの下であるとする。
       \item このスライドは、主に N. Zhang "Properties of the SABR model"に基づく。
@@ -82,7 +82,8 @@
 \end{frame}
 
 \section{Local Volatility Model}
-\begin{frame}{Local Volatility Model}
+\subsection{Modelの概要}
+\begin{frame}{Modelの概要}
   \begin{block}{Model}
     Forward price $F_{t}(T)$が、
     \begin{equation}
@@ -101,9 +102,10 @@
   \end{block}
 \end{frame}
 
+\subsection{IVの漸近形}
 \begin{frame}
-  \begin{block}{IVの求め方}
-    さらに、Black Modelとの比較を行うことにより、implied volatilityを求める。
+  \begin{block}{IVの漸近形}
+    さらに、Black Modelとの比較を行うことにより、implied volatilityの漸近形を求める。
     \begin{enumerate}
       \setcounter{enumi}{4}
       \item 漸近形を整理して、（実質的に）一変数関数にする。
@@ -117,6 +119,7 @@
   \end{block}
 \end{frame}
 
+\subsection{Modelの限界}
 \begin{frame}{LVの限界}
   \begin{block}{LVの限界}
     Marketで観測されるIVが$\sigma^{\mathrm{M}}(F_{0},K)$であるとする。現在のMarketに合うように最低次を考えて$\sigma^{\mathrm{loc}}$のcalibrationを行うと、
@@ -152,7 +155,7 @@
   \end{block}
 \end{frame}
 
-\subsection{SABRのIVの漸近形}
+\subsection{IVの漸近形}
 \begin{frame}{SABRのIVの漸近形}
   \begin{block}{European Call Option価格導出の概要}
     Volが小さいとして、一般に、
@@ -261,7 +264,7 @@
   \end{block}
 \end{frame}
 
-\section{SABR IVのパラメータ依存性}
+\subsection{IVのパラメータ依存性}
 \begin{frame}{SABR IVのパラメータ依存性}
   めでたく漸近形が出たところで、パラメータ$\alpha(=\alpha_{0}),\beta,\rho,\nu$がそれぞれどういう意味を持つか理解しておこう。\\
   まず、$\alpha$はVolの初期値であり、IVの全体の水準を定める。\\
@@ -349,7 +352,7 @@
 
 \end{frame}
 
-\section{SV Modelのrobustness}
+\subsection{Modelのrobustness}
 \begin{frame}{SV Modelのrobustness}
   SV Modelを導入したのは、将来のForward価格の変動に対応するためであった。
   SABR Modelが確かに期待される振る舞いを持つことを見よう。
@@ -370,6 +373,25 @@
     このModelは常識的な範囲のパラメータなら、いつもATM付近でsmileの極小が見える。
     だから、$f$が変わったときに追従するのは当然といえば当然である。
   \end{alertblock}
+\end{frame}
+
+\subsection{SVにおけるGreeks}
+\begin{frame}{SVにおけるGreeks}
+  IVが出たので、Black Modelの解析式を用いればリスク量を算出することができる。ここでは細かいGreeksの導出は行わないが、その概略と注意点をデルタを例に見ていこう。
+  \\
+  直感的には、SV Modelのコールオプションの価格$C^{\mathrm{SV}}$としたとき、そのデルタは
+  \begin{equation}
+    \Delta = \pdv{C^{\mathrm{SV}}}{f} \overset{?}{=} \pdv{C^{\mathrm{B}}}{f} + \pdv{C^{\mathrm{B}}}{\sigma^{\mathrm{B}}} \pdv{\sigma^{\mathrm{IV}}}{f}
+  \end{equation}
+  とすれば良いように思われる。しかし、これは($f,\sigma^{\mathrm{B}}$以外のパラメータを定数と見ている限りにおいて)正しくない。というのも、$f$が変化すると、相関$\rho$を通じて$\alpha_{t}$(の平均)も変化するためである。この問題を解消するため、volのSDEを次のように変形する。
+  \begin{equation}
+    \dd \alpha_{t} = \nu \alpha_{t} \dd W_{t}^{2} = \nu\alpha_{t}\pqty{\rho \dd W_{t}^{1} + \sqrt{1-\rho^{2}} \dd Y_{t}} = g~\dd F_{t} + \nu\alpha_{t}\sqrt{1-\rho^{2}}~\dd Y_{t}
+  \end{equation}
+  ここで、$Y_{t}$は$W_{t}^{1}$に独立なブラウン運動であり、$g$は$F_{t}$のSDEから定まる、一般には$F_{t},\alpha_{t}$の関数となる係数である。これにより、$f$の変動による$\alpha$の変動がわかったので、正しいデルタは、
+  \begin{equation}
+    \Delta = \pdv{C^{\mathrm{B}}}{f} + \pdv{C^{\mathrm{B}}}{\sigma^{\mathrm{B}}} \pqty{ \pdv{\sigma^{\mathrm{IV}}}{f} + g\pdv{\sigma^{\mathrm{IV}}}{\alpha}}
+  \end{equation}
+  となることがわかる。
 \end{frame}
 
 
