@@ -17,27 +17,40 @@ namespace Process
 namespace ShortRate
 {
 
-void ModelAbstract::calcZCB()
+void ModelAbstract::build()
 {
-    calcEachRates();
-    std::vector< double > lIntegralRates( mNPath, 0 );
     for ( std::size_t iTerm = 1; iTerm < msTerms->size(); ++iTerm )
     {
-        double lHalfTime =
-            0.5 * ( msTerms->at( iTerm ) - msTerms->at( iTerm - 1 ) );
-        mZCB[iTerm] = 0.0;
+        double lTmpDt     = msTerms->at( iTerm ) - msTerms->at( iTerm - 1 );
+        double lHalfTmpDt = 0.5 * lTmpDt;
         for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
         {
-            lIntegralRates[iTerm] =
-                lIntegralRates[iTerm - 1] +
-                lHalfTime *
-                    ( mSpotRates[iPath][iTerm] + mSpotRates[iPath][iTerm - 1] );
-            mZCB[iTerm] += std::exp( -lIntegralRates[iTerm] );
+            mSpotRates.at( iPath ).at( iTerm ) =
+                mSpotRates.at( iPath ).at( iTerm - 1 ) +
+                driftCoeff( iPath, iTerm ) * lTmpDt;
+            mDFs.at( iPath ).at( iTerm ) =
+                mDFs.at( iPath ).at( iTerm - 1 ) *
+                std::exp( -( mSpotRates.at( iPath ).at( iTerm - 1 ) +
+                             mSpotRates.at( iPath ).at( iTerm ) ) *
+                          lHalfTmpDt );
         }
-        mZCB[iTerm] /= mNPath;
+    }
+
+    for ( std::size_t iTerm = 1; iTerm < msTerms->size(); ++iTerm )
+    {
+        mExpectedSpotRates.at( iTerm ) = 0.0;
+        mZCBs.at( iTerm )              = 0.0;
+        for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
+        {
+            mExpectedSpotRates.at( iTerm ) +=
+                mSpotRates.at( iPath ).at( iTerm );
+            mZCBs.at( iTerm ) += mDFs.at( iPath ).at( iTerm );
+        }
+        mExpectedSpotRates.at( iTerm ) /= double( mNPath );
+        mZCBs.at( iTerm ) /= double( mNPath );
     }
     mInterpZCB.build( msTerms,
-                      std::make_shared< std::vector< double > >( mZCB ) );
+                      std::make_shared<std::vector<double> >( mZCBs ) );
 }
 
 double ModelAbstract::priceZCB( double inStartTime, double inMaturityTime )
@@ -47,21 +60,19 @@ double ModelAbstract::priceZCB( double inStartTime, double inMaturityTime )
 
 double ModelAbstract::forwardRate( double inStartTime, double inTerminalTime )
 {
-    auto lItr =
-        std::upper_bound( msTerms->begin(), msTerms->end(), inTerminalTime );
-    double lDTime = ( *lItr - inTerminalTime ) * 0.1;
-    return ( std::log( priceZCB( inStartTime, inTerminalTime ) ) -
-             std::log( priceZCB( inStartTime, inTerminalTime + lDTime ) ) ) /
-           lDTime;
+    return ( std::log( priceZCB( msTerms->at( 0 ), inTerminalTime ) ) -
+             std::log( priceZCB( msTerms->at( 0 ), inStartTime ) ) ) /
+           ( inTerminalTime - inStartTime );
 }
 
-double ConstantRate::priceZCB( double inStartTime, double inMaturityTime )
+double ModelAbstract::instantaneousForwardRate( double inTime )
 {
-    return std::exp( -( inMaturityTime - inStartTime ) * mRate );
+    return mInterpZCB.deriv( inTime, 1 ) / mInterpZCB( inTime );
 }
-double ConstantRate::forwardRate( double inStartTime, double inTerminalTime )
+
+double ConstantRate::driftCoeff( std::size_t inIndPath, std::size_t inIndTerm )
 {
-    return mRate;
+    return 0.0;
 }
 
 }  // namespace ShortRate

@@ -20,8 +20,8 @@ class GeneratorAbstract
 {
 protected:
     bool mIsBuilt = false;
-    std::shared_ptr< const std::vector< double > > msRefXs;  //! vector of X
-    std::shared_ptr< const std::vector< double > >
+    std::shared_ptr<const std::vector<double> > msRefXs;  //! vector of X
+    std::shared_ptr<const std::vector<double> >
         msRefYs;  //! vector of Y corresponding to f(msRefXs)
 public:
     /**
@@ -30,8 +30,8 @@ public:
      * @param insRefYs vector of Y corresponding to f(msRefXs)
      */
     virtual void build(
-        std::shared_ptr< const std::vector< double > > insRefXs,
-        std::shared_ptr< const std::vector< double > > insRefYs ) = 0;
+        std::shared_ptr<const std::vector<double> > insRefXs,
+        std::shared_ptr<const std::vector<double> > insRefYs ) = 0;
     /**
      * @brief This calculates the value f(inX) using interpolation.
      * @param inX
@@ -48,7 +48,7 @@ class NewtonSpline : public GeneratorAbstract
 {
 private:
     std::size_t mNDeg;
-    std::vector< std::vector< double > > mCoeff;
+    std::vector<std::vector<double> > mCoeff;
 
 public:
     /**
@@ -56,8 +56,7 @@ public:
      * @param inNDeg degree of spline
      */
     NewtonSpline( std::size_t inNDeg = 1 ) :
-        mNDeg( inNDeg ),
-        mCoeff( std::vector< std::vector< double > >( inNDeg ) )
+        mNDeg( inNDeg ), mCoeff( std::vector<std::vector<double> >( inNDeg ) )
     {
     }
     /**
@@ -65,15 +64,22 @@ public:
      * @param insRefXs vector of X ( must be > mNDeg )
      * @param insRefYs vector of Y corresponding to f(msRefXs)
      */
-    void build(
-        std::shared_ptr< const std::vector< double > > insRefXs,
-        std::shared_ptr< const std::vector< double > > insRefYs ) override;
+    void build( std::shared_ptr<const std::vector<double> > insRefXs,
+                std::shared_ptr<const std::vector<double> > insRefYs ) override;
     /**
      * @brief This calculates the value f(inX) using mNDeg-degree Newton spline.
      * @param inX
      * @return double f(inX)
      */
     double operator()( double inX ) override;
+    /**
+     * @brief This calculates the derivative of f(inX) using mNDeg-degree Newton
+     * spline.
+     * @param inX
+     * @param inOrder the order of derivative
+     * @return double f^(inOrder)(inX)
+     */
+    double deriv( double inX, std::size_t inOrder = 1 );
 };
 
 }  // namespace Interpolate1d

@@ -25,18 +25,20 @@ namespace ShortRate
 class ModelAbstract
 {
 protected:
-    std::size_t mNPath;  //! the number of Path
-    std::shared_ptr< const std::vector< double > > msTerms;  //! term structure
-    std::vector< std::vector< double > >
-        mSpotRates;              //! calcurated interest rate
-    std::vector< double > mZCB;  //! price of zero-coupon bond
+    std::size_t mNPath;                                   //! the number of Path
+    std::shared_ptr<const std::vector<double> > msTerms;  //! term structure
+    std::vector<std::vector<double> > mSpotRates;  //! calcurated interest rate
+    std::vector<std::vector<double> > mDFs;  //! calcurated discount factor
+    std::vector<double>
+        mExpectedSpotRates;     //! calcurated expectation value of spot rate
+    std::vector<double> mZCBs;  //! price of zero-coupon bond
     Math::Interpolate1d::NewtonSpline
-        mInterpZCB;  //! interpolated function of ZCB
-    /**
-     * @brief This calcurate interest rates of each random path.
-     */
-    virtual void calcEachRates() = 0;
-    virtual ~ModelAbstract()     = default;
+        mInterpZCB;        //! interpolated function of ZCB
+    double mInitSpotRate;  //! initial spot rate
+
+    virtual double driftCoeff( std::size_t inIndPath,
+                               std::size_t inIndTerm ) = 0;
+    virtual ~ModelAbstract()                           = default;
 
 public:
     /**
@@ -45,18 +47,26 @@ public:
      * @param insTerms term structure
      */
     ModelAbstract( std::size_t inNPath,
-                   std::shared_ptr< const std::vector< double > > insTerms ) :
+                   std::shared_ptr<const std::vector<double> > insTerms,
+                   double inInitSpotRate ) :
         mNPath( inNPath ),
         msTerms( insTerms ),
-        mSpotRates( mNPath, std::vector< double >( insTerms->size(), 0 ) ),
-        mZCB( insTerms->size(), 1.0 ),
-        mInterpZCB( 3 )
+        mSpotRates( mNPath, std::vector<double>( insTerms->size(), 0 ) ),
+        mDFs( mNPath, std::vector<double>( insTerms->size(), 1.0 ) ),
+        mExpectedSpotRates( insTerms->size(), 0.0 ),
+        mZCBs( insTerms->size(), 1.0 ),
+        mInterpZCB( 3 ),
+        mInitSpotRate( inInitSpotRate )
     {
+        for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
+        {
+            mSpotRates.at( 0 ).at( iPath ) = inInitSpotRate;
+        }
     }
     /**
-     * @brief This calculates ZCB price.
+     * @brief This calcurate interest rates of each random path.
      */
-    virtual void calcZCB();
+    virtual void build();
     /**
      * @brief This calculates ZCB price within arbitrary interval observed at
      * Terms[0].
@@ -74,6 +84,14 @@ public:
      * @return double f(inStartTime, inTerminalTime)
      */
     virtual double forwardRate( double inStartTime, double inTerminalTime );
+
+    /**
+     * @brief This calculates instantaneous forward rate at arbitary time
+     * observed at Terms[0].
+     * @param inTime time of forward rate
+     * @return double f(inTime)
+     */
+    virtual double instantaneousForwardRate( double inTime );
 };
 
 /**
@@ -82,8 +100,9 @@ public:
 class ModelAbstractBuilder
 {
 protected:
-    std::size_t mNPath;  //! the number of Path
-    std::shared_ptr< const std::vector< double > > msTerms;  //! term structure
+    double mInitSpotRate;
+    std::size_t mNPath;                                   //! the number of Path
+    std::shared_ptr<const std::vector<double> > msTerms;  //! term structure
 public:
     ModelAbstractBuilder& setNPath( std::size_t inNPath )
     {
@@ -91,9 +110,14 @@ public:
         return *this;
     }
     ModelAbstractBuilder& setTerms(
-        std::shared_ptr< const std::vector< double > > insTerms )
+        std::shared_ptr<const std::vector<double> > insTerms )
     {
         msTerms = insTerms;
+        return *this;
+    }
+    ModelAbstractBuilder& setInitSpotRate( double inInitSpotRate )
+    {
+        mInitSpotRate = inInitSpotRate;
         return *this;
     }
     virtual ~ModelAbstractBuilder() = default;
@@ -102,18 +126,14 @@ public:
 class ConstantRate : public ModelAbstract
 {
 private:
-    double mRate;
-    void calcEachRates() override {}
+    double driftCoeff( std::size_t inIndPath, std::size_t inIndTerm ) override;
 
 public:
-    ConstantRate( std::shared_ptr< const std::vector< double > > insTerms,
-                  double inRate ) :
-        ModelAbstract( 1, insTerms ), mRate( inRate )
+    ConstantRate( std::shared_ptr<const std::vector<double> > insTerms,
+                  double inInitSpotRate ) :
+        ModelAbstract( 1, insTerms, inInitSpotRate )
     {
     }
-    void calcZCB() override {}
-    double priceZCB( double inStartTime, double inMaturityTime ) override;
-    double forwardRate( double inStartTime, double inTerminalTime ) override;
 };
 
 }  // namespace ShortRate

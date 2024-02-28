@@ -9,15 +9,15 @@ int main( int argc, char* argv[] )
     std::size_t lNPath  = 10;
     double lDt          = 0.1;
     double lRate        = 0.05;
-    std::vector< double > lTerms( lNTerms, 0 );
+    std::vector<double> lTerms( lNTerms, 0 );
     for ( std::size_t iTerm = 1; iTerm < lNTerms; ++iTerm )
     {
         lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
     }
-    auto lsTerms = std::make_shared< std::vector< double > >( lTerms );
+    auto lsTerms = std::make_shared<std::vector<double> >( lTerms );
 
     Process::ShortRate::ConstantRate lObj( lsTerms, lRate );
-    lObj.calcZCB();
+    lObj.build();
 
     for ( std::size_t iTerm = 0; iTerm < lNTerms; ++iTerm )
     {
@@ -25,13 +25,10 @@ int main( int argc, char* argv[] )
     }
     std::cout << std::endl;
     double x = 0.0;
-    for ( std::size_t iPath = 0; iPath < lNPath; ++iPath )
+    for ( std::size_t iTerm = 0; iTerm < lNTerms; ++iTerm )
     {
-        for ( std::size_t iTerm = 0; iTerm < lNTerms; ++iTerm )
-        {
-            std::cout << lObj.priceZCB( 0.0, lTerms[iTerm] ) << " ";
-        }
-        std::cout << std::endl;
+        std::cout << lObj.priceZCB( 0.0, lTerms[iTerm] ) << " ";
     }
+    std::cout << std::endl;
     return 0;
 }
