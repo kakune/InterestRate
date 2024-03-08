@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 
-#include "process/short_rate.hpp"
+#include "process/market.hpp"
 
 int main( int argc, char* argv[] )
 {
@@ -10,25 +10,27 @@ int main( int argc, char* argv[] )
     double lDt          = 0.1;
     double lRate        = 0.05;
     std::vector<double> lTerms( lNTerms, 0 );
+    std::vector<double> lZCB( lNTerms, 1.0 );
     for ( std::size_t iTerm = 1; iTerm < lNTerms; ++iTerm )
     {
         lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
+        lZCB[iTerm]   = lZCB[iTerm - 1] - 0.04;
     }
     auto lsTerms = std::make_shared<std::vector<double> >( lTerms );
 
-    Process::ShortRate::ConstantRate lObj( lsTerms, lRate );
-    lObj.build();
+    Process::Market::Data lObj( lsTerms );
+    lObj.setZCB( lZCB );
+    std::vector<double> lFR( lNTerms );
+    for ( std::size_t iTerm = 0; iTerm < lNTerms; ++iTerm )
+    {
+        lFR.at( iTerm ) = lObj.mInterpInstantaneousForwardRate( lTerms[iTerm] );
+        std::cout << lFR.at( iTerm ) << std::endl;
+    }
 
+    lObj.setForwardRate( lFR );
     for ( std::size_t iTerm = 0; iTerm < lNTerms; ++iTerm )
     {
-        std::cout << lTerms[iTerm] << " ";
+        std::cout << lObj.mInterpZCB( lTerms[iTerm] ) << std::endl;
     }
-    std::cout << std::endl;
-    double x = 0.0;
-    for ( std::size_t iTerm = 0; iTerm < lNTerms; ++iTerm )
-    {
-        std::cout << lObj.priceZCB( 0.0, lTerms[iTerm] ) << " ";
-    }
-    std::cout << std::endl;
     return 0;
 }

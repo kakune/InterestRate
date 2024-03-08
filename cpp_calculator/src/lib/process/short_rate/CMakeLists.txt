@@ -1,0 +1,4 @@
+set(SHORT_RATE_SOURCES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/core.cpp
+    PARENT_SCOPE
+)

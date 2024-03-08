@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -60,7 +61,7 @@ void NewtonSpline::build( std::shared_ptr<const std::vector<double> > insRefXs,
     mIsBuilt = true;
 }
 
-double NewtonSpline::operator()( double inX )
+double NewtonSpline::operator()( double inX ) const
 {
     if ( !mIsBuilt )
     {
@@ -93,13 +94,21 @@ double NewtonSpline::operator()( double inX )
     return lRes;
 }
 
-double NewtonSpline::deriv( double inX, std::size_t inOrder )
+double NewtonSpline::deriv( double inX, std::size_t inOrder ) const
 {
     if ( inOrder == 0 ) { return operator()( inX ); }
     if ( !mIsBuilt )
     {
         std::cerr << "Error: The spline has NOT been built." << std::endl;
         return std::numeric_limits<double>::quiet_NaN();
+    }
+    if ( inX == msRefXs->front() )
+    {
+        return deriv( inX + std::numeric_limits<double>::epsilon(), inOrder );
+    }
+    if ( inX == msRefXs->back() )
+    {
+        return deriv( inX - std::numeric_limits<double>::epsilon(), inOrder );
     }
     if ( inX <= msRefXs->front() || inX >= msRefXs->back() )
     {

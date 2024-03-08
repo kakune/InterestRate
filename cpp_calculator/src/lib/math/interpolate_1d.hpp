@@ -5,6 +5,9 @@
  * @date 1/29/2024
  */
 
+#ifndef MATH_INTERPOLATE_1D_HPP
+#define MATH_INTERPOLATE_1D_HPP
+
 #include <memory>
 #include <vector>
 
@@ -37,8 +40,8 @@ public:
      * @param inX
      * @return double f(inX)
      */
-    virtual double operator()( double inX ) = 0;
-    virtual ~GeneratorAbstract()            = default;
+    virtual double operator()( double inX ) const = 0;
+    virtual ~GeneratorAbstract()                  = default;
 };
 
 /**
@@ -71,7 +74,7 @@ public:
      * @param inX
      * @return double f(inX)
      */
-    double operator()( double inX ) override;
+    double operator()( double inX ) const override;
     /**
      * @brief This calculates the derivative of f(inX) using mNDeg-degree Newton
      * spline.
@@ -79,8 +82,10 @@ public:
      * @param inOrder the order of derivative
      * @return double f^(inOrder)(inX)
      */
-    double deriv( double inX, std::size_t inOrder = 1 );
+    double deriv( double inX, std::size_t inOrder = 1 ) const;
 };
 
 }  // namespace Interpolate1d
 }  // namespace Math
+
+#endif

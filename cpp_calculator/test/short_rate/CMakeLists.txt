@@ -1,0 +1,2 @@
+add_executable(test_constant test_constant.cpp)
+target_link_libraries(test_constant LibProcess)

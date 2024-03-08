@@ -16,11 +16,13 @@ target_link_libraries(test_interpolate_1D LibMath)
 add_executable(test_special_functions test_special_functions.cpp)
 target_link_libraries(test_special_functions LibMath)
 
-add_executable(test_short_rate test_short_rate.cpp)
-target_link_libraries(test_short_rate LibProcess)
-
 add_executable(test_asset test_asset.cpp)
 target_link_libraries(test_asset LibProcess)
+
+add_executable(test_market test_market.cpp)
+target_link_libraries(test_market LibProcess)
+
+add_subdirectory(short_rate)
 
 
 if(CUDA_ENABLED)
