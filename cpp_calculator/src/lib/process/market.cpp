@@ -10,8 +10,6 @@
 
 #include <cmath>
 
-#include "math/integral_1d.hpp"
-
 namespace Process
 {
 namespace Market
@@ -43,14 +41,19 @@ void Data::setForwardRate( std::vector<double> inForwardRate )
         lFineRates.at( iTerm ) =
             mInterpInstantaneousForwardRate( mFineTerms.at( iTerm ) );
     }
-    std::vector<double> lIntegralRates =
-        Math::Integral::eachTrapezoidal( mFineTerms, lFineRates );
+    Math::Interpolate1d::NewtonSpline lSplineRates( mNDimSpline );
+    lSplineRates.build( std::make_shared<std::vector<double>>( mFineTerms ),
+                        std::make_shared<std::vector<double>>( lFineRates ) );
+    lSplineRates.buildIntegral();
+
+    std::vector<double> lZCB( mFineTerms.size() );
     for ( std::size_t iTerm = 0; iTerm < mFineTerms.size(); ++iTerm )
     {
-        lIntegralRates.at( iTerm ) = std::exp( -lIntegralRates.at( iTerm ) );
+        lZCB.at( iTerm ) =
+            std::exp( -lSplineRates.integral( mFineTerms.at( iTerm ) ) );
     }
     mInterpZCB.build( std::make_shared<std::vector<double>>( mFineTerms ),
-                      std::make_shared<std::vector<double>>( lIntegralRates ) );
+                      std::make_shared<std::vector<double>>( lZCB ) );
 }
 
 }  // namespace Market

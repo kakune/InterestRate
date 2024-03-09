@@ -21,6 +21,7 @@ namespace Market
 
 struct Data
 {
+    std::size_t mNDimSpline;
     std::shared_ptr<const std::vector<double> > msTerms;  //! term structure
     std::size_t mNMesh;  //! the number of mesh in making ZCB from forward rate
                          //! or vice versa.
@@ -33,11 +34,12 @@ struct Data
     void setForwardRate( std::vector<double> inForwardRate );
     Data( std::shared_ptr<const std::vector<double> > insTerms,
           std::size_t inNMesh = 10 ) :
+        mNDimSpline( std::min( std::size_t( 5 ), insTerms->size() - 2 ) ),
         msTerms( insTerms ),
         mNMesh( inNMesh ),
         mFineTerms( ( insTerms->size() - 1 ) * inNMesh + 1 ),
-        mInterpZCB( 3 ),
-        mInterpInstantaneousForwardRate( 3 )
+        mInterpZCB( mNDimSpline ),
+        mInterpInstantaneousForwardRate( mNDimSpline )
     {
         for ( std::size_t iTerm = 1; iTerm < msTerms->size(); ++iTerm )
         {
