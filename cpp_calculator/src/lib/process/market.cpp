@@ -45,11 +45,9 @@ void Data::setForwardRate( std::vector<double> inForwardRate )
     }
     std::vector<double> lIntegralRates =
         Math::Integral::eachTrapezoidal( mFineTerms, lFineRates );
-    double lFactor = msTerms->at( 0 ) * inForwardRate.at( 0 );
     for ( std::size_t iTerm = 0; iTerm < mFineTerms.size(); ++iTerm )
     {
-        lIntegralRates.at( iTerm ) =
-            std::exp( -lFactor - lIntegralRates.at( iTerm ) );
+        lIntegralRates.at( iTerm ) = std::exp( -lIntegralRates.at( iTerm ) );
     }
     mInterpZCB.build( std::make_shared<std::vector<double>>( mFineTerms ),
                       std::make_shared<std::vector<double>>( lIntegralRates ) );

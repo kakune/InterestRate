@@ -9,5 +9,6 @@
 #define PROCESS_SHORT_RATE_HPP
 
 #include "short_rate/core.hpp"
+#include "short_rate/one-factor_Gauss.hpp"
 
 #endif

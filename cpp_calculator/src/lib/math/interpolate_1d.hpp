@@ -52,6 +52,8 @@ class NewtonSpline : public GeneratorAbstract
 private:
     std::size_t mNDeg;
     std::vector<std::vector<double> > mCoeff;
+    std::vector<std::vector<double> > mCoeffIntegral;
+    std::vector<double> mSumIntegral;
 
 public:
     /**
@@ -83,6 +85,24 @@ public:
      * @return double f^(inOrder)(inX)
      */
     double deriv( double inX, std::size_t inOrder = 1 ) const;
+
+    /**
+     * @brief This prepares the coefficients for integral.
+     */
+    void buildIntegral();
+
+    /**
+     * @brief This calculates the integral in the area [x0, inX].
+     * @param inX
+     * @return double
+     */
+    double integral( double inX ) const;
+    /**
+     * @brief This calculates the integral in the area [inA, inB].
+     * @param inX
+     * @return double
+     */
+    double integral( double inA, double inB ) const;
 };
 
 }  // namespace Interpolate1d

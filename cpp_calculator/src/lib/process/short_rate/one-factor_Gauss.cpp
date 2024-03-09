@@ -19,10 +19,31 @@ double HoLee::driftCoeff( std::size_t inIndPath, std::size_t inIndTerm ) const
 {
     if ( msMarketData == nullptr ) { return 0.0; }
     return msMarketData->mInterpInstantaneousForwardRate.deriv(
-               msTerms->at( inIndPath - 1 ), 1 ) +
-           mVol2 * ( msTerms->at( inIndPath - 1 ) - msTerms->at( 0 ) );
+               msTerms->at( inIndTerm - 1 ), 1 ) +
+           mVol2 * ( msTerms->at( inIndTerm - 1 ) - msTerms->at( 0 ) );
 }
 double HoLee::volCoeff( std::size_t inIndPath, std::size_t inIndTerm ) const
+{
+    return mVol;
+}
+
+double Vasicek::driftCoeff( std::size_t inIndPath, std::size_t inIndTerm ) const
+{
+    --inIndTerm;
+    if ( msMarketData == nullptr )
+    {
+        return mKappa * ( mMean - mSpotRates.at( inIndPath ).at( inIndTerm ) );
+    }
+    double lTime = msTerms->at( inIndTerm );
+    double lMean =
+        mMeanFactor1 *
+            msMarketData->mInterpInstantaneousForwardRate.deriv( lTime, 1 ) +
+        msMarketData->mInterpInstantaneousForwardRate( lTime ) +
+        mMeanFactor2 *
+            ( 1.0 - std::exp( -2.0 * mKappa * ( lTime - msTerms->at( 0 ) ) ) );
+    return mKappa * ( lMean - mSpotRates.at( inIndPath ).at( inIndTerm ) );
+}
+double Vasicek::volCoeff( std::size_t inIndPath, std::size_t inIndTerm ) const
 {
     return mVol;
 }

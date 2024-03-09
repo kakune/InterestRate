@@ -73,12 +73,15 @@ public:
         mExpectedSpotRates( insTerms->size(), 0.0 ),
         mZCBs( insTerms->size(), 1.0 ),
         mInterpZCB( 3 ),
-        mInitSpotRate( inInitSpotRate ),
+        mInitSpotRate( insMarketData == nullptr
+                           ? inInitSpotRate
+                           : insMarketData->mInterpInstantaneousForwardRate(
+                                 insTerms->at( 0 ) ) ),
         msMarketData( insMarketData )
     {
         for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
         {
-            mSpotRates.at( 0 ).at( iPath ) = inInitSpotRate;
+            mSpotRates.at( iPath ).at( 0 ) = mInitSpotRate;
         }
     }
     /**

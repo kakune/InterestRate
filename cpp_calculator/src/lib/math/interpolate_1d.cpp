@@ -24,7 +24,11 @@ void NewtonSpline::build( std::shared_ptr<const std::vector<double> > insRefXs,
 {
     msRefXs = insRefXs;
     msRefYs = insRefYs;
-    if ( mNDeg == 0 ) { return; }
+    if ( mNDeg == 0 )
+    {
+        mIsBuilt = true;
+        return;
+    }
     std::size_t lSize = insRefXs->size();
     if ( lSize <= mNDeg )
     {
@@ -97,23 +101,19 @@ double NewtonSpline::operator()( double inX ) const
 double NewtonSpline::deriv( double inX, std::size_t inOrder ) const
 {
     if ( inOrder == 0 ) { return operator()( inX ); }
+    if ( mNDeg == 0 ) { return 0.0; }
     if ( !mIsBuilt )
     {
-        std::cerr << "Error: The spline has NOT been built." << std::endl;
+        std::cerr << "Error: Math::Interpolate1d::NewtonSpline::deriv"
+                  << std::endl
+                  << "The spline has NOT been built." << std::endl;
         return std::numeric_limits<double>::quiet_NaN();
     }
-    if ( inX == msRefXs->front() )
+    if ( inX < msRefXs->front() || inX > msRefXs->back() )
     {
-        return deriv( inX + std::numeric_limits<double>::epsilon(), inOrder );
-    }
-    if ( inX == msRefXs->back() )
-    {
-        return deriv( inX - std::numeric_limits<double>::epsilon(), inOrder );
-    }
-    if ( inX <= msRefXs->front() || inX >= msRefXs->back() )
-    {
-        std::cerr << "Error: Argument is out of the allowed range."
-                  << std::endl;
+        std::cerr << "Error: Math::Interpolate1d::NewtonSpline::deriv"
+                  << std::endl
+                  << "Argument is out of the allowed range." << std::endl;
         return std::numeric_limits<double>::quiet_NaN();
     }
 
@@ -139,6 +139,97 @@ double NewtonSpline::deriv( double inX, std::size_t inOrder ) const
     }
 
     return lRes;
+}
+
+void NewtonSpline::buildIntegral()
+{
+    mCoeffIntegral.resize( mNDeg + 2 );
+    for ( std::size_t iDeg = 0; iDeg <= mNDeg + 1; ++iDeg )
+    {
+        mCoeffIntegral.at( iDeg ).resize( msRefXs->size(), 0.0 );
+    }
+    for ( std::size_t lIndLeft = 0; lIndLeft < msRefXs->size(); ++lIndLeft )
+    {
+        if ( msRefXs->size() < mNDeg + lIndLeft ) { break; }
+        std::vector<double> lTmpBareCoeff( mNDeg + 1 );
+        lTmpBareCoeff.at( 0 )                 = 1.0;
+        mCoeffIntegral.at( 0 ).at( lIndLeft ) = msRefYs->at( lIndLeft );
+        for ( std::size_t iDeg = 1; iDeg <= mNDeg; ++iDeg )
+        {
+            double lDif =
+                msRefXs->at( lIndLeft ) - msRefXs->at( lIndLeft + iDeg - 1 );
+            for ( std::size_t jDeg = iDeg; jDeg > 0; --jDeg )
+            {
+                lTmpBareCoeff.at( jDeg ) *= lDif;
+                lTmpBareCoeff.at( jDeg ) += lTmpBareCoeff.at( jDeg - 1 );
+                mCoeffIntegral.at( jDeg ).at( lIndLeft ) +=
+                    mCoeff.at( iDeg - 1 ).at( lIndLeft ) *
+                    lTmpBareCoeff.at( jDeg );
+            }
+            lTmpBareCoeff.at( 0 ) = 0;
+        }
+        for ( std::size_t iDeg = mNDeg + 1; iDeg > 0; --iDeg )
+        {
+            mCoeffIntegral.at( iDeg ).at( lIndLeft ) =
+                mCoeffIntegral.at( iDeg - 1 ).at( lIndLeft ) / double( iDeg );
+        }
+        mCoeffIntegral.at( 0 ).at( lIndLeft ) = 0;
+    }
+
+    mSumIntegral.resize( msRefXs->size(), 0.0 );
+    std::size_t lIndLeft = 0;
+    for ( std::size_t iX = 1; iX < msRefXs->size(); ++iX )
+    {
+        mSumIntegral.at( iX ) = mSumIntegral.at( lIndLeft );
+        double lDif           = msRefXs->at( iX ) - msRefXs->at( lIndLeft );
+        double lPowX          = 1.0;
+        for ( std::size_t iDeg = 1; iDeg <= mNDeg + 1; ++iDeg )
+        {
+            lPowX *= lDif;
+            mSumIntegral.at( iX ) +=
+                lPowX * mCoeffIntegral.at( iDeg ).at( lIndLeft );
+        }
+        if ( msRefXs->size() > mNDeg + lIndLeft ) { ++lIndLeft; }
+    }
+}
+
+double NewtonSpline::integral( double inX ) const
+{
+    if ( mCoeffIntegral.size() == 0 )
+    {
+        std::cerr << "Error: Math::Interpolate1d::NewtonSpline::integral"
+                  << std::endl
+                  << "The coefficients of integral have not calculated."
+                  << std::endl
+                  << "Run buildIntegral() before integral()." << std::endl;
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    if ( inX < msRefXs->front() || inX > msRefXs->back() )
+    {
+        std::cerr << "Error: Math::Interpolate1d::NewtonSpline::integral"
+                  << std::endl
+                  << "Argument is out of the allowed range." << std::endl;
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    auto lItr = std::upper_bound( msRefXs->begin(), msRefXs->end(), inX );
+    --lItr;
+    if ( *lItr == inX ) { return mSumIntegral.at( lItr - msRefXs->begin() ); }
+    while ( msRefXs->end() - lItr < mNDeg ) { --lItr; }
+    std::size_t lIndLeft = lItr - msRefXs->begin();
+    double lResult       = mSumIntegral.at( lIndLeft );
+    double lDif          = inX - *lItr;
+    double lPowX         = 1.0;
+    for ( std::size_t iDeg = 1; iDeg <= mNDeg + 1; ++iDeg )
+    {
+        lPowX *= lDif;
+        lResult += lPowX * mCoeffIntegral.at( iDeg ).at( lIndLeft );
+    }
+    return lResult;
+}
+
+double NewtonSpline::integral( double inA, double inB ) const
+{
+    return integral( inB ) - integral( inA );
 }
 
 }  // namespace Interpolate1d
