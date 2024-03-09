@@ -96,6 +96,8 @@ public:
      * @return double P(inStartTime, inMaturityTime)
      */
     virtual double priceZCB( double inStartTime, double inMaturityTime ) const;
+    virtual double priceZCB( std::size_t inIndStartTime,
+                             std::size_t inIndMaturityTime ) const;
 
     /**
      * @brief This calculates forward rate within arbitary interval observed at
@@ -106,6 +108,8 @@ public:
      */
     virtual double forwardRate( double inStartTime,
                                 double inTerminalTime ) const;
+    virtual double forwardRate( std::size_t inIndStartTime,
+                                std::size_t inIndTerminalTime ) const;
 
     /**
      * @brief This calculates instantaneous forward rate at arbitary time
@@ -114,6 +118,7 @@ public:
      * @return double f(inTime)
      */
     virtual double instantaneousForwardRate( double inTime ) const;
+    virtual double instantaneousForwardRate( std::size_t inIndTime ) const;
 };
 
 /**

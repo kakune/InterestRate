@@ -66,6 +66,20 @@ double ModelAbstract::priceZCB( double inStartTime,
 {
     return mInterpZCB( inMaturityTime ) / mInterpZCB( inStartTime );
 }
+double ModelAbstract::priceZCB( std::size_t inIndStartTime,
+                                std::size_t inIndMaturityTime ) const
+{
+    if ( inIndStartTime >= msTerms->size() ||
+         inIndMaturityTime >= msTerms->size() )
+    {
+        std::cerr << "Error: "
+                     "Process::ShortRate::ModelAbstract:priceZCB()"
+                  << std::endl
+                  << "Argument is out of range." << std::endl;
+    }
+    return priceZCB( msTerms->at( inIndStartTime ),
+                     msTerms->at( inIndMaturityTime ) );
+}
 
 double ModelAbstract::forwardRate( double inStartTime,
                                    double inTerminalTime ) const
@@ -74,10 +88,36 @@ double ModelAbstract::forwardRate( double inStartTime,
              std::log( priceZCB( msTerms->at( 0 ), inStartTime ) ) ) /
            ( inTerminalTime - inStartTime );
 }
+double ModelAbstract::forwardRate( std::size_t inIndStartTime,
+                                   std::size_t inIndTerminalTime ) const
+{
+    if ( inIndStartTime >= msTerms->size() ||
+         inIndTerminalTime >= msTerms->size() )
+    {
+        std::cerr << "Error: "
+                     "Process::ShortRate::ModelAbstract:forwardRate()"
+                  << std::endl
+                  << "Argument is out of range." << std::endl;
+    }
+    return forwardRate( msTerms->at( inIndStartTime ),
+                        msTerms->at( inIndTerminalTime ) );
+}
 
 double ModelAbstract::instantaneousForwardRate( double inTime ) const
 {
     return mInterpZCB.deriv( inTime, 1 ) / mInterpZCB( inTime );
+}
+double ModelAbstract::instantaneousForwardRate( std::size_t inIndTime ) const
+{
+    if ( inIndTime >= msTerms->size() )
+    {
+        std::cerr
+            << "Error: "
+               "Process::ShortRate::ModelAbstract::instantaneousForwardRate()"
+            << std::endl
+            << "Argument is out of range." << std::endl;
+    }
+    return instantaneousForwardRate( msTerms->at( inIndTime ) );
 }
 
 double ConstantRate::driftCoeff( std::size_t inIndPath,

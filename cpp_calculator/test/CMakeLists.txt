@@ -1,3 +1,6 @@
+find_package(GTest REQUIRED)
+include(GoogleTest)
+
 add_executable(test_parameters test_parameters.cpp)
 target_link_libraries(test_parameters LibUtils)
 
@@ -20,7 +23,8 @@ add_executable(test_asset test_asset.cpp)
 target_link_libraries(test_asset LibProcess)
 
 add_executable(test_market test_market.cpp)
-target_link_libraries(test_market LibProcess)
+target_link_libraries(test_market LibProcess GTest::GTest GTest::Main)
+gtest_add_tests(TARGET test_market)
 
 add_subdirectory(short_rate)
 

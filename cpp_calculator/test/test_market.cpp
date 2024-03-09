@@ -1,20 +1,28 @@
+#include <gtest/gtest.h>
+
 #include <iostream>
+#include <random>
 #include <vector>
 
 #include "process/market.hpp"
 
-int main( int argc, char* argv[] )
+bool testConsistencyZCB( double inMean, double inVol, std::size_t inSeed )
 {
-    std::size_t lNTerms = 10;
-    std::size_t lNPath  = 10;
-    double lDt          = 0.1;
-    double lRate        = 0.05;
+    std::size_t lNTerms = 100;
+    double lMaturity    = 1.0;
+    double lDt          = lMaturity / double( lNTerms );
     std::vector<double> lTerms( lNTerms, 0 );
     std::vector<double> lZCB( lNTerms, 1.0 );
+
+    std::mt19937_64 lEngine( inSeed );
+    std::uniform_real_distribution<double> lRandomGen(
+        ( inMean - inVol ) / double( lNTerms ),
+        ( inMean + inVol ) / double( lNTerms ) );
+
     for ( std::size_t iTerm = 1; iTerm < lNTerms; ++iTerm )
     {
         lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
-        lZCB[iTerm]   = lZCB[iTerm - 1] - 0.04;
+        lZCB[iTerm]   = lZCB[iTerm - 1] - lRandomGen( lEngine );
     }
     auto lsTerms = std::make_shared<std::vector<double> >( lTerms );
 
@@ -24,13 +32,23 @@ int main( int argc, char* argv[] )
     for ( std::size_t iTerm = 0; iTerm < lNTerms; ++iTerm )
     {
         lFR.at( iTerm ) = lObj.mInterpInstantaneousForwardRate( lTerms[iTerm] );
-        std::cout << lFR.at( iTerm ) << std::endl;
     }
-
-    lObj.setForwardRate( lFR );
+    Process::Market::Data lObj2( lsTerms );
+    lObj2.setForwardRate( lFR );
     for ( std::size_t iTerm = 0; iTerm < lNTerms; ++iTerm )
     {
-        std::cout << lObj.mInterpZCB( lTerms[iTerm] ) << std::endl;
+        if ( std::abs( ( lZCB[iTerm] - lObj2.mInterpZCB( lTerms[iTerm] ) ) /
+                       lZCB[iTerm] ) > 0.01 )
+        {
+            return false;
+        }
     }
-    return 0;
+    return true;
+}
+
+TEST( MarketTest, ConsistencyZCB )
+{
+    EXPECT_TRUE( testConsistencyZCB( 0.1, 0.05, 0 ) );
+    EXPECT_TRUE( testConsistencyZCB( 0.1, 0.02, 1 ) );
+    EXPECT_TRUE( testConsistencyZCB( 0.1, 0.08, 2 ) );
 }
