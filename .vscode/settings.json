@@ -74,7 +74,13 @@
         "valarray": "cpp",
         "charconv": "cpp",
         "codecvt": "cpp",
-        "__nullptr": "cpp"
+        "__nullptr": "cpp",
+        "forward_list": "cpp",
+        "__hash_table": "cpp",
+        "__split_buffer": "cpp",
+        "__tree": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     },
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/cpp_calculator/src/lib",

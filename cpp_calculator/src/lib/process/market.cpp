@@ -30,7 +30,7 @@ void Data::setZCB( std::vector<double> inZCB )
         std::make_shared<std::vector<double>>( lInstantaneousForwardRate ) );
 }
 
-void Data::setForwardRate( std::vector<double> inForwardRate )
+void Data::setInstantaneousForwardRate( std::vector<double> inForwardRate )
 {
     mInterpInstantaneousForwardRate.build(
         msTerms, std::make_shared<std::vector<double>>( inForwardRate ) );

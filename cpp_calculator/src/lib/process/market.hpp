@@ -19,9 +19,12 @@ namespace Process
 namespace Market
 {
 
+/**
+ * @brief This srores data of market.
+ */
 struct Data
 {
-    std::size_t mNDimSpline;
+    std::size_t mNDimSpline;  //! the number of dimension of spline functions
     std::shared_ptr<const std::vector<double> > msTerms;  //! term structure
     std::size_t mNMesh;  //! the number of mesh in making ZCB from forward rate
                          //! or vice versa.
@@ -30,11 +33,20 @@ struct Data
         mInterpZCB;  //! interpolated function of ZCB
     Math::Interpolate1d::NewtonSpline
         mInterpInstantaneousForwardRate;  //! interpolated function of ZCB
+    /**
+     * @brief This sets ZCB and calculate IFR from ZCB.
+     * @param inZCB price of ZCB at each terms.
+     */
     void setZCB( std::vector<double> inZCB );
-    void setForwardRate( std::vector<double> inForwardRate );
+    /**
+     * @brief This sets IFR and calculate ZCB from IFR.
+     * @param inInstantaneousForwardRate IFR at each terms
+     */
+    void setInstantaneousForwardRate(
+        std::vector<double> inInstantaneousForwardRate );
     Data( std::shared_ptr<const std::vector<double> > insTerms,
-          std::size_t inNMesh = 10 ) :
-        mNDimSpline( std::min( std::size_t( 5 ), insTerms->size() - 2 ) ),
+          std::size_t inNMesh = 10, std::size_t inNDimSpline = 3 ) :
+        mNDimSpline( std::min( inNDimSpline, insTerms->size() - 2 ) ),
         msTerms( insTerms ),
         mNMesh( inNMesh ),
         mFineTerms( ( insTerms->size() - 1 ) * inNMesh + 1 ),

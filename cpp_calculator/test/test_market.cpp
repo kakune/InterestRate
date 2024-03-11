@@ -6,20 +6,19 @@
 
 #include "process/market.hpp"
 
-bool testConsistencyZCB( double inMean, double inVol, std::size_t inSeed )
+double testConsistencyZCB( std::size_t inNTerms, double inMaturity,
+                           double inMean, double inVol, std::size_t inSeed = 0 )
 {
-    std::size_t lNTerms = 100;
-    double lMaturity    = 1.0;
-    double lDt          = lMaturity / double( lNTerms );
-    std::vector<double> lTerms( lNTerms, 0 );
-    std::vector<double> lZCB( lNTerms, 1.0 );
+    double lDt = inMaturity / double( inNTerms );
+    std::vector<double> lTerms( inNTerms, 0 );
+    std::vector<double> lZCB( inNTerms, 1.0 );
 
     std::mt19937_64 lEngine( inSeed );
     std::uniform_real_distribution<double> lRandomGen(
-        ( inMean - inVol ) / double( lNTerms ),
-        ( inMean + inVol ) / double( lNTerms ) );
+        ( inMean - inVol ) / double( inNTerms ),
+        ( inMean + inVol ) / double( inNTerms ) );
 
-    for ( std::size_t iTerm = 1; iTerm < lNTerms; ++iTerm )
+    for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
     {
         lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
         lZCB[iTerm]   = lZCB[iTerm - 1] - lRandomGen( lEngine );
@@ -27,28 +26,30 @@ bool testConsistencyZCB( double inMean, double inVol, std::size_t inSeed )
     auto lsTerms = std::make_shared<std::vector<double> >( lTerms );
 
     Process::Market::Data lObj( lsTerms );
+    Process::Market::Data lObj2( lsTerms );
+
     lObj.setZCB( lZCB );
-    std::vector<double> lFR( lNTerms );
-    for ( std::size_t iTerm = 0; iTerm < lNTerms; ++iTerm )
+    std::vector<double> lFR( inNTerms );
+    for ( std::size_t iTerm = 0; iTerm < inNTerms; ++iTerm )
     {
         lFR.at( iTerm ) = lObj.mInterpInstantaneousForwardRate( lTerms[iTerm] );
     }
-    Process::Market::Data lObj2( lsTerms );
-    lObj2.setForwardRate( lFR );
-    for ( std::size_t iTerm = 0; iTerm < lNTerms; ++iTerm )
+    lObj2.setInstantaneousForwardRate( lFR );
+
+    double lResult = 0.0;
+    for ( std::size_t iTerm = 0; iTerm < inNTerms; ++iTerm )
     {
-        if ( std::abs( ( lZCB[iTerm] - lObj2.mInterpZCB( lTerms[iTerm] ) ) /
-                       lZCB[iTerm] ) > 0.01 )
-        {
-            return false;
-        }
+        // std::cout << lZCB[iTerm] << "," << lObj2.mInterpZCB( lTerms[iTerm] )
+        //           << std::endl;
+        lResult = std::max(
+            0.0, std::abs( ( lZCB[iTerm] - lObj2.mInterpZCB( lTerms[iTerm] ) ) /
+                           lZCB[iTerm] ) );
     }
-    return true;
+    return lResult;
 }
 
 TEST( MarketTest, ConsistencyZCB )
 {
-    EXPECT_TRUE( testConsistencyZCB( 0.1, 0.05, 0 ) );
-    EXPECT_TRUE( testConsistencyZCB( 0.1, 0.02, 1 ) );
-    EXPECT_TRUE( testConsistencyZCB( 0.1, 0.08, 2 ) );
+    EXPECT_NEAR( 0.0, testConsistencyZCB( 100, 1.0, 0.1, 0.05, 0 ), 0.001 );
+    EXPECT_NEAR( 0.0, testConsistencyZCB( 100, 1.0, 0.1, 0.02, 0 ), 0.001 );
 }

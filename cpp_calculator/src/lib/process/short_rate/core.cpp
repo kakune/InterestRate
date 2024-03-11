@@ -61,10 +61,15 @@ void ModelAbstract::build()
     buildZCB();
 }
 
+double ModelAbstract::priceZCB( double inMaturityTime ) const
+{
+    return mInterpZCB( inMaturityTime );
+}
+
 double ModelAbstract::priceZCB( double inStartTime,
                                 double inMaturityTime ) const
 {
-    return mInterpZCB( inMaturityTime ) / mInterpZCB( inStartTime );
+    return priceZCB( inMaturityTime ) / priceZCB( inStartTime );
 }
 double ModelAbstract::priceZCB( std::size_t inIndStartTime,
                                 std::size_t inIndMaturityTime ) const
@@ -84,8 +89,8 @@ double ModelAbstract::priceZCB( std::size_t inIndStartTime,
 double ModelAbstract::forwardRate( double inStartTime,
                                    double inTerminalTime ) const
 {
-    return ( std::log( priceZCB( msTerms->at( 0 ), inTerminalTime ) ) -
-             std::log( priceZCB( msTerms->at( 0 ), inStartTime ) ) ) /
+    return ( std::log( priceZCB( msTerms->at( 0 ), inStartTime ) ) -
+             std::log( priceZCB( msTerms->at( 0 ), inTerminalTime ) ) ) /
            ( inTerminalTime - inStartTime );
 }
 double ModelAbstract::forwardRate( std::size_t inIndStartTime,
@@ -105,7 +110,7 @@ double ModelAbstract::forwardRate( std::size_t inIndStartTime,
 
 double ModelAbstract::instantaneousForwardRate( double inTime ) const
 {
-    return mInterpZCB.deriv( inTime, 1 ) / mInterpZCB( inTime );
+    return -mInterpZCB.deriv( inTime, 1 ) / mInterpZCB( inTime );
 }
 double ModelAbstract::instantaneousForwardRate( std::size_t inIndTime ) const
 {
