@@ -12,6 +12,8 @@
     - `cpp_calculator/lib/process_cuda`およびそれを実行するpython wrapperを使わない場合は不要。
 - Visual Studio Code
     - このリポジトリをcloneして、ワークスペースに読み込めば、Linux環境であればそのまま動作すると思われる。
+- GoogleTest
+    - testの実行のために導入。随時testをGoogleTestによるものに置換予定。
 
 
 ## 主要な構成
@@ -120,6 +122,8 @@ $$
     - 独立変数と従属変数の組を与えると、その内挿関数を構成する。
     - NewtonSpline
         - Newton補間により、任意の次数の多項式により内挿関数を作る。
+- ODE
+    - 常微分方程式を解く関数群。連立常微分方程式にも対応。
 
 #### process  
 - random
