@@ -26,6 +26,14 @@ add_executable(test_market test_market.cpp)
 target_link_libraries(test_market LibProcess GTest::GTest GTest::Main)
 gtest_add_tests(TARGET test_market)
 
+add_executable(test_ODE test_ODE.cpp)
+target_link_libraries(test_ODE LibMath GTest::GTest GTest::Main)
+gtest_add_tests(TARGET test_ODE)
+
+add_executable(test_PDE test_PDE.cpp)
+target_link_libraries(test_PDE LibMath GTest::GTest GTest::Main)
+gtest_add_tests(TARGET test_PDE)
+
 add_subdirectory(short_rate)
 
 
