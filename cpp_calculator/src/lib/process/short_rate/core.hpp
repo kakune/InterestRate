@@ -33,7 +33,7 @@ protected:
     std::vector<double>
         mExpectedSpotRates;     //! calcurated expectation value of spot rate
     std::vector<double> mZCBs;  //! price of zero-coupon bond
-    Math::Interpolate1d::NewtonSpline
+    Math::Interpolate1D::NewtonSpline
         mInterpZCB;        //! interpolated function of ZCB
     double mInitSpotRate;  //! initial spot rate
     std::shared_ptr<const Market::Data> msMarketData;  //! the data of market

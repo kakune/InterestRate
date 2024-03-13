@@ -145,7 +145,7 @@ public:
 class GSR : public OneFactorAbstract
 {
 private:
-    Math::Interpolate1d::NewtonSpline mInterpVol, mInterpKappa, mInterpMean;
+    Math::Interpolate1D::NewtonSpline mInterpVol, mInterpKappa, mInterpMean;
     std::vector<std::vector<double>> mFactors;
     double driftCoeff( std::size_t inIndPath,
                        std::size_t inIndTerm ) const override;
@@ -160,9 +160,9 @@ public:
          std::shared_ptr<const Market::Data> insMarketData,
          double inInitSpotRate,
          std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
-         Math::Interpolate1d::NewtonSpline inInterpVol,
-         Math::Interpolate1d::NewtonSpline inInterpKappa,
-         Math::Interpolate1d::NewtonSpline inInterpMean ) :
+         Math::Interpolate1D::NewtonSpline inInterpVol,
+         Math::Interpolate1D::NewtonSpline inInterpKappa,
+         Math::Interpolate1D::NewtonSpline inInterpMean ) :
         OneFactorAbstract( inNPath, insTerms, insMarketData,
                            insMarketData == nullptr
                                ? inInitSpotRate
@@ -184,7 +184,7 @@ public:
 class GSRBuilder : public OneFactorAbstractBuilder
 {
 private:
-    Math::Interpolate1d::NewtonSpline mInterpVol, mInterpKappa, mInterpMean;
+    Math::Interpolate1D::NewtonSpline mInterpVol, mInterpKappa, mInterpMean;
 
 public:
     GSRBuilder( std::size_t inNDegVol = 3, std::size_t inNDegKappa = 3,
@@ -194,7 +194,7 @@ public:
         mInterpMean( inNDegMean )
     {
     }
-    GSRBuilder& setInterpVol( Math::Interpolate1d::NewtonSpline inInterpVol )
+    GSRBuilder& setInterpVol( Math::Interpolate1D::NewtonSpline inInterpVol )
     {
         mInterpVol = inInterpVol;
         return *this;
@@ -214,7 +214,7 @@ public:
         return *this;
     }
     GSRBuilder& setInterpKappa(
-        Math::Interpolate1d::NewtonSpline inInterpKappa )
+        Math::Interpolate1D::NewtonSpline inInterpKappa )
     {
         mInterpKappa = inInterpKappa;
         return *this;
@@ -233,7 +233,7 @@ public:
             std::make_shared<const std::vector<double>>( inKappas ) );
         return *this;
     }
-    GSRBuilder& setInterpMean( Math::Interpolate1d::NewtonSpline inInterpMean )
+    GSRBuilder& setInterpMean( Math::Interpolate1D::NewtonSpline inInterpMean )
     {
         mInterpMean = inInterpMean;
         return *this;

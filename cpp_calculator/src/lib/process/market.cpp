@@ -41,7 +41,7 @@ void Data::setInstantaneousForwardRate( std::vector<double> inForwardRate )
         lFineRates.at( iTerm ) =
             mInterpInstantaneousForwardRate( mFineTerms.at( iTerm ) );
     }
-    Math::Interpolate1d::NewtonSpline lSplineRates( mNDimSpline );
+    Math::Interpolate1D::NewtonSpline lSplineRates( mNDimSpline );
     lSplineRates.build( std::make_shared<std::vector<double>>( mFineTerms ),
                         std::make_shared<std::vector<double>>( lFineRates ) );
     lSplineRates.buildIntegral();

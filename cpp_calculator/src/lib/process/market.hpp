@@ -29,9 +29,9 @@ struct Data
     std::size_t mNMesh;  //! the number of mesh in making ZCB from forward rate
                          //! or vice versa.
     std::vector<double> mFineTerms;  //! term structure cut by mNMesh
-    Math::Interpolate1d::NewtonSpline
+    Math::Interpolate1D::NewtonSpline
         mInterpZCB;  //! interpolated function of ZCB
-    Math::Interpolate1d::NewtonSpline
+    Math::Interpolate1D::NewtonSpline
         mInterpInstantaneousForwardRate;  //! interpolated function of ZCB
     /**
      * @brief This sets ZCB and calculate IFR from ZCB.

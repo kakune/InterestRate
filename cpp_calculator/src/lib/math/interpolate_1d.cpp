@@ -16,7 +16,7 @@
 
 namespace Math
 {
-namespace Interpolate1d
+namespace Interpolate1D
 {
 
 void NewtonSpline::build( std::shared_ptr<const std::vector<double> > insRefXs,
@@ -32,7 +32,7 @@ void NewtonSpline::build( std::shared_ptr<const std::vector<double> > insRefXs,
     std::size_t lSize = insRefXs->size();
     if ( lSize <= mNDeg )
     {
-        std::cerr << "Error: Math::Interpolate1d::NewtonSpline::build()"
+        std::cerr << "Error: Math::Interpolate1D::NewtonSpline::build()"
                   << std::endl
                   << "There are " << lSize
                   << " points, which is not enough to evaluate." << std::endl;
@@ -69,14 +69,14 @@ double NewtonSpline::operator()( double inX ) const
 {
     if ( !mIsBuilt )
     {
-        std::cerr << "Error: Math::Interpolate1d::NewtonSpline::operator()"
+        std::cerr << "Error: Math::Interpolate1D::NewtonSpline::operator()"
                   << std::endl
                   << "The spline has NOT been built." << std::endl;
         return std::numeric_limits<double>::quiet_NaN();
     }
     if ( inX < msRefXs->front() || inX > msRefXs->back() )
     {
-        std::cerr << "Error: Math::Interpolate1d::NewtonSpline::operator()"
+        std::cerr << "Error: Math::Interpolate1D::NewtonSpline::operator()"
                   << std::endl
                   << "Argument is out of the allowed range." << std::endl;
         return std::numeric_limits<double>::quiet_NaN();
@@ -104,14 +104,14 @@ double NewtonSpline::deriv( double inX, std::size_t inOrder ) const
     if ( mNDeg == 0 ) { return 0.0; }
     if ( !mIsBuilt )
     {
-        std::cerr << "Error: Math::Interpolate1d::NewtonSpline::deriv"
+        std::cerr << "Error: Math::Interpolate1D::NewtonSpline::deriv"
                   << std::endl
                   << "The spline has NOT been built." << std::endl;
         return std::numeric_limits<double>::quiet_NaN();
     }
     if ( inX < msRefXs->front() || inX > msRefXs->back() )
     {
-        std::cerr << "Error: Math::Interpolate1d::NewtonSpline::deriv"
+        std::cerr << "Error: Math::Interpolate1D::NewtonSpline::deriv"
                   << std::endl
                   << "Argument is out of the allowed range." << std::endl;
         return std::numeric_limits<double>::quiet_NaN();
@@ -197,7 +197,7 @@ double NewtonSpline::integral( double inX ) const
 {
     if ( mCoeffIntegral.size() == 0 )
     {
-        std::cerr << "Error: Math::Interpolate1d::NewtonSpline::integral"
+        std::cerr << "Error: Math::Interpolate1D::NewtonSpline::integral"
                   << std::endl
                   << "The coefficients of integral have not calculated."
                   << std::endl
@@ -206,7 +206,7 @@ double NewtonSpline::integral( double inX ) const
     }
     if ( inX < msRefXs->front() || inX > msRefXs->back() )
     {
-        std::cerr << "Error: Math::Interpolate1d::NewtonSpline::integral"
+        std::cerr << "Error: Math::Interpolate1D::NewtonSpline::integral"
                   << std::endl
                   << "Argument is out of the allowed range." << std::endl;
         return std::numeric_limits<double>::quiet_NaN();
@@ -232,5 +232,5 @@ double NewtonSpline::integral( double inA, double inB ) const
     return integral( inB ) - integral( inA );
 }
 
-}  // namespace Interpolate1d
+}  // namespace Interpolate1D
 }  // namespace Math

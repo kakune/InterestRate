@@ -13,7 +13,7 @@
 
 namespace Math
 {
-namespace Interpolate1d
+namespace Interpolate1D
 {
 
 /**
@@ -105,7 +105,7 @@ public:
     double integral( double inA, double inB ) const;
 };
 
-}  // namespace Interpolate1d
+}  // namespace Interpolate1D
 }  // namespace Math
 
 #endif
