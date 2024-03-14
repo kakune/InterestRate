@@ -5,8 +5,8 @@
 
 #include "process/short_rate.hpp"
 
-double testPriceZCB( std::size_t inNTerms, std::size_t inNPath,
-                     double inMaturity, double inRate )
+double testConstantPriceZCB( std::size_t inNTerms, std::size_t inNPath,
+                             double inMaturity, double inRate )
 {
     double lDt = inMaturity / double( inNTerms - 1 );
     std::vector<double> lTerms( inNTerms + 1, 0 );
@@ -21,9 +21,9 @@ double testPriceZCB( std::size_t inNTerms, std::size_t inNPath,
     return lObj.priceZCB( 0.0, inMaturity );
 }
 
-double testForwardRate( std::size_t inNTerms, std::size_t inNPath,
-                        double inMaturity, double inRate, double inStartTime,
-                        double inTerminalTime )
+double testConstantForwardRate( std::size_t inNTerms, std::size_t inNPath,
+                                double inMaturity, double inRate,
+                                double inStartTime, double inTerminalTime )
 {
     double lDt = inMaturity / double( inNTerms - 1 );
     std::vector<double> lTerms( inNTerms + 1, 0.0 );
@@ -38,9 +38,10 @@ double testForwardRate( std::size_t inNTerms, std::size_t inNPath,
     return lObj.forwardRate( inStartTime, inTerminalTime );
 }
 
-double testInstantaneousForwardRate( std::size_t inNTerms, std::size_t inNPath,
-                                     double inMaturity, double inRate,
-                                     double inFRTime )
+double testConstantInstantaneousForwardRate( std::size_t inNTerms,
+                                             std::size_t inNPath,
+                                             double inMaturity, double inRate,
+                                             double inFRTime )
 {
     double lDt = inMaturity / double( inNTerms - 1 );
     std::vector<double> lTerms( inNTerms + 1, 0 );
@@ -57,24 +58,33 @@ double testInstantaneousForwardRate( std::size_t inNTerms, std::size_t inNPath,
 
 TEST( ShortRateConstantTest, PriceZCB )
 {
-    EXPECT_NEAR( std::exp( -0.1 ), testPriceZCB( 10, 10, 1.0, 0.1 ), 0.001 );
-    EXPECT_NEAR( std::exp( -0.2 ), testPriceZCB( 10, 10, 1.0, 0.2 ), 0.001 );
-    EXPECT_NEAR( std::exp( -6.0 ), testPriceZCB( 10, 10, 20.0, 0.3 ), 0.001 );
+    EXPECT_NEAR( std::exp( -0.1 ), testConstantPriceZCB( 10, 10, 1.0, 0.1 ),
+                 0.001 );
+    EXPECT_NEAR( std::exp( -0.2 ), testConstantPriceZCB( 10, 10, 1.0, 0.2 ),
+                 0.001 );
+    EXPECT_NEAR( std::exp( -6.0 ), testConstantPriceZCB( 10, 10, 20.0, 0.3 ),
+                 0.001 );
 }
 
 TEST( ShortRateConstantTest, ForwardRate )
 {
-    EXPECT_NEAR( 0.1, testForwardRate( 10, 10, 1.0, 0.1, 0.2, 0.5 ), 0.001 );
-    EXPECT_NEAR( 0.2, testForwardRate( 10, 10, 1.0, 0.2, 0.3, 0.7 ), 0.001 );
-    EXPECT_NEAR( 0.3, testForwardRate( 10, 10, 10.0, 0.3, 0.6, 10.0 ), 0.001 );
+    EXPECT_NEAR( 0.1, testConstantForwardRate( 10, 10, 1.0, 0.1, 0.2, 0.5 ),
+                 0.001 );
+    EXPECT_NEAR( 0.2, testConstantForwardRate( 10, 10, 1.0, 0.2, 0.3, 0.7 ),
+                 0.001 );
+    EXPECT_NEAR( 0.3, testConstantForwardRate( 10, 10, 10.0, 0.3, 0.6, 10.0 ),
+                 0.001 );
 }
 
 TEST( ShortRateConstantTest, InstantaneousForwardRate )
 {
-    EXPECT_NEAR( 0.1, testInstantaneousForwardRate( 100, 10, 1.0, 0.1, 0.5 ),
+    EXPECT_NEAR( 0.1,
+                 testConstantInstantaneousForwardRate( 100, 10, 1.0, 0.1, 0.5 ),
                  0.001 );
-    EXPECT_NEAR( 0.2, testInstantaneousForwardRate( 100, 10, 1.0, 0.2, 0.3 ),
+    EXPECT_NEAR( 0.2,
+                 testConstantInstantaneousForwardRate( 100, 10, 1.0, 0.2, 0.3 ),
                  0.001 );
-    EXPECT_NEAR( 0.3, testInstantaneousForwardRate( 100, 10, 10.0, 0.3, 6.7 ),
-                 0.001 );
+    EXPECT_NEAR(
+        0.3, testConstantInstantaneousForwardRate( 100, 10, 10.0, 0.3, 6.7 ),
+        0.001 );
 }
