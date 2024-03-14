@@ -56,6 +56,12 @@ double testIntegralPolynomial( double inLeftInterval, double inRightInterval,
 TEST( Interpolate1DTest, InterpPolynomial )
 {
     EXPECT_NEAR(
+        27.0, testInterpPolynomial( 0.0, 3.0, 3.0, 3, { 0.0, 2.0, 4.0, 6.0 } ),
+        1e-6 );
+    EXPECT_NEAR(
+        729.0, testInterpPolynomial( 6.0, 3.0, 3.0, 3, { 0.0, 2.0, 4.0, 6.0 } ),
+        1e-6 );
+    EXPECT_NEAR(
         125.0, testInterpPolynomial( 2.0, 3.0, 3.0, 3, { 0.0, 2.0, 4.0, 6.0 } ),
         1e-6 );
     EXPECT_NEAR(

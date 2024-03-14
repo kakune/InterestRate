@@ -24,8 +24,6 @@ class GeneratorAbstract
 protected:
     bool mIsBuilt = false;
     std::shared_ptr<const std::vector<double> > msRefXs;  //! vector of X
-    std::shared_ptr<const std::vector<double> >
-        msRefYs;  //! vector of Y corresponding to f(msRefXs)
 public:
     /**
      * @brief This calculates coefficients of interpolation function.
@@ -51,6 +49,7 @@ class NewtonSpline : public GeneratorAbstract
 {
 private:
     std::size_t mNDeg;
+    std::size_t mSizeIndex;
     std::vector<std::vector<double> > mCoeff;
     std::vector<std::vector<double> > mCoeffIntegral;
     std::vector<double> mSumIntegral;
@@ -61,7 +60,8 @@ public:
      * @param inNDeg degree of spline
      */
     NewtonSpline( std::size_t inNDeg = 1 ) :
-        mNDeg( inNDeg ), mCoeff( std::vector<std::vector<double> >( inNDeg ) )
+        mNDeg( inNDeg ),
+        mCoeff( std::vector<std::vector<double> >( inNDeg + 1 ) )
     {
     }
     /**

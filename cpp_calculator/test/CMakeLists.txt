@@ -17,6 +17,14 @@ add_executable(test_interpolate_1d test_interpolate_1d.cpp)
 target_link_libraries(test_interpolate_1d LibMath GTest::GTest GTest::Main)
 gtest_add_tests(TARGET test_interpolate_1d)
 
+add_executable(test_interpolate_multi test_interpolate_multi.cpp)
+target_link_libraries(test_interpolate_multi LibMath GTest::GTest GTest::Main)
+gtest_add_tests(TARGET test_interpolate_multi)
+
+add_executable(test_matrix test_matrix.cpp)
+target_link_libraries(test_matrix LibMath GTest::GTest GTest::Main)
+gtest_add_tests(TARGET test_matrix)
+
 add_executable(test_special_functions test_special_functions.cpp)
 target_link_libraries(test_special_functions LibMath)
 

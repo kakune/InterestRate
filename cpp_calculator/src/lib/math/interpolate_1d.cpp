@@ -22,44 +22,32 @@ namespace Interpolate1D
 void NewtonSpline::build( std::shared_ptr<const std::vector<double> > insRefXs,
                           std::shared_ptr<const std::vector<double> > insRefYs )
 {
-    msRefXs = insRefXs;
-    msRefYs = insRefYs;
-    if ( mNDeg == 0 )
-    {
-        mIsBuilt = true;
-        return;
-    }
-    std::size_t lSize = insRefXs->size();
-    if ( lSize <= mNDeg )
+    msRefXs                = insRefXs;
+    std::size_t lSizeCoeff = insRefXs->size();
+    mSizeIndex             = msRefXs->size() - mNDeg;
+    if ( lSizeCoeff <= mNDeg )
     {
         std::cerr << "Error: Math::Interpolate1D::NewtonSpline::build()"
                   << std::endl
-                  << "There are " << lSize
+                  << "There are " << lSizeCoeff
                   << " points, which is not enough to evaluate." << std::endl;
         return;
     }
-    std::size_t lMaxIndCoeff = lSize - 1;
-    mCoeff.at( 0 ).resize( lSize );
-    for ( std::size_t iX = 0; iX < lMaxIndCoeff; ++iX )
+    mCoeff.at( 0 ).resize( lSizeCoeff );
+    for ( std::size_t iX = 0; iX < lSizeCoeff; ++iX )
     {
-        mCoeff.at( 0 ).at( iX ) =
-            ( msRefYs->at( iX + 1 ) - msRefYs->at( iX ) ) /
-            ( msRefXs->at( iX + 1 ) - msRefXs->at( iX ) );
+        mCoeff.at( 0 ).at( iX ) = insRefYs->at( iX );
     }
-    for ( std::size_t iDeg = 1; iDeg < mNDeg; ++iDeg )
+    for ( std::size_t iDeg = 1; iDeg <= mNDeg; ++iDeg )
     {
-        mCoeff.at( iDeg ).resize( insRefXs->size() );
-        --lMaxIndCoeff;
-        for ( std::size_t iX = 0; iX < lMaxIndCoeff; ++iX )
+        --lSizeCoeff;
+        mCoeff.at( iDeg ).resize( lSizeCoeff );
+        for ( std::size_t iX = 0; iX < lSizeCoeff; ++iX )
         {
             mCoeff.at( iDeg ).at( iX ) =
                 ( mCoeff.at( iDeg - 1 ).at( iX + 1 ) -
                   mCoeff.at( iDeg - 1 ).at( iX ) ) /
-                ( msRefXs->at( iX + iDeg + 1 ) - msRefXs->at( iX ) );
-        }
-        for ( std::size_t iX = lMaxIndCoeff; iX < lSize - 1; ++iX )
-        {
-            mCoeff.at( iDeg ).at( iX ) = mCoeff.at( iDeg ).at( iX - 1 );
+                ( msRefXs->at( iX + iDeg ) - msRefXs->at( iX ) );
         }
     }
     mIsBuilt = true;
@@ -81,15 +69,13 @@ double NewtonSpline::operator()( double inX ) const
                   << "Argument is out of the allowed range." << std::endl;
         return std::numeric_limits<double>::quiet_NaN();
     }
-    if ( inX == msRefXs->front() ) { return msRefYs->front(); }
-    if ( inX == msRefXs->back() ) { return msRefYs->back(); }
     auto lItr = std::upper_bound( msRefXs->begin(), msRefXs->end(), inX );
     --lItr;
-    while ( msRefXs->end() - lItr < mNDeg ) { --lItr; }
+    while ( msRefXs->end() - lItr <= mNDeg ) { --lItr; }
     std::size_t lInd = lItr - msRefXs->begin();
-    double lRes      = msRefYs->at( lInd );
+    double lRes      = mCoeff.at( 0 ).at( lInd );
     double lMulDx    = 1.0;
-    for ( std::size_t iDx = 0; iDx < mNDeg; ++iDx )
+    for ( std::size_t iDx = 1; iDx <= mNDeg; ++iDx )
     {
         lMulDx *= inX - *lItr;
         lRes += mCoeff.at( iDx ).at( lInd ) * lMulDx;
@@ -119,13 +105,13 @@ double NewtonSpline::deriv( double inX, std::size_t inOrder ) const
 
     auto lItr = std::upper_bound( msRefXs->begin(), msRefXs->end(), inX );
     --lItr;
-    while ( msRefXs->end() - lItr < mNDeg ) { --lItr; }
+    while ( msRefXs->end() - lItr <= mNDeg ) { --lItr; }
     std::size_t lInd = lItr - msRefXs->begin();
 
     double lRes = 0.0;
     std::vector<double> lMulDxs( inOrder + 1, 0.0 );
     lMulDxs.at( 0 ) = 1.0;
-    for ( std::size_t iDx = 0; iDx < mNDeg; ++iDx )
+    for ( std::size_t iDx = 1; iDx <= mNDeg; ++iDx )
     {
         double lDif = inX - *lItr;
         for ( std::size_t iDeriv = inOrder; iDeriv > 0; --iDeriv )
@@ -146,14 +132,13 @@ void NewtonSpline::buildIntegral()
     mCoeffIntegral.resize( mNDeg + 2 );
     for ( std::size_t iDeg = 0; iDeg <= mNDeg + 1; ++iDeg )
     {
-        mCoeffIntegral.at( iDeg ).resize( msRefXs->size(), 0.0 );
+        mCoeffIntegral.at( iDeg ).resize( mSizeIndex, 0.0 );
     }
-    for ( std::size_t lIndLeft = 0; lIndLeft < msRefXs->size(); ++lIndLeft )
+    for ( std::size_t lIndLeft = 0; lIndLeft < mSizeIndex; ++lIndLeft )
     {
-        if ( msRefXs->size() < mNDeg + lIndLeft ) { break; }
         std::vector<double> lTmpBareCoeff( mNDeg + 1 );
         lTmpBareCoeff.at( 0 )                 = 1.0;
-        mCoeffIntegral.at( 0 ).at( lIndLeft ) = msRefYs->at( lIndLeft );
+        mCoeffIntegral.at( 0 ).at( lIndLeft ) = mCoeff.at( 0 ).at( lIndLeft );
         for ( std::size_t iDeg = 1; iDeg <= mNDeg; ++iDeg )
         {
             double lDif =
@@ -163,8 +148,7 @@ void NewtonSpline::buildIntegral()
                 lTmpBareCoeff.at( jDeg ) *= lDif;
                 lTmpBareCoeff.at( jDeg ) += lTmpBareCoeff.at( jDeg - 1 );
                 mCoeffIntegral.at( jDeg ).at( lIndLeft ) +=
-                    mCoeff.at( iDeg - 1 ).at( lIndLeft ) *
-                    lTmpBareCoeff.at( jDeg );
+                    mCoeff.at( iDeg ).at( lIndLeft ) * lTmpBareCoeff.at( jDeg );
             }
             lTmpBareCoeff.at( 0 ) = 0;
         }
@@ -176,20 +160,18 @@ void NewtonSpline::buildIntegral()
         mCoeffIntegral.at( 0 ).at( lIndLeft ) = 0;
     }
 
-    mSumIntegral.resize( msRefXs->size(), 0.0 );
-    std::size_t lIndLeft = 0;
-    for ( std::size_t iX = 1; iX < msRefXs->size(); ++iX )
+    mSumIntegral.resize( mSizeIndex, 0.0 );
+    for ( std::size_t iX = 1; iX < mSizeIndex; ++iX )
     {
-        mSumIntegral.at( iX ) = mSumIntegral.at( lIndLeft );
-        double lDif           = msRefXs->at( iX ) - msRefXs->at( lIndLeft );
+        mSumIntegral.at( iX ) = mSumIntegral.at( iX - 1 );
+        double lDif           = msRefXs->at( iX ) - msRefXs->at( iX - 1 );
         double lPowX          = 1.0;
         for ( std::size_t iDeg = 1; iDeg <= mNDeg + 1; ++iDeg )
         {
             lPowX *= lDif;
             mSumIntegral.at( iX ) +=
-                lPowX * mCoeffIntegral.at( iDeg ).at( lIndLeft );
+                lPowX * mCoeffIntegral.at( iDeg ).at( iX - 1 );
         }
-        if ( msRefXs->size() > mNDeg + lIndLeft ) { ++lIndLeft; }
     }
 }
 
@@ -213,8 +195,9 @@ double NewtonSpline::integral( double inX ) const
     }
     auto lItr = std::upper_bound( msRefXs->begin(), msRefXs->end(), inX );
     --lItr;
-    if ( *lItr == inX ) { return mSumIntegral.at( lItr - msRefXs->begin() ); }
-    while ( msRefXs->end() - lItr < mNDeg ) { --lItr; }
+    // if ( *lItr == inX ) { return mSumIntegral.at( lItr - msRefXs->begin() );
+    // }
+    while ( msRefXs->end() - lItr <= mNDeg ) { --lItr; }
     std::size_t lIndLeft = lItr - msRefXs->begin();
     double lResult       = mSumIntegral.at( lIndLeft );
     double lDif          = inX - *lItr;
