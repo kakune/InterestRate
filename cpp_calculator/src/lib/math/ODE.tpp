@@ -214,7 +214,7 @@ solveSecondOrderRungeKutta45( const Func_& inFunc, double inInitX,
                               double inRelTol, double inMaxDif )
 {
     auto tmpFunctionForSecondOrderRungeKutta45 =
-        [inFunc]( double inX, std::vector<double> inY ) -> std::vector<double>
+        [&inFunc]( double inX, std::vector<double> inY ) -> std::vector<double>
     {
         std::vector<double> lResults( 2 );
         lResults.at( 0 ) = inY.at( 1 );
@@ -238,7 +238,7 @@ std::vector<std::vector<double>> solveSIMLSecondOrderRungeKutta45(
                std::back_inserter( inInitY ) );
 
     auto tmpFunctionForSIMLSecondOrderRungeKutta45 =
-        [inFunc]( double inX, std::vector<double> inY ) -> std::vector<double>
+        [&inFunc]( double inX, std::vector<double> inY ) -> std::vector<double>
     {
         std::vector<double> lResults( inY.size() );
         std::size_t lHalfSize = inY.size() / 2;
