@@ -33,7 +33,12 @@ protected:
     double mFactorDecay;
     virtual double distance( const Math::Vec& inX1,
                              const Math::Vec& inX2 ) const;
-    virtual double radial( double inDist ) const = 0;
+    virtual double derivDistance( const Math::Vec& inX1, const Math::Vec& inX2,
+                                  std::size_t inDim,
+                                  std::size_t inOrder = 1 ) const;
+    virtual double radial( double inDist ) const                = 0;
+    virtual double derivRadial( double inDist,
+                                std::size_t inOrder = 1 ) const = 0;
 
 public:
     RBFAbstract( double inMinDistance = 0.2, double inFactorDecay = 0.001 ) :
@@ -49,12 +54,15 @@ public:
         std::shared_ptr<const std::vector<double>> insRefVals );
 
     double operator()( const std::vector<double>& inVar ) const;
+    double deriv( const std::vector<double>& inVar, std::size_t inDim,
+                  std::size_t inOrder = 1 ) const;
 };
 
 class RBFGaussian : public RBFAbstract
 {
 private:
     double radial( double inDist ) const override;
+    double derivRadial( double inDist, std::size_t inOrder = 1 ) const override;
 
 public:
     RBFGaussian( double inMinDistance = 0.2, double inFactorDecay = 0.001 ) :

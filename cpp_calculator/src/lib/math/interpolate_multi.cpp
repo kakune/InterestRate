@@ -69,6 +69,38 @@ double RBFAbstract::operator()( const std::vector<double>& inVar ) const
     }
     return dot( mCoeffs, lRadials );
 }
+double RBFAbstract::deriv( const std::vector<double>& inVar, std::size_t inDim,
+                           std::size_t inOrder ) const
+{
+    if ( inOrder == 0 ) { return operator()( inVar ); }
+    if ( inOrder > 2 )
+    {
+        std::cerr << "Math::InterpolateMulti::RBFAbstract::deriv()" << std::endl
+                  << "Derivative of order > 2 is not implemented..."
+                  << std::endl;
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    Math::Vec lVar( inVar );
+    Math::Vec lRadials( mNCoeff );
+    for ( std::size_t iPos = 0; iPos < mNCoeff; ++iPos )
+    {
+        if ( inOrder == 1 )
+        {
+            lRadials( iPos ) =
+                derivRadial( distance( lVar, mPoints[iPos] ), 1 ) *
+                derivDistance( lVar, mPoints[iPos], inDim, 1 );
+        }
+        if ( inOrder == 2 )
+        {
+            double lDist     = distance( lVar, mPoints[iPos] );
+            double lDDist    = derivDistance( lVar, mPoints[iPos], inDim, 1 );
+            lRadials( iPos ) = lDDist * lDDist * derivRadial( lDist, 2 ) +
+                               derivDistance( lVar, mPoints[iPos], inDim, 2 ) *
+                                   derivRadial( lDist, 1 );
+        }
+    }
+    return dot( mCoeffs, lRadials );
+}
 double RBFAbstract::distance( const Math::Vec& inX1,
                               const Math::Vec& inX2 ) const
 {
@@ -80,9 +112,26 @@ double RBFAbstract::distance( const Math::Vec& inX1,
     }
     return mFactorDistance * lResult;
 }
+double RBFAbstract::derivDistance( const Math::Vec& inX1, const Math::Vec& inX2,
+                                   std::size_t inDim,
+                                   std::size_t inOrder ) const
+{
+    if ( inOrder == 0 ) { return distance( inX1, inX2 ); }
+    if ( inOrder == 1 )
+    {
+        return 2.0 * mFactorDistance * ( inX1( inDim ) - inX2( inDim ) );
+    }
+    if ( inOrder == 2 ) { return 2.0 * mFactorDistance; }
+    return 0.0;
+}
 double RBFGaussian::radial( double inDist ) const
 {
     return std::exp( -inDist );
+}
+double RBFGaussian::derivRadial( double inDist, std::size_t inOrder ) const
+{
+    if ( inOrder % 2 == 0 ) return radial( inDist );
+    return -radial( inDist );
 }
 
 }  // namespace InterpolateMulti
