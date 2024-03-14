@@ -41,8 +41,8 @@ std::vector<double> SIMLSecondOrderODEForTest( double inX,
 double testFirstOrderODE( double inInitX, double inInitY, double inEndX,
                           double inRelTol, double inMaxDif = 1.0 )
 {
-    auto [lResXs, lResYs] = Math::ODE::solveRungeKutta45<firstOrderODEForTest>(
-        inInitX, inInitY, inEndX, inRelTol, inMaxDif );
+    auto [lResXs, lResYs] = Math::ODE::solveRungeKutta45(
+        firstOrderODEForTest, inInitX, inInitY, inEndX, inRelTol, inMaxDif );
     // for ( std::size_t i = 0; i < lResXs.size(); ++i )
     // {
     //     std::cout << lResXs.at( i ) << "," << lResYs.at( i ) << std::endl;
@@ -55,8 +55,9 @@ std::vector<double> testSIMLFirstOrderODE( double inInitX,
                                            double inEndX, double inRelTol,
                                            double inMaxDif = 1.0 )
 {
-    auto lResults = Math::ODE::solveSIMLRungeKutta45<SIMLFirstOrderODEForTest>(
-        inInitX, inInitY, inEndX, inRelTol, inMaxDif );
+    auto lResults =
+        Math::ODE::solveSIMLRungeKutta45( SIMLFirstOrderODEForTest, inInitX,
+                                          inInitY, inEndX, inRelTol, inMaxDif );
     std::vector<double> lAnswer;
     // for ( std::size_t i = 0; i < lResults.at( 0 ).size(); ++i )
     // {
@@ -79,9 +80,9 @@ double testSecondOrderODE( double inInitX, double inInitY, double inInitDY,
                            double inEndX, double inRelTol,
                            double inMaxDif = 1.0 )
 {
-    auto [lResXs, lResYs, lResDYs] =
-        Math::ODE::solveSecondOrderRungeKutta45<secondOrderODEForTest>(
-            inInitX, inInitY, inInitDY, inEndX, inRelTol, inMaxDif );
+    auto [lResXs, lResYs, lResDYs] = Math::ODE::solveSecondOrderRungeKutta45(
+        secondOrderODEForTest, inInitX, inInitY, inInitDY, inEndX, inRelTol,
+        inMaxDif );
     // for ( std::size_t i = 0; i < lResXs.size(); ++i )
     // {
     //     std::cout << lResXs.at( i ) << "," << lResYs.at( i ) << std::endl;
@@ -95,9 +96,9 @@ std::vector<double> testSIMLSecondOrderODE( double inInitX,
                                             double inEndX, double inRelTol,
                                             double inMaxDif = 1.0 )
 {
-    auto lResults =
-        Math::ODE::solveSIMLSecondOrderRungeKutta45<SIMLSecondOrderODEForTest>(
-            inInitX, inInitY, inInitDY, inEndX, inRelTol, inMaxDif );
+    auto lResults = Math::ODE::solveSIMLSecondOrderRungeKutta45(
+        SIMLSecondOrderODEForTest, inInitX, inInitY, inInitDY, inEndX, inRelTol,
+        inMaxDif );
     std::vector<double> lAnswer;
     // for ( std::size_t i = 0; i < lResults.at( 0 ).size(); ++i )
     // {

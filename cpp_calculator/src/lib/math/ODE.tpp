@@ -36,16 +36,17 @@ static constexpr double gCoeffY5[6] = { 16.0 / 135.0,     0.0,
                                         6656.0 / 12825.0, 28561.0 / 56430.0,
                                         -9.0 / 50.0,      2.0 / 55.0 };
 
-template <auto Func_>
-double stepRungeKutta45( double& inX, double& inY, double& inDif,
-                         double inRelTol );
-template <auto Func_>
-std::vector<double> stepSIMLRungeKutta45( double& inX, std::vector<double>& inY,
+template <typename Func_>
+double stepRungeKutta45( const Func_& inFunc, double& inX, double& inY,
+                         double& inDif, double inRelTol );
+template <typename Func_>
+std::vector<double> stepSIMLRungeKutta45( const Func_& inFunc, double& inX,
+                                          std::vector<double>& inY,
                                           double& inDif, double inRelTol );
 
-template <auto Func_>
-double stepRungeKutta45( double& inX, double& inY, double& inDif,
-                         double inRelTol )
+template <typename Func_>
+double stepRungeKutta45( const Func_& inFunc, double& inX, double& inY,
+                         double& inDif, double inRelTol )
 {
     double lK[6];
     for ( int i = 0; i < 6; ++i )
@@ -54,7 +55,7 @@ double stepRungeKutta45( double& inX, double& inY, double& inDif,
         lTmpX += inDif * gCoeffKX[i];
         double lTmpY = inY;
         for ( int j = 0; j < i; ++j ) { lTmpY += lK[j] * gCoeffKY[i][j]; }
-        lK[i] = inDif * Func_( lTmpX, lTmpY );
+        lK[i] = inDif * inFunc( lTmpX, lTmpY );
     }
 
     double lY4 = inY;
@@ -77,14 +78,14 @@ double stepRungeKutta45( double& inX, double& inY, double& inDif,
     else
     {
         inDif *= lDelta;
-        return stepRungeKutta45<Func_>( inX, inY, inDif, inRelTol );
+        return stepRungeKutta45<Func_>( inFunc, inX, inY, inDif, inRelTol );
     }
 }
 
-template <auto Func_>
+template <typename Func_>
 std::pair<std::vector<double>, std::vector<double>> solveRungeKutta45(
-    double inInitX, double inInitY, double inEndX, double inRelTol,
-    double inMaxDif )
+    const Func_& inFunc, double inInitX, double inInitY, double inEndX,
+    double inRelTol, double inMaxDif )
 {
     std::vector<double> lXs, lYs;
     double lX   = inInitX;
@@ -96,7 +97,7 @@ std::pair<std::vector<double>, std::vector<double>> solveRungeKutta45(
 
     while ( ( lX - inEndX ) * ( inInitX - inEndX ) > 0 )
     {
-        lY   = stepRungeKutta45<Func_>( lX, lY, lDif, inRelTol );
+        lY   = stepRungeKutta45<Func_>( inFunc, lX, lY, lDif, inRelTol );
         lDif = std::min( { std::abs( lDif ), std::abs( inMaxDif ),
                            std::abs( lX - inEndX ) } );
         if ( inEndX < inInitX ) { lDif = -lDif; }
@@ -107,8 +108,9 @@ std::pair<std::vector<double>, std::vector<double>> solveRungeKutta45(
     return std::make_pair( lXs, lYs );
 }
 
-template <auto Func_>
-std::vector<double> stepSIMLRungeKutta45( double& inX, std::vector<double>& inY,
+template <typename Func_>
+std::vector<double> stepSIMLRungeKutta45( const Func_& inFunc, double& inX,
+                                          std::vector<double>& inY,
                                           double& inDif, double inRelTol )
 {
     std::vector<std::vector<double>> lK( 6 );
@@ -124,7 +126,7 @@ std::vector<double> stepSIMLRungeKutta45( double& inX, std::vector<double>& inY,
                 lTmpY.at( iDim ) += lK.at( j ).at( iDim ) * gCoeffKY[i][j];
             }
         }
-        lK.at( i ) = Func_( lTmpX, lTmpY );
+        lK.at( i ) = inFunc( lTmpX, lTmpY );
         for ( std::size_t iDim = 0; iDim < inY.size(); ++iDim )
         {
             lK.at( i ).at( iDim ) *= inDif;
@@ -169,14 +171,14 @@ std::vector<double> stepSIMLRungeKutta45( double& inX, std::vector<double>& inY,
     else
     {
         inDif *= lDelta;
-        return stepSIMLRungeKutta45<Func_>( inX, inY, inDif, inRelTol );
+        return stepSIMLRungeKutta45<Func_>( inFunc, inX, inY, inDif, inRelTol );
     }
 }
 
-template <auto Func_>
+template <typename Func_>
 std::vector<std::vector<double>> solveSIMLRungeKutta45(
-    double inInitX, std::vector<double> inInitY, double inEndX, double inRelTol,
-    double inMaxDif )
+    const Func_& inFunc, double inInitX, std::vector<double> inInitY,
+    double inEndX, double inRelTol, double inMaxDif )
 {
     std::vector<std::vector<double>> lResults( inInitY.size() + 1 );
     double lX              = inInitX;
@@ -191,7 +193,7 @@ std::vector<std::vector<double>> solveSIMLRungeKutta45(
 
     while ( ( lX - inEndX ) * ( inInitX - inEndX ) > 0 )
     {
-        lY   = stepSIMLRungeKutta45<Func_>( lX, lY, lDif, inRelTol );
+        lY   = stepSIMLRungeKutta45<Func_>( inFunc, lX, lY, lDif, inRelTol );
         lDif = std::min( { std::abs( lDif ), std::abs( inMaxDif ),
                            std::abs( lX - inEndX ) } );
         if ( inEndX < inInitX ) { lDif = -lDif; }
@@ -205,55 +207,54 @@ std::vector<std::vector<double>> solveSIMLRungeKutta45(
     return lResults;
 }
 
-template <auto Func_>
-std::vector<double> tmpFunctionForSecondOrderRungeKutta45(
-    double inX, std::vector<double> inY )
-{
-    std::vector<double> lResults( 2 );
-    lResults.at( 0 ) = inY.at( 1 );
-    lResults.at( 1 ) = Func_( inX, inY.at( 0 ), inY.at( 1 ) );
-    return lResults;
-}
-
-template <auto Func_>
+template <typename Func_>
 std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>
-solveSecondOrderRungeKutta45( double inInitX, double inInitY, double inInitDY,
-                              double inEndX, double inRelTol, double inMaxDif )
+solveSecondOrderRungeKutta45( const Func_& inFunc, double inInitX,
+                              double inInitY, double inInitDY, double inEndX,
+                              double inRelTol, double inMaxDif )
 {
-    auto lResults =
-        solveSIMLRungeKutta45<tmpFunctionForSecondOrderRungeKutta45<Func_>>(
-            inInitX, { inInitY, inInitDY }, inEndX, inRelTol, inMaxDif );
+    auto tmpFunctionForSecondOrderRungeKutta45 =
+        [inFunc]( double inX, std::vector<double> inY ) -> std::vector<double>
+    {
+        std::vector<double> lResults( 2 );
+        lResults.at( 0 ) = inY.at( 1 );
+        lResults.at( 1 ) = inFunc( inX, inY.at( 0 ), inY.at( 1 ) );
+        return lResults;
+    };
+    auto lResults = solveSIMLRungeKutta45(
+        tmpFunctionForSecondOrderRungeKutta45, inInitX, { inInitY, inInitDY },
+        inEndX, inRelTol, inMaxDif );
     return std::make_tuple( lResults.at( 0 ), lResults.at( 1 ),
                             lResults.at( 2 ) );
 }
 
-template <auto Func_>
-std::vector<double> tmpFunctionForSIMLSecondOrderRungeKutta45(
-    double inX, std::vector<double> inY )
-{
-    std::vector<double> lResults( inY.size() );
-    std::size_t lHalfSize = inY.size() / 2;
-    std::vector<double> lY( inY.begin(), inY.begin() + lHalfSize );
-    std::vector<double> lDY( inY.begin() + lHalfSize, inY.end() );
-    std::vector<double> lTmpRes = Func_( inX, lY, lDY );
-    for ( std::size_t i = 0; i < lHalfSize; ++i )
-    {
-        lResults.at( i )             = inY.at( lHalfSize + i );
-        lResults.at( lHalfSize + i ) = lTmpRes.at( i );
-    }
-    return lResults;
-}
-
-template <auto Func_>
+template <typename Func_>
 std::vector<std::vector<double>> solveSIMLSecondOrderRungeKutta45(
-    double inInitX, std::vector<double> inInitY, std::vector<double> inInitDY,
-    double inEndX, double inRelTol, double inMaxDif )
+    const Func_& inFunc, double inInitX, std::vector<double> inInitY,
+    std::vector<double> inInitDY, double inEndX, double inRelTol,
+    double inMaxDif )
 {
     std::copy( inInitDY.begin(), inInitDY.end(),
                std::back_inserter( inInitY ) );
-    return solveSIMLRungeKutta45<
-        tmpFunctionForSIMLSecondOrderRungeKutta45<Func_>>(
-        inInitX, inInitY, inEndX, inRelTol, inMaxDif );
+
+    auto tmpFunctionForSIMLSecondOrderRungeKutta45 =
+        [inFunc]( double inX, std::vector<double> inY ) -> std::vector<double>
+    {
+        std::vector<double> lResults( inY.size() );
+        std::size_t lHalfSize = inY.size() / 2;
+        std::vector<double> lY( inY.begin(), inY.begin() + lHalfSize );
+        std::vector<double> lDY( inY.begin() + lHalfSize, inY.end() );
+        std::vector<double> lTmpRes = inFunc( inX, lY, lDY );
+        for ( std::size_t i = 0; i < lHalfSize; ++i )
+        {
+            lResults.at( i )             = inY.at( lHalfSize + i );
+            lResults.at( lHalfSize + i ) = lTmpRes.at( i );
+        }
+        return lResults;
+    };
+    return solveSIMLRungeKutta45( tmpFunctionForSIMLSecondOrderRungeKutta45,
+                                  inInitX, inInitY, inEndX, inRelTol,
+                                  inMaxDif );
 }
 
 }  // namespace ODE
