@@ -12,6 +12,8 @@
     - `cpp_calculator/lib/process_cuda`およびそれを実行するpython wrapperを使わない場合は不要。
 - Visual Studio Code
     - このリポジトリをcloneして、ワークスペースに読み込めば、Linux環境であればそのまま動作すると思われる。
+- MKL
+    - ない場合はLAPACKEを使うようになっている。
 - GoogleTest
     - testの実行のために導入。随時testをGoogleTestによるものに置換予定。
 
