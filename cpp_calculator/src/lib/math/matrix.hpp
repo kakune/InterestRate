@@ -12,12 +12,6 @@
 #include <numeric>
 #include <valarray>
 
-#ifndef NUSE_MKL
-#include "mkl.h"
-#else
-#include "lapacke.h"
-#endif
-
 namespace Math
 {
 

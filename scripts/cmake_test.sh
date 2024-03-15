@@ -1,4 +1,5 @@
-cmake -S $1 -B $1/build -DCMAKE_BUILD_TYPE=Release -DCUDA_ENABLED=1
+export CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu:${CMAKE_PREFIX_PATH}
+cmake -S $1 -B $1/build -DCMAKE_BUILD_TYPE=Release -DCUDA_ENABLED=0
 cmake --build $1/build
 
 PROJECT_ROOT="$1"

@@ -7,6 +7,13 @@
 
 #include "math/matrix.hpp"
 
+#ifndef NUSE_MKL
+#include "mkl.h"
+#else
+#include <cblas.h>
+#include <lapacke.h>
+#endif
+
 #include <cassert>
 #include <iostream>
 namespace Math
