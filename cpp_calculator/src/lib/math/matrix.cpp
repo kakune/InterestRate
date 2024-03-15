@@ -193,7 +193,6 @@ Mat Mat::operator/( const Mat& inRhs ) const
 Mat Mat::transpose() const
 {
     Mat lResult( mNCol, mNRow );
-#pragma omp parallel for
     for ( int i = 0; i < mNRow; ++i )
     {
         for ( int j = 0; j < mNCol; ++j )

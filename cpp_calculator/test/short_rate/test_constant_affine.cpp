@@ -9,8 +9,8 @@ std::shared_ptr<std::vector<double> > makeTerms( std::size_t inNTerms,
                                                  double inMaturity )
 {
     double lDt = inMaturity / double( inNTerms - 1 );
-    std::vector<double> lTerms( inNTerms + 1, 0 );
-    for ( std::size_t iTerm = 1; iTerm < inNTerms + 1; ++iTerm )
+    std::vector<double> lTerms( inNTerms + 5, 0 );
+    for ( std::size_t iTerm = 1; iTerm < inNTerms + 5; ++iTerm )
     {
         lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
     }
@@ -69,6 +69,8 @@ double testCIRPriceZCB( std::size_t inNTerms, std::size_t inNPath,
     auto lObj = rateBuild( inNTerms, inNPath, inMaturity, inRate, -inK,
                            inK * inMean, inVol * inVol, 0.0 );
     lObj.build();
+    lObj.buildAB( 60.0 );
+    std::cout << lObj.priceZCBByAB( inMaturity ) << std::endl;
     return lObj.priceZCB( 0.0, inMaturity );
 }
 
@@ -100,11 +102,11 @@ TEST( ShortRateConstantAffineTest, Constant )
 TEST( ShortRateConstantAffineTest, CIR )
 {
     EXPECT_NEAR( 0.987862017045984,
-                 testCIRPriceZCB( 1000, 10, 1.0, 0.01, 0.05, 0.1, 0.02 ),
+                 testCIRPriceZCB( 50, 1000, 1.0, 0.01, 0.05, 0.1, 0.02 ),
                  0.001 );
     EXPECT_NEAR( 0.3685782372351295,
-                 testCIRPriceZCB( 1000, 10, 10.0, 0.1, 0.2, 0.1, 0.02 ),
+                 testCIRPriceZCB( 50, 1000, 10.0, 0.1, 0.2, 0.1, 0.02 ),
                  0.001 );
     EXPECT_NEAR( 0.913980503378077,
-                 testCIRPriceZCB( 1000, 10, 0.1, 0.9, 0.0, 0.7, 0.6 ), 0.001 );
+                 testCIRPriceZCB( 50, 1000, 0.1, 0.9, 0.0, 0.7, 0.6 ), 0.001 );
 }

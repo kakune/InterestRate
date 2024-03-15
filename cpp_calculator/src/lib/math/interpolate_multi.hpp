@@ -8,8 +8,6 @@
 #ifndef MATH_INTERPOLATE_MULTI_HPP
 #define MATH_INTERPOLATE_MULTI_HPP
 
-#include <omp.h>
-
 #include <memory>
 #include <vector>
 

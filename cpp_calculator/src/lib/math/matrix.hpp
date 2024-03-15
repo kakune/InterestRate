@@ -8,13 +8,15 @@
 #ifndef MATH_MATRIX_HPP
 #define MATH_MATRIX_HPP
 
-#include <omp.h>
-
 #include <iostream>
 #include <numeric>
 #include <valarray>
 
+#ifndef NUSE_MKL
 #include "mkl.h"
+#else
+#include "lapacke.h"
+#endif
 
 namespace Math
 {

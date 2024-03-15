@@ -32,7 +32,7 @@ void RBFAbstract::build(
             mPoints[iPos]( iDim ) = insRefVars[iDim]->operator[]( iPos );
         }
     }
-    double lTmpMinDistance = 100.0;
+    double lTmpMinDistance = 1.0e10;
     for ( std::size_t i = 0; i < mNCoeff; ++i )
     {
         for ( std::size_t j = 0; j < i; ++j )
@@ -41,7 +41,10 @@ void RBFAbstract::build(
             lTmpMinDistance = std::min( lTmpMinDistance, lDistances( i, j ) );
         }
     }
-    mFactorDistance = mMinDistance / lTmpMinDistance;
+    if ( mMinDistance > 0.0 )
+    {
+        mFactorDistance = mMinDistance / lTmpMinDistance;
+    }
     for ( std::size_t i = 0; i < mNCoeff; ++i )
     {
         for ( std::size_t j = 0; j <= i; ++j )
@@ -50,6 +53,7 @@ void RBFAbstract::build(
             lDistances( j, i ) = lDistances( i, j );
         }
     }
+
     mCoeffs    = dot( lDistances, lValues );
     lDistances = dot( lDistances, lDistances );
     for ( std::size_t i = 0; i < mNCoeff; ++i )

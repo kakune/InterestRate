@@ -1,5 +1,11 @@
-find_package(GTest REQUIRED)
-include(GoogleTest)
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
 
 add_executable(test_parameters test_parameters.cpp)
 target_link_libraries(test_parameters LibUtils)
@@ -14,16 +20,13 @@ add_executable(test_random test_random.cpp)
 target_link_libraries(test_random LibProcess)
 
 add_executable(test_interpolate_1d test_interpolate_1d.cpp)
-target_link_libraries(test_interpolate_1d LibMath GTest::GTest GTest::Main)
-gtest_add_tests(TARGET test_interpolate_1d)
+target_link_libraries(test_interpolate_1d LibMath gtest_main)
 
 add_executable(test_interpolate_multi test_interpolate_multi.cpp)
-target_link_libraries(test_interpolate_multi LibMath GTest::GTest GTest::Main)
-gtest_add_tests(TARGET test_interpolate_multi)
+target_link_libraries(test_interpolate_multi LibMath gtest_main)
 
 add_executable(test_matrix test_matrix.cpp)
-target_link_libraries(test_matrix LibMath GTest::GTest GTest::Main)
-gtest_add_tests(TARGET test_matrix)
+target_link_libraries(test_matrix LibMath gtest_main)
 
 add_executable(test_special_functions test_special_functions.cpp)
 target_link_libraries(test_special_functions LibMath)
@@ -32,12 +35,10 @@ add_executable(test_asset test_asset.cpp)
 target_link_libraries(test_asset LibProcess)
 
 add_executable(test_market test_market.cpp)
-target_link_libraries(test_market LibProcess GTest::GTest GTest::Main)
-gtest_add_tests(TARGET test_market)
+target_link_libraries(test_market LibProcess gtest_main)
 
 add_executable(test_ODE test_ODE.cpp)
-target_link_libraries(test_ODE LibMath GTest::GTest GTest::Main)
-gtest_add_tests(TARGET test_ODE)
+target_link_libraries(test_ODE LibMath gtest_main)
 
 add_subdirectory(short_rate)
 

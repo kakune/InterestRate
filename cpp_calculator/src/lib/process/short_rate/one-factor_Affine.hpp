@@ -13,6 +13,7 @@
 #include <memory>
 #include <vector>
 
+#include "math/interpolate_multi.hpp"
 #include "process/market.hpp"
 #include "process/short_rate/core.hpp"
 
@@ -33,6 +34,7 @@ private:
                        std::size_t inIndTerm ) const override;
     double volCoeff( std::size_t inIndPath,
                      std::size_t inIndTerm ) const override;
+    Math::InterpolateMulti::RBFGaussian mInterpA, mInterpB;
 
 public:
     ConstantAffine(
@@ -47,13 +49,15 @@ public:
         mLambda( inLambda ),
         mEta( inEta ),
         mGamma( inGamma ),
-        mDelta( inDelta )
+        mDelta( inDelta ),
+        mInterpA( 0.0, 1.0e-6 * ( insTerms->back() - insTerms->front() ) ),
+        mInterpB( 0.0, 1.0e-6 * ( insTerms->back() - insTerms->front() ) )
     {
     }
-    double analyticalPriceZCB( double inStartTime,
-                               double inMaturityTime ) const;
-    double analyticalPriceZCB( std::size_t inIndStartTime,
-                               std::size_t inIndMaturityTime ) const;
+    void buildAB( double inTimeMesh = 10.0 );
+    double priceZCBByAB( double inMaturityTime ) const;
+    // double analyticalPriceZCB( std::size_t inIndStartTime,
+    //                            std::size_t inIndMaturityTime ) const;
 };
 
 class ConstantAffineBuilder : public OneFactorAbstractBuilder
