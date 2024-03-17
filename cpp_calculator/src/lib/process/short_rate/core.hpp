@@ -102,7 +102,7 @@ public:
      * Terms[0].
      * @param inStartTime start time of ZCB
      * @param inMaturityTime maturity time of ZCB
-     * @return double P(inStartTime, inMaturityTime)
+     * @return double P(Terms[0], inMaturityTime)
      */
     double priceZCB( double inStartTime, double inMaturityTime ) const;
     double priceZCB( std::size_t inIndStartTime,

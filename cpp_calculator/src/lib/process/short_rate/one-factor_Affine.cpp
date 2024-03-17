@@ -9,6 +9,7 @@
 #include "process/short_rate/one-factor_Affine.hpp"
 
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -32,19 +33,12 @@ double ConstantAffine::volCoeff( std::size_t inIndPath,
                       mDelta );
 }
 
-void ConstantAffine::buildAB( double inTimeMesh )
+void AffineAbstract::buildAB( double inTimeMesh )
 {
     std::vector<double> lInitAB = { 1.0, 0.0 };
-    auto ODEForAB               = [this]( double inTime,
-                            std::vector<double> inAB ) -> std::vector<double>
-    {
-        std::vector<double> lResult( 2 );
-        double B2  = inAB[1] * inAB[1];
-        lResult[1] = -this->mLambda * inAB[1] + 0.5 * this->mGamma * B2 - 1.0;
-        lResult[0] =
-            inAB[0] * ( this->mEta * inAB[1] - 0.5 * this->mDelta * B2 );
-        return lResult;
-    };
+    auto lFunc                  = [this]( double inTime,
+                         std::vector<double> inAB ) -> std::vector<double>
+    { return this->ODEForAB( inTime, inAB ); };
     double lMaxDif = ( msTerms->back() - msTerms->front() ) / inTimeMesh;
     std::vector<double> lStartTimes = { 0.0 };
     std::vector<double> lEndTimes   = { 0.0 };
@@ -53,7 +47,7 @@ void ConstantAffine::buildAB( double inTimeMesh )
     for ( std::size_t iTerm = 1; iTerm < msTerms->size(); ++iTerm )
     {
         auto lResults = Math::ODE::solveSIMLRungeKutta45(
-            ODEForAB, msTerms->operator[]( iTerm ), lInitAB,
+            lFunc, msTerms->operator[]( iTerm ), lInitAB,
             msTerms->front() - lMaxDif, 1e-6, lMaxDif );
 
         lEndTimes.resize( lEndTimes.size() + lResults[0].size(),
@@ -77,11 +71,94 @@ void ConstantAffine::buildAB( double inTimeMesh )
                     std::make_shared<std::vector<double> >( lBValues ) );
 }
 
-double ConstantAffine::priceZCBByAB( double inMaturityTime ) const
+double AffineAbstract::priceZCBByAB( double inMaturityTime ) const
 {
     return mInterpA( { msTerms->front(), inMaturityTime } ) *
            std::exp( -mInitSpotRate *
                      mInterpB( { msTerms->front(), inMaturityTime } ) );
+}
+
+double AffineAbstract::priceZCBByAB( double inStartTime,
+                                     double inMaturityTime ) const
+{
+    return priceZCBByAB( inMaturityTime ) / priceZCBByAB( inStartTime );
+}
+double AffineAbstract::priceZCBByAB( std::size_t inIndStartTime,
+                                     std::size_t inIndMaturityTime ) const
+{
+    if ( inIndStartTime >= msTerms->size() ||
+         inIndMaturityTime >= msTerms->size() )
+    {
+        std::cerr << "Error: Process::ShortRate::ConstantAffine::priceZCBByAB()"
+                  << std::endl
+                  << "Argument is out of range." << std::endl;
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    return priceZCBByAB( msTerms->operator[]( inIndStartTime ),
+                         msTerms->operator[]( inIndMaturityTime ) );
+}
+
+double AffineAbstract::instantaneousForwardRateByAB( double inTime ) const
+{
+    return instantaneousForwardRateByAB( inTime, msTerms->front(),
+                                         mInitSpotRate );
+}
+
+double AffineAbstract::instantaneousForwardRateByAB(
+    std::size_t inIndTime ) const
+{
+    if ( inIndTime >= msTerms->size() )
+    {
+        std::cerr << "Error: Process::ShortRate::ConstantAffine::priceZCBByAB()"
+                  << std::endl
+                  << "Argument is out of range." << std::endl;
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    return instantaneousForwardRateByAB( msTerms->operator[]( inIndTime ) );
+}
+
+double AffineAbstract::instantaneousForwardRateByAB( double inTime,
+                                                     double inObservingTime,
+                                                     double inInitRate ) const
+{
+    if ( inObservingTime > inTime )
+    {
+        std::cerr << "Error: "
+                     "Process::ShortRate::ConstantAffine::"
+                     "instantaneousForwardRateByAB()"
+                  << std::endl
+                  << "ObservingTime must be smaller than inTime." << std::endl;
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    return -mInterpA.deriv( { inObservingTime, inTime }, 1, 1 ) /
+               mInterpA( { inObservingTime, inTime } ) +
+           inInitRate * mInterpB.deriv( { inObservingTime, inTime }, 1, 1 );
+}
+
+double AffineAbstract::instantaneousForwardRateByAB(
+    std::size_t inIndTime, std::size_t inIndObservingTime,
+    double inInitRate ) const
+{
+    if ( inIndTime >= msTerms->size() || inIndObservingTime >= msTerms->size() )
+    {
+        std::cerr << "Error: Process::ShortRate::ConstantAffine::priceZCBByAB()"
+                  << std::endl
+                  << "Argument is out of range." << std::endl;
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    return instantaneousForwardRateByAB(
+        msTerms->operator[]( inIndTime ),
+        msTerms->operator[]( inIndObservingTime ), inInitRate );
+}
+
+std::vector<double> ConstantAffine::ODEForAB( double inTime,
+                                              std::vector<double> inAB ) const
+{
+    std::vector<double> lResult( 2 );
+    double B2  = inAB[1] * inAB[1];
+    lResult[1] = -this->mLambda * inAB[1] + 0.5 * this->mGamma * B2 - 1.0;
+    lResult[0] = inAB[0] * ( this->mEta * inAB[1] - 0.5 * this->mDelta * B2 );
+    return lResult;
 }
 
 }  // namespace ShortRate

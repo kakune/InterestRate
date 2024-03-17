@@ -81,6 +81,7 @@ double ModelAbstract::priceZCB( std::size_t inIndStartTime,
                      "Process::ShortRate::ModelAbstract:priceZCB()"
                   << std::endl
                   << "Argument is out of range." << std::endl;
+        return std::numeric_limits<double>::quiet_NaN();
     }
     return priceZCB( msTerms->at( inIndStartTime ),
                      msTerms->at( inIndMaturityTime ) );
@@ -103,6 +104,7 @@ double ModelAbstract::forwardRate( std::size_t inIndStartTime,
                      "Process::ShortRate::ModelAbstract:forwardRate()"
                   << std::endl
                   << "Argument is out of range." << std::endl;
+        return std::numeric_limits<double>::quiet_NaN();
     }
     return forwardRate( msTerms->at( inIndStartTime ),
                         msTerms->at( inIndTerminalTime ) );
@@ -121,6 +123,7 @@ double ModelAbstract::instantaneousForwardRate( std::size_t inIndTime ) const
                "Process::ShortRate::ModelAbstract::instantaneousForwardRate()"
             << std::endl
             << "Argument is out of range." << std::endl;
+        return std::numeric_limits<double>::quiet_NaN();
     }
     return instantaneousForwardRate( msTerms->at( inIndTime ) );
 }

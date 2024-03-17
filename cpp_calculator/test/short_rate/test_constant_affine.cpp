@@ -69,9 +69,38 @@ double testCIRPriceZCB( std::size_t inNTerms, std::size_t inNPath,
     auto lObj = rateBuild( inNTerms, inNPath, inMaturity, inRate, -inK,
                            inK * inMean, inVol * inVol, 0.0 );
     lObj.build();
-    lObj.buildAB( 60.0 );
-    std::cout << lObj.priceZCBByAB( inMaturity ) << std::endl;
     return lObj.priceZCB( 0.0, inMaturity );
+}
+double testCIRInstantaneousForwardRate( std::size_t inNTerms,
+                                        std::size_t inNPath, double inMaturity,
+                                        double inRate, double inK,
+                                        double inMean, double inVol )
+{
+    auto lObj = rateBuild( inNTerms, inNPath, inMaturity, inRate, -inK,
+                           inK * inMean, inVol * inVol, 0.0 );
+    lObj.build();
+    return lObj.instantaneousForwardRate( inMaturity );
+}
+
+double testCIRPriceZCBByAB( std::size_t inNTerms, double inTimeMesh,
+                            double inMaturity, double inRate, double inK,
+                            double inMean, double inVol )
+{
+    auto lObj = rateBuild( inNTerms, 1, inMaturity, inRate, -inK, inK * inMean,
+                           inVol * inVol, 0.0 );
+    lObj.buildAB( inTimeMesh );
+    return lObj.priceZCBByAB( inMaturity );
+}
+double testCIRInstantaneousForwardRateByAB( std::size_t inNTerms,
+                                            double inTimeMesh,
+                                            double inMaturity, double inRate,
+                                            double inK, double inMean,
+                                            double inVol )
+{
+    auto lObj = rateBuild( inNTerms, 1, inMaturity, inRate, -inK, inK * inMean,
+                           inVol * inVol, 0.0 );
+    lObj.buildAB( inTimeMesh );
+    return lObj.instantaneousForwardRateByAB( inMaturity );
 }
 
 TEST( ShortRateConstantAffineTest, Constant )
@@ -109,4 +138,38 @@ TEST( ShortRateConstantAffineTest, CIR )
                  0.001 );
     EXPECT_NEAR( 0.913980503378077,
                  testCIRPriceZCB( 50, 1000, 0.1, 0.9, 0.0, 0.7, 0.6 ), 0.001 );
+    EXPECT_NEAR( 0.0143871638049957,
+                 testCIRInstantaneousForwardRate( 100, 10000, 1.0, 0.01, 0.05,
+                                                  0.1, 0.02 ),
+                 0.001 );
+    EXPECT_NEAR( 0.0996280717912332,
+                 testCIRInstantaneousForwardRate( 100, 10000, 10.0, 0.1, 0.2,
+                                                  0.1, 0.02 ),
+                 0.001 );
+    EXPECT_NEAR(
+        0.898381942018978,
+        testCIRInstantaneousForwardRate( 100, 10000, 0.1, 0.9, 0.0, 0.7, 0.6 ),
+        0.005 );
+
+    EXPECT_NEAR( 0.987862017045984,
+                 testCIRPriceZCBByAB( 50.0, 50.0, 1.0, 0.01, 0.05, 0.1, 0.02 ),
+                 0.001 );
+    EXPECT_NEAR( 0.3685782372351295,
+                 testCIRPriceZCBByAB( 50.0, 50.0, 10.0, 0.1, 0.2, 0.1, 0.02 ),
+                 0.001 );
+    EXPECT_NEAR( 0.913980503378077,
+                 testCIRPriceZCBByAB( 50.0, 50.0, 0.1, 0.9, 0.0, 0.7, 0.6 ),
+                 0.001 );
+    EXPECT_NEAR( 0.0143871638049957,
+                 testCIRInstantaneousForwardRateByAB( 50.0, 100.0, 1.0, 0.01,
+                                                      0.05, 0.1, 0.02 ),
+                 0.003 );
+    EXPECT_NEAR( 0.0996280717912332,
+                 testCIRInstantaneousForwardRateByAB( 50.0, 100.0, 10.0, 0.1,
+                                                      0.2, 0.1, 0.02 ),
+                 0.001 );
+    EXPECT_NEAR( 0.898381942018978,
+                 testCIRInstantaneousForwardRateByAB( 50.0, 100.0, 0.1, 0.9,
+                                                      0.0, 0.7, 0.6 ),
+                 0.005 );
 }

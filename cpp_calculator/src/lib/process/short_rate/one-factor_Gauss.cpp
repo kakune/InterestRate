@@ -50,6 +50,7 @@ double HoLee::analyticalPriceZCB( std::size_t inIndStartTime,
                      "Process::ShortRate::HoLee:analyticalPriceZCB()"
                   << std::endl
                   << "Argument is out of range." << std::endl;
+        return std::numeric_limits<double>::quiet_NaN();
     }
     return analyticalPriceZCB( msTerms->at( inIndStartTime ),
                                msTerms->at( inIndMaturityTime ) );
@@ -105,6 +106,7 @@ double Vasicek::analyticalPriceZCB( std::size_t inIndStartTime,
                      "Process::ShortRate::HoLee:analyticalPriceZCB()"
                   << std::endl
                   << "Argument is out of range." << std::endl;
+        return std::numeric_limits<double>::quiet_NaN();
     }
     return analyticalPriceZCB( msTerms->at( inIndStartTime ),
                                msTerms->at( inIndMaturityTime ) );
