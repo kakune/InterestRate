@@ -46,7 +46,6 @@ protected:
      */
     virtual double driftCoeff( std::size_t inIndPath,
                                std::size_t inIndTerm ) const = 0;
-    virtual ~ModelAbstract()                                 = default;
     /**
      * @brief This calcurate spot rates and Disconunt Factors.
      */
@@ -85,6 +84,7 @@ public:
             mSpotRates.at( iPath ).at( 0 ) = mInitSpotRate;
         }
     }
+    virtual ~ModelAbstract() = default;
     /**
      * @brief This calcurate interest rates of each random path.
      */

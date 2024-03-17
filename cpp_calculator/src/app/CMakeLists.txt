@@ -1,1 +1,2 @@
 add_subdirectory(SABR)
+add_subdirectory(short_rate)

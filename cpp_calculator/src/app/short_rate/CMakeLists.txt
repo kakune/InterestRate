@@ -1,0 +1,2 @@
+add_executable(calc_with_param calc_with_param.cpp)
+target_link_libraries(calc_with_param LibUtils LibProcess)
