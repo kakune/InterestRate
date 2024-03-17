@@ -1,31 +1,23 @@
+import __init__
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-from lib.cpp.cmake import buildCmakeReleaseCUDA, runExe
+from lib.cpp.cmake import buildCmakeRelease, runExe
 from lib.plot.graph import plotGraph
 from lib.finance.SABR import approxImpVol
 from lib.utils.parameters import Parameters
 
-gPathCurrent = os.path.abspath(__file__)
-gPathProject = os.path.split(os.path.split(
-    os.path.split(gPathCurrent)[0])[0])[0]
-gPathCppDir = os.path.join(gPathProject, "cpp_calculator")
 gPathCppExe = os.path.join(
-    gPathCppDir, "build", "src", "SABR_implied_volatility_cuda")
-
-gNameParam = "SABR.ini"
-gPathParam = os.path.join(gPathProject, "parameters", gNameParam)
-
-gNameOutput = "SABR_output.csv"
-gPathOutput = os.path.join(gPathProject, "output", gNameOutput)
-gNameGraph = "SABR_graph.png"
-gPathGraph = os.path.join(gPathProject, "output", gNameGraph)
+    __init__.gPathCppExeDir, "SABR_implied_volatility_cuda")
+gPathParam = os.path.join(__init__.gPathParamDir, "SABR.ini")
+gPathOutput = os.path.join(__init__.gPathOutputDir, "SABR_output.csv")
+gPathGraph = os.path.join(__init__.gPathOutputDir, "SABR_graph.png")
 
 gNameSection = "PARAM1"
 
 
 if __name__ == '__main__':
-    buildCmakeReleaseCUDA(gPathCppDir)
+    buildCmakeRelease(__init__.gPathCppDir)
     runExe(
         gPathCppExe,
         (gPathParam, gNameSection, gPathOutput)

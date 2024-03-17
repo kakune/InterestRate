@@ -1,36 +1,29 @@
+import __init__
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-from lib.cpp.cmake import buildCmakeReleaseCUDA, runExe
-from lib.plot.graph import plotGraph
-from lib.finance.SABR import approxImpVol
 from lib.utils.parameters import Parameters
+from lib.finance.SABR import approxImpVol
+from lib.plot.graph import plotGraph
+from lib.cpp.cmake import buildCmakeReleaseCUDA, runExe
 
-gPathCurrent = os.path.abspath(__file__)
-gPathProject = os.path.split(os.path.split(
-    os.path.split(gPathCurrent)[0])[0])[0]
-gPathCppDir = os.path.join(gPathProject, "cpp_calculator")
 gPathCppExe = os.path.join(
-    gPathCppDir, "build", "src", "SABR_implied_volatility_cuda")
-
-gNameParam = "SABR.ini"
-gPathParam = os.path.join(gPathProject, "parameters", gNameParam)
+    __init__.gPathCppExeDir, "SABR_implied_volatility_cuda")
+gPathParam = os.path.join(__init__.gPathParamDir, "SABR.ini")
 
 gNameSections = ["PARAM1", "PARAM2", "PARAM3"]
-
 gNameOutputs = ["SABR_output_" + gNameSection +
                 ".csv" for gNameSection in gNameSections]
-gPathOutputs = [os.path.join(gPathProject, "output", gNameOutput)
+gPathOutputs = [os.path.join(__init__.gPathOutputDir, gNameOutput)
                 for gNameOutput in gNameOutputs]
-gNameGraph = "SABR_graph_multi.png"
-gPathGraph = os.path.join(gPathProject, "output", gNameGraph)
+gPathGraph = os.path.join(__init__.gPathOutputDir, "SABR_graph_multi.png")
 
 fig = None
 ax = None
 
 
 if __name__ == '__main__':
-    buildCmakeReleaseCUDA(gPathCppDir)
+    buildCmakeReleaseCUDA(__init__.gPathCppDir)
     for gNameSection, gPathOutput in zip(gNameSections, gPathOutputs):
         runExe(
             gPathCppExe,
