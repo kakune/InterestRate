@@ -28,7 +28,7 @@ InterestRate
 
 
 ## 実行用コードの説明
-実行用コードは、cppファイルと、それに対応する同名のpython wrapperファイルによって成る。
+実行用コードは、C++,pythonともに`src/app`内にあり、cppファイルと、それに対応する同名のpython wrapperファイルによって成る。
 
 ### SABR_implied_volatility
 
@@ -89,6 +89,8 @@ $$
     \chi(\zeta) = \log \left( \frac{\sqrt{1-2\rho \zeta + \zeta^{2}} + \zeta - \rho}{1 - \rho}\right)
 $$
 
+### short_rate
+calc_with_paramはあらゆるパラメータを天下り的に与えることで、calc_with_marketはドリフト項をマーケットデータから推定して、計算を行う。
 
 
 ## 主要なライブラリの説明  
