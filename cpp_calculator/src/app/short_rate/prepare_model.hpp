@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "process/market.hpp"
 #include "process/short_rate.hpp"
 #include "utils/parameters.hpp"
 
@@ -78,6 +79,47 @@ std::unique_ptr<Process::ShortRate::ModelAbstract> prepareModelFromParam(
 {
     return ( prepareModelFromParam( inNameModel, inParams,
                                     prepareTerms( inParams ) ) );
+}
+
+std::unique_ptr<Process::ShortRate::ModelAbstract> prepareModelFromMarket(
+    std::string inNameModel, const Utils::Parameters& inParams,
+    std::shared_ptr<std::vector<double> > insTerms,
+    const Process::Market::Data inMarketData )
+{
+    auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
+        inParams( "NPath" ), insTerms );
+    if ( inNameModel == "Vasicek" )
+    {
+        Process::ShortRate::VasicekBuilder lBuilder;
+        lBuilder.setTerms( insTerms );
+        lBuilder.setRandom( std::move( luRandom ) );
+        lBuilder.setNPath( inParams( "NPath" ) );
+        lBuilder.setVol( inParams( "Vol" ) );
+        lBuilder.setMarketData(
+            std::make_shared<Process::Market::Data>( inMarketData ) );
+        return std::move(
+            std::make_unique<Process::ShortRate::Vasicek>( lBuilder.build() ) );
+    }
+    if ( inNameModel == "HoLee" )
+    {
+        Process::ShortRate::HoLeeBuilder lBuilder;
+        lBuilder.setTerms( insTerms );
+        lBuilder.setRandom( std::move( luRandom ) );
+        lBuilder.setNPath( inParams( "NPath" ) );
+        lBuilder.setVol( inParams( "Vol" ) );
+        lBuilder.setMarketData(
+            std::make_shared<Process::Market::Data>( inMarketData ) );
+        return std::move(
+            std::make_unique<Process::ShortRate::HoLee>( lBuilder.build() ) );
+    }
+    return nullptr;
+}
+std::unique_ptr<Process::ShortRate::ModelAbstract> prepareModelFromMarket(
+    std::string inNameModel, const Utils::Parameters& inParams,
+    const Process::Market::Data inMarketData )
+{
+    return prepareModelFromMarket( inNameModel, inParams,
+                                   prepareTerms( inParams ), inMarketData );
 }
 
 }  // namespace ShortRate
