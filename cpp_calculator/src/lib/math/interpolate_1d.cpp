@@ -50,18 +50,10 @@ void NewtonSpline::build( std::shared_ptr<const std::vector<double> > insRefXs,
                 ( msRefXs->at( iX + iDeg ) - msRefXs->at( iX ) );
         }
     }
-    mIsBuilt = true;
 }
 
 double NewtonSpline::operator()( double inX ) const
 {
-    if ( !mIsBuilt )
-    {
-        std::cerr << "Error: Math::Interpolate1D::NewtonSpline::operator()"
-                  << std::endl
-                  << "The spline has NOT been built." << std::endl;
-        return std::numeric_limits<double>::quiet_NaN();
-    }
     if ( inX < msRefXs->front() || inX > msRefXs->back() )
     {
         std::cerr << "Error: Math::Interpolate1D::NewtonSpline::operator()"
@@ -88,13 +80,6 @@ double NewtonSpline::deriv( double inX, std::size_t inOrder ) const
 {
     if ( inOrder == 0 ) { return operator()( inX ); }
     if ( mNDeg == 0 ) { return 0.0; }
-    if ( !mIsBuilt )
-    {
-        std::cerr << "Error: Math::Interpolate1D::NewtonSpline::deriv"
-                  << std::endl
-                  << "The spline has NOT been built." << std::endl;
-        return std::numeric_limits<double>::quiet_NaN();
-    }
     if ( inX < msRefXs->front() || inX > msRefXs->back() )
     {
         std::cerr << "Error: Math::Interpolate1D::NewtonSpline::deriv"

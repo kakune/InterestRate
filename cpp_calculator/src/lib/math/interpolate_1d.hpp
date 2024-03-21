@@ -22,17 +22,16 @@ namespace Interpolate1D
 class GeneratorAbstract
 {
 protected:
-    bool mIsBuilt = false;
-    std::shared_ptr<const std::vector<double> > msRefXs;  //! vector of X
-public:
     /**
      * @brief This calculates coefficients of interpolation function.
-     * @param insRefXs vector of X
+     * @param insRefXs vector of X ( must be > mNDeg )
      * @param insRefYs vector of Y corresponding to f(msRefXs)
      */
     virtual void build(
         std::shared_ptr<const std::vector<double> > insRefXs,
         std::shared_ptr<const std::vector<double> > insRefYs ) = 0;
+
+public:
     /**
      * @brief This calculates the value f(inX) using interpolation.
      * @param inX
@@ -50,27 +49,35 @@ class NewtonSpline : public GeneratorAbstract
 private:
     std::size_t mNDeg;
     std::size_t mSizeIndex;
+    std::shared_ptr<const std::vector<double> > msRefXs;  //! vector of X
     std::vector<std::vector<double> > mCoeff;
     std::vector<std::vector<double> > mCoeffIntegral;
     std::vector<double> mSumIntegral;
+    void build( std::shared_ptr<const std::vector<double> > insRefXs,
+                std::shared_ptr<const std::vector<double> > insRefYs ) override;
+    /**
+     * @brief This prepares the coefficients for integral.
+     */
+    void buildIntegral();
 
 public:
     /**
      * @brief This constructs a new NewtonSpline.
+     * @param insRefXs vector of X
+     * @param insRefYs vector of Y corresponding to f(msRefXs)
      * @param inNDeg degree of spline
      */
-    NewtonSpline( std::size_t inNDeg = 1 ) :
+    NewtonSpline( std::shared_ptr<const std::vector<double> > insRefXs,
+                  std::shared_ptr<const std::vector<double> > insRefYs,
+                  std::size_t inNDeg = 1 ) :
         mNDeg( inNDeg ),
-        mCoeff( std::vector<std::vector<double> >( inNDeg + 1 ) )
+        mCoeff( std::vector<std::vector<double> >( inNDeg + 1 ) ),
+        msRefXs( insRefXs )
     {
+        build( insRefXs, insRefYs );
+        buildIntegral();
     }
-    /**
-     * @brief This calculates coefficients of interpolation function.
-     * @param insRefXs vector of X ( must be > mNDeg )
-     * @param insRefYs vector of Y corresponding to f(msRefXs)
-     */
-    void build( std::shared_ptr<const std::vector<double> > insRefXs,
-                std::shared_ptr<const std::vector<double> > insRefYs ) override;
+
     /**
      * @brief This calculates the value f(inX) using mNDeg-degree Newton spline.
      * @param inX
@@ -85,12 +92,6 @@ public:
      * @return double f^(inOrder)(inX)
      */
     double deriv( double inX, std::size_t inOrder = 1 ) const;
-
-    /**
-     * @brief This prepares the coefficients for integral.
-     */
-    void buildIntegral();
-
     /**
      * @brief This calculates the integral in the area [x0, inX].
      * @param inX

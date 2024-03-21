@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "process/market.hpp"
-#include "process/short_rate.hpp"
+#include "process/market_data.hpp"
+#include "process/short_rate_MC.hpp"
 #include "utils/parameters.hpp"
 
 namespace APP
@@ -14,8 +14,7 @@ namespace APP
 namespace ShortRate
 {
 
-std::shared_ptr<std::vector<double> > prepareTerms(
-    const Utils::Parameters& inParams )
+Process::MarketData::Terms prepareTerms( const Utils::Parameters& inParams )
 {
     std::size_t lNTerms = std::size_t( inParams( "NTerms" ) );
     std::vector<double> lTerms( lNTerms, 0 );
@@ -26,100 +25,101 @@ std::shared_ptr<std::vector<double> > prepareTerms(
         lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
     }
 
-    return std::make_shared<std::vector<double> >( lTerms );
+    return Process::MarketData::Terms( lTerms );
 }
 
-std::unique_ptr<Process::ShortRate::ModelAbstract> prepareModelFromParam(
+std::unique_ptr<Process::ShortRateMC::ModelAbstract> prepareModelFromParam(
     std::string inNameModel, const Utils::Parameters& inParams,
-    std::shared_ptr<std::vector<double> > insTerms )
+    const Process::MarketData::Terms& inTerms )
 {
     auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-        inParams( "NPath" ), insTerms );
+        inParams( "NPath" ), inTerms );
     if ( inNameModel == "Vasicek" )
     {
-        Process::ShortRate::VasicekBuilder lBuilder;
-        lBuilder.setTerms( insTerms );
+        Process::ShortRateMC::VasicekBuilder lBuilder;
+        lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setInitSpotRate( inParams( "InitRate" ) );
         lBuilder.setVol( inParams( "Vol" ) );
         lBuilder.setKappa( inParams( "Kappa" ) );
         lBuilder.setMean( inParams( "Mean" ) );
-        return std::move(
-            std::make_unique<Process::ShortRate::Vasicek>( lBuilder.build() ) );
+        return std::move( std::make_unique<Process::ShortRateMC::Vasicek>(
+            lBuilder.build() ) );
     }
     if ( inNameModel == "HoLee" )
     {
-        Process::ShortRate::HoLeeBuilder lBuilder;
-        lBuilder.setTerms( insTerms );
+        Process::ShortRateMC::HoLeeBuilder lBuilder;
+        lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setInitSpotRate( inParams( "InitRate" ) );
         lBuilder.setVol( inParams( "Vol" ) );
         return std::move(
-            std::make_unique<Process::ShortRate::HoLee>( lBuilder.build() ) );
+            std::make_unique<Process::ShortRateMC::HoLee>( lBuilder.build() ) );
     }
     if ( inNameModel == "ConstantAffine" )
     {
-        Process::ShortRate::ConstantAffineBuilder lBuilder;
-        lBuilder.setTerms( insTerms );
+        Process::ShortRateMC::ConstantAffineBuilder lBuilder;
+        lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setInitSpotRate( inParams( "InitRate" ) );
         lBuilder.setDrift( inParams( "Lambda" ), inParams( "Eta" ) );
         lBuilder.setVol( inParams( "Gamma" ), inParams( "Delta" ) );
-        return std::move( std::make_unique<Process::ShortRate::ConstantAffine>(
-            lBuilder.build() ) );
+        return std::move(
+            std::make_unique<Process::ShortRateMC::ConstantAffine>(
+                lBuilder.build() ) );
     }
     return nullptr;
 }
 
-std::unique_ptr<Process::ShortRate::ModelAbstract> prepareModelFromParam(
+std::unique_ptr<Process::ShortRateMC::ModelAbstract> prepareModelFromParam(
     std::string inNameModel, const Utils::Parameters& inParams )
 {
     return ( prepareModelFromParam( inNameModel, inParams,
                                     prepareTerms( inParams ) ) );
 }
 
-std::unique_ptr<Process::ShortRate::ModelAbstract> prepareModelFromMarket(
+std::unique_ptr<Process::ShortRateMC::ModelAbstract> prepareModelFromMarket(
     std::string inNameModel, const Utils::Parameters& inParams,
-    std::shared_ptr<std::vector<double> > insTerms,
-    const Process::Market::Data inMarketData )
+    const Process::MarketData::Terms inTerms,
+    const Process::MarketData::ZCB inMarketZCB )
 {
     auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-        inParams( "NPath" ), insTerms );
+        inParams( "NPath" ), inTerms );
     if ( inNameModel == "Vasicek" )
     {
-        Process::ShortRate::VasicekBuilder lBuilder;
-        lBuilder.setTerms( insTerms );
+        Process::ShortRateMC::VasicekWithMarketBuilder lBuilder;
+        lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setVol( inParams( "Vol" ) );
-        lBuilder.setMarketData(
-            std::make_shared<Process::Market::Data>( inMarketData ) );
+        lBuilder.setMarketZCB( inMarketZCB );
         return std::move(
-            std::make_unique<Process::ShortRate::Vasicek>( lBuilder.build() ) );
+            std::make_unique<Process::ShortRateMC::VasicekWithMarket>(
+                lBuilder.build() ) );
     }
     if ( inNameModel == "HoLee" )
     {
-        Process::ShortRate::HoLeeBuilder lBuilder;
-        lBuilder.setTerms( insTerms );
+        Process::ShortRateMC::HoLeeWithMarketBuilder lBuilder;
+        lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setVol( inParams( "Vol" ) );
-        lBuilder.setMarketData(
-            std::make_shared<Process::Market::Data>( inMarketData ) );
+        lBuilder.setMarketZCB( inMarketZCB );
         return std::move(
-            std::make_unique<Process::ShortRate::HoLee>( lBuilder.build() ) );
+            std::make_unique<Process::ShortRateMC::HoLeeWithMarket>(
+                lBuilder.build() ) );
     }
     return nullptr;
 }
-std::unique_ptr<Process::ShortRate::ModelAbstract> prepareModelFromMarket(
+std::unique_ptr<Process::ShortRateMC::ModelAbstract> prepareModelFromMarket(
     std::string inNameModel, const Utils::Parameters& inParams,
-    const Process::Market::Data inMarketData )
+    const Process::MarketData::ZCB inMarketZCB )
 {
     return prepareModelFromMarket( inNameModel, inParams,
-                                   prepareTerms( inParams ), inMarketData );
+                                   prepareTerms( inParams ), inMarketZCB );
 }
 
 }  // namespace ShortRate

@@ -4,13 +4,11 @@
 #include <memory>
 #include <vector>
 
-#include "process/market.hpp"
+#include "process/market_data.hpp"
 #include "process/random.hpp"
-#include "process/short_rate.hpp"
+#include "process/short_rate_MC.hpp"
 
-double testDifAnalytical( std::size_t inNTerms, std::size_t inNPath,
-                          double inMaturity, double inInitRate, double inVol,
-                          double inKappa, double inMean )
+Process::MarketData::Terms makeTerms( std::size_t inNTerms, double inMaturity )
 {
     double lDt = inMaturity / double( inNTerms - 1 );
     std::vector<double> lTerms( inNTerms + 2, 0 );
@@ -18,12 +16,19 @@ double testDifAnalytical( std::size_t inNTerms, std::size_t inNPath,
     {
         lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
     }
-    auto lsTerms  = std::make_shared<std::vector<double> >( lTerms );
-    auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-        inNPath, lsTerms );
+    return Process::MarketData::Terms( lTerms );
+}
 
-    Process::ShortRate::VasicekBuilder lBuilder;
-    lBuilder.setTerms( lsTerms );
+double testDifAnalytical( std::size_t inNTerms, std::size_t inNPath,
+                          double inMaturity, double inInitRate, double inVol,
+                          double inKappa, double inMean )
+{
+    auto lTerms   = makeTerms( inNTerms, inMaturity );
+    auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
+        inNPath, lTerms );
+
+    Process::ShortRateMC::VasicekBuilder lBuilder;
+    lBuilder.setTerms( lTerms );
     lBuilder.setRandom( std::move( luRandom ) );
     lBuilder.setNPath( inNPath );
     lBuilder.setInitSpotRate( inInitRate );
@@ -31,13 +36,13 @@ double testDifAnalytical( std::size_t inNTerms, std::size_t inNPath,
     lBuilder.setKappa( inKappa );
     lBuilder.setMean( inMean );
 
-    Process::ShortRate::Vasicek lVasicek = lBuilder.build();
-    lVasicek.build();
+    Process::ShortRateMC::Vasicek lVasicek = lBuilder.build();
+    Process::MarketData::ZCB lVasicekZCB( lVasicek.calcSpotRates() );
 
     double lResult = 0.0;
     for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
     {
-        double lNumerical  = lVasicek.priceZCB( 0, iTerm );
+        double lNumerical  = lVasicekZCB( 0.0, lTerms[iTerm] );
         double lAnalytical = lVasicek.analyticalPriceZCB( 0, iTerm );
         // std::cout << lNumerical << "," << lAnalytical << std::endl;
         lResult = std::max(
@@ -52,47 +57,44 @@ double testConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
                            std::size_t inSeed = 0 )
 {
     double lDt = inMaturity / double( inNTerms - 1 );
-    std::vector<double> lTerms( inNTerms + 2, 0 );
     std::vector<double> lZCB( inNTerms + 2, 1.0 );
-
     std::mt19937_64 lEngine( inSeed );
     std::uniform_real_distribution<double> lRandomGen(
-        ( inMeanDriftZCB - inVolDriftZCB ) / double( inNTerms + 2 ),
-        ( inMeanDriftZCB + inVolDriftZCB ) / double( inNTerms + 2 ) );
+        ( inMeanDriftZCB - inVolDriftZCB ) / double( inNTerms ),
+        ( inMeanDriftZCB + inVolDriftZCB ) / double( inNTerms ) );
 
     for ( std::size_t iTerm = 1; iTerm < inNTerms + 2; ++iTerm )
     {
-        lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
-        lZCB[iTerm]   = lZCB[iTerm - 1] - lRandomGen( lEngine );
+        lZCB[iTerm] = lZCB[iTerm - 1] - lRandomGen( lEngine );
     }
-    auto lsTerms  = std::make_shared<std::vector<double> >( lTerms );
+
+    auto lTerms   = makeTerms( inNTerms, inMaturity );
     auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-        inNPath, lsTerms );
+        inNPath, lTerms );
 
-    Process::Market::Data lMarketData( lsTerms );
-    lMarketData.setZCB( lZCB );
+    Process::MarketData::ZCB lMarketZCB( lTerms, lZCB );
 
-    Process::ShortRate::VasicekBuilder lBuilder;
-    lBuilder.setTerms( lsTerms );
+    Process::ShortRateMC::VasicekWithMarketBuilder lBuilder;
+    lBuilder.setTerms( lTerms );
     lBuilder.setNPath( inNPath );
     lBuilder.setVol( inVol );
     lBuilder.setKappa( inKappa );
-    lBuilder.setMarketData(
-        std::make_shared<Process::Market::Data>( lMarketData ) );
+    lBuilder.setMarketZCB( lMarketZCB );
     lBuilder.setRandom( std::move( luRandom ) );
 
-    Process::ShortRate::Vasicek lVasicek = lBuilder.build();
-    lVasicek.build();
+    Process::ShortRateMC::VasicekWithMarket lVasicek = lBuilder.build();
+    Process::MarketData::SpotRates lSpot             = lVasicek.calcSpotRates();
+    Process::MarketData::ZCB lVasicekZCB( lSpot, 3 );
 
     double lResult = 0.0;
 
     for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
     {
-        // std::cout << lZCB[iTerm] << "," << lVasicek.priceZCB( 0, iTerm )
-        //           << std::endl;
+        std::cout << lTerms[iTerm] << "," << lZCB[iTerm] << ","
+                  << lVasicekZCB[iTerm] << std::endl;
         lResult = std::max(
-            lResult, std::abs( ( lZCB[iTerm] - lVasicek.priceZCB( 0, iTerm ) ) /
-                               lZCB[iTerm] ) );
+            lResult,
+            std::abs( ( lZCB[iTerm] - lVasicekZCB[iTerm] ) / lZCB[iTerm] ) );
     }
     return lResult;
 }
@@ -106,9 +108,9 @@ TEST( ShortRateVasicekTest, DifAnalytical )
 TEST( ShortRateVasicekTest, ConsistencyZCB )
 {
     EXPECT_NEAR(
-        0.0, testConsistencyZCB( 100, 100000, 1.0, 0.05, 0.1, 0.1, 0.05, 0 ),
+        0.0, testConsistencyZCB( 100, 100000, 1.0, 0.05, 0.1, 0.1, 0.005, 0 ),
         0.01 );
     EXPECT_NEAR(
-        0.0, testConsistencyZCB( 100, 100000, 1.0, 0.15, 0.1, 0.1, 0.05, 0 ),
+        0.0, testConsistencyZCB( 100, 100000, 1.0, 0.15, 0.1, 0.1, 0.005, 10 ),
         0.01 );
 }

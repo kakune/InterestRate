@@ -3,10 +3,10 @@
 #include <iostream>
 #include <vector>
 
-#include "process/short_rate.hpp"
+#include "process/short_rate_MC.hpp"
+#include "process/short_rate_PDE.hpp"
 
-std::shared_ptr<std::vector<double> > makeTerms( std::size_t inNTerms,
-                                                 double inMaturity )
+Process::MarketData::Terms makeTerms( std::size_t inNTerms, double inMaturity )
 {
     double lDt = inMaturity / double( inNTerms - 1 );
     std::vector<double> lTerms( inNTerms + 5, 0 );
@@ -14,33 +14,43 @@ std::shared_ptr<std::vector<double> > makeTerms( std::size_t inNTerms,
     {
         lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
     }
-    return std::make_shared<std::vector<double> >( lTerms );
+    return Process::MarketData::Terms( lTerms );
 }
 
-Process::ShortRate::ConstantAffine rateBuild( std::size_t inNTerms,
-                                              std::size_t inNPath,
-                                              double inMaturity, double inRate,
-                                              double inLambda, double inEta,
-                                              double inGamma, double inDelta )
+Process::ShortRateMC::ConstantAffine rateBuild(
+    std::size_t inNTerms, std::size_t inNPath, double inMaturity, double inRate,
+    double inLambda, double inEta, double inGamma, double inDelta )
 {
-    Process::ShortRate::ConstantAffineBuilder lBuilder;
-    auto lsTerms = makeTerms( inNTerms, inMaturity );
+    Process::ShortRateMC::ConstantAffineBuilder lBuilder;
+    auto lTerms = makeTerms( inNTerms, inMaturity );
     lBuilder.setInitSpotRate( inRate );
     lBuilder.setNPath( 100 );
     lBuilder.setDrift( inLambda, inEta );
     lBuilder.setVol( inGamma, inDelta );
-    lBuilder.setTerms( lsTerms );
-    lBuilder.setRandom( std::make_unique<Process::Random::PathBrownAntithetic>(
-        100, lsTerms ) );
+    lBuilder.setTerms( lTerms );
+    lBuilder.setRandom(
+        std::make_unique<Process::Random::PathBrownAntithetic>( 100, lTerms ) );
     return lBuilder.build();
 }
+
+Process::ShortRatePDE::ConstantAffine rateBuildPDE(
+    double inStartTime, double inEndTime, double inStepTime, double inLambda,
+    double inEta, double inGamma, double inDelta )
+{
+    Process::ShortRatePDE::ConstantAffineBuilder lBuilder;
+    lBuilder.setRegTime( inStartTime, inEndTime );
+    lBuilder.setStepTime( inStepTime );
+    lBuilder.setDrift( inLambda, inEta );
+    lBuilder.setVol( inGamma, inDelta );
+    return lBuilder.build();
+}
+
 double testConstantPriceZCB( std::size_t inNTerms, std::size_t inNPath,
                              double inMaturity, double inRate )
 {
     auto lObj =
         rateBuild( inNTerms, inNPath, inMaturity, inRate, 0.0, 0.0, 0.0, 0.0 );
-    lObj.build();
-    return lObj.priceZCB( 0.0, inMaturity );
+    return Process::MarketData::ZCB( lObj.calcSpotRates() )( 0.0, inMaturity );
 }
 double testConstantForwardRate( std::size_t inNTerms, std::size_t inNPath,
                                 double inMaturity, double inRate,
@@ -48,8 +58,8 @@ double testConstantForwardRate( std::size_t inNTerms, std::size_t inNPath,
 {
     auto lObj =
         rateBuild( inNTerms, inNPath, inMaturity, inRate, 0.0, 0.0, 0.0, 0.0 );
-    lObj.build();
-    return lObj.forwardRate( inStartTime, inTerminalTime );
+    return Process::MarketData::ZCB( lObj.calcSpotRates() )
+        .forwardRate( inStartTime, inTerminalTime );
 }
 double testConstantInstantaneousForwardRate( std::size_t inNTerms,
                                              std::size_t inNPath,
@@ -58,8 +68,8 @@ double testConstantInstantaneousForwardRate( std::size_t inNTerms,
 {
     auto lObj =
         rateBuild( inNTerms, inNPath, inMaturity, inRate, 0.0, 0.0, 0.0, 0.0 );
-    lObj.build();
-    return lObj.instantaneousForwardRate( inFRTime );
+    return Process::MarketData::ZCB( lObj.calcSpotRates() )
+        .instantaneousForwardRate( inFRTime );
 }
 
 double testCIRPriceZCB( std::size_t inNTerms, std::size_t inNPath,
@@ -68,8 +78,7 @@ double testCIRPriceZCB( std::size_t inNTerms, std::size_t inNPath,
 {
     auto lObj = rateBuild( inNTerms, inNPath, inMaturity, inRate, -inK,
                            inK * inMean, inVol * inVol, 0.0 );
-    lObj.build();
-    return lObj.priceZCB( 0.0, inMaturity );
+    return Process::MarketData::ZCB( lObj.calcSpotRates() )( 0.0, inMaturity );
 }
 double testCIRInstantaneousForwardRate( std::size_t inNTerms,
                                         std::size_t inNPath, double inMaturity,
@@ -78,29 +87,31 @@ double testCIRInstantaneousForwardRate( std::size_t inNTerms,
 {
     auto lObj = rateBuild( inNTerms, inNPath, inMaturity, inRate, -inK,
                            inK * inMean, inVol * inVol, 0.0 );
-    lObj.build();
-    return lObj.instantaneousForwardRate( inMaturity );
+    return Process::MarketData::ZCB( lObj.calcSpotRates() )
+        .instantaneousForwardRate( inMaturity );
 }
 
-double testCIRPriceZCBByAB( std::size_t inNTerms, double inTimeMesh,
-                            double inMaturity, double inRate, double inK,
+double testCIRPriceZCBByAB( double inStartTime, double inMaturityTime,
+                            double inStepTime, double inRate, double inK,
                             double inMean, double inVol )
 {
-    auto lObj = rateBuild( inNTerms, 1, inMaturity, inRate, -inK, inK * inMean,
-                           inVol * inVol, 0.0 );
-    lObj.buildAB( inTimeMesh );
-    return lObj.priceZCBByAB( inMaturity );
+    auto lObj = rateBuildPDE( inStartTime - 10.0 * inStepTime,
+                              inMaturityTime + 10.0 * inStepTime, inStepTime,
+                              -inK, inK * inMean, inVol * inVol, 0.0 );
+    return lObj.priceZCBObservedAtArbitraryTime( 0.0, 0.0, inMaturityTime,
+                                                 inRate );
 }
-double testCIRInstantaneousForwardRateByAB( std::size_t inNTerms,
-                                            double inTimeMesh,
-                                            double inMaturity, double inRate,
+double testCIRInstantaneousForwardRateByAB( double inStartTime,
+                                            double inMaturityTime,
+                                            double inStepTime, double inRate,
                                             double inK, double inMean,
                                             double inVol )
 {
-    auto lObj = rateBuild( inNTerms, 1, inMaturity, inRate, -inK, inK * inMean,
-                           inVol * inVol, 0.0 );
-    lObj.buildAB( inTimeMesh );
-    return lObj.instantaneousForwardRateByAB( inMaturity );
+    auto lObj = rateBuildPDE( inStartTime - 10.0 * inStepTime,
+                              inMaturityTime + 10.0 * inStepTime, inStepTime,
+                              -inK, inK * inMean, inVol * inVol, 0.0 );
+    return lObj.instantaneousForwardRateAtArbitraryTime( 0.0, inMaturityTime,
+                                                         inRate );
 }
 
 TEST( ShortRateConstantAffineTest, Constant )
@@ -152,24 +163,24 @@ TEST( ShortRateConstantAffineTest, CIR )
         0.005 );
 
     EXPECT_NEAR( 0.987862017045984,
-                 testCIRPriceZCBByAB( 50.0, 50.0, 1.0, 0.01, 0.05, 0.1, 0.02 ),
+                 testCIRPriceZCBByAB( 0.0, 1.0, 0.015, 0.01, 0.05, 0.1, 0.02 ),
                  0.001 );
     EXPECT_NEAR( 0.3685782372351295,
-                 testCIRPriceZCBByAB( 50.0, 50.0, 10.0, 0.1, 0.2, 0.1, 0.02 ),
+                 testCIRPriceZCBByAB( 0.0, 10.0, 0.1, 0.1, 0.2, 0.1, 0.02 ),
                  0.001 );
     EXPECT_NEAR( 0.913980503378077,
-                 testCIRPriceZCBByAB( 50.0, 50.0, 0.1, 0.9, 0.0, 0.7, 0.6 ),
+                 testCIRPriceZCBByAB( 0.0, 0.1, 0.0015, 0.9, 0.0, 0.7, 0.6 ),
                  0.001 );
     EXPECT_NEAR( 0.0143871638049957,
-                 testCIRInstantaneousForwardRateByAB( 50.0, 100.0, 1.0, 0.01,
+                 testCIRInstantaneousForwardRateByAB( 0.0, 1.0, 0.015, 0.01,
                                                       0.05, 0.1, 0.02 ),
                  0.003 );
     EXPECT_NEAR( 0.0996280717912332,
-                 testCIRInstantaneousForwardRateByAB( 50.0, 100.0, 10.0, 0.1,
-                                                      0.2, 0.1, 0.02 ),
+                 testCIRInstantaneousForwardRateByAB( 0.0, 10.0, 0.8, 0.1, 0.2,
+                                                      0.1, 0.02 ),
                  0.001 );
     EXPECT_NEAR( 0.898381942018978,
-                 testCIRInstantaneousForwardRateByAB( 50.0, 100.0, 0.1, 0.9,
+                 testCIRInstantaneousForwardRateByAB( 0.0, 0.1, 0.0015, 0.9,
                                                       0.0, 0.7, 0.6 ),
                  0.005 );
 }

@@ -15,9 +15,9 @@ double testInterpPolynomial( double inX, double inShift, double inDeg,
     {
         lSampleYs.at( iX ) = pow( inSampleXs.at( iX ) + inShift, inDeg );
     }
-    Math::Interpolate1D::NewtonSpline lSpline( inInterpDeg );
-    lSpline.build( std::make_shared<std::vector<double>>( inSampleXs ),
-                   std::make_shared<std::vector<double>>( lSampleYs ) );
+    Math::Interpolate1D::NewtonSpline lSpline(
+        std::make_shared<std::vector<double>>( inSampleXs ),
+        std::make_shared<std::vector<double>>( lSampleYs ), inInterpDeg );
     return lSpline( inX );
 }
 
@@ -30,9 +30,9 @@ double testDerivPolynomial( double inX, double inShift, double inDeg,
     {
         lSampleYs.at( iX ) = pow( inSampleXs.at( iX ) + inShift, inDeg );
     }
-    Math::Interpolate1D::NewtonSpline lSpline( inInterpDeg );
-    lSpline.build( std::make_shared<std::vector<double>>( inSampleXs ),
-                   std::make_shared<std::vector<double>>( lSampleYs ) );
+    Math::Interpolate1D::NewtonSpline lSpline(
+        std::make_shared<std::vector<double>>( inSampleXs ),
+        std::make_shared<std::vector<double>>( lSampleYs ), inInterpDeg );
     return lSpline.deriv( inX, inOrderDeriv );
 }
 
@@ -46,10 +46,9 @@ double testIntegralPolynomial( double inLeftInterval, double inRightInterval,
     {
         lSampleYs.at( iX ) = pow( inSampleXs.at( iX ) + inShift, inDeg );
     }
-    Math::Interpolate1D::NewtonSpline lSpline( inInterpDeg );
-    lSpline.build( std::make_shared<std::vector<double>>( inSampleXs ),
-                   std::make_shared<std::vector<double>>( lSampleYs ) );
-    lSpline.buildIntegral();
+    Math::Interpolate1D::NewtonSpline lSpline(
+        std::make_shared<std::vector<double>>( inSampleXs ),
+        std::make_shared<std::vector<double>>( lSampleYs ), inInterpDeg );
     return lSpline.integral( inLeftInterval, inRightInterval );
 }
 

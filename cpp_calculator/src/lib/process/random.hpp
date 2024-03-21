@@ -12,6 +12,8 @@
 #include <random>
 #include <vector>
 
+#include "market_data.hpp"
+
 namespace Process
 {
 namespace Random
@@ -24,10 +26,11 @@ class PathAbstract
 {
 protected:
     std::size_t mNPath;  //! the number of Path
-    std::shared_ptr< const std::vector< double > > msTerms;  //! term structure
-    std::vector< std::vector< double > >
-        mRandomValues;        //! generated random values
-    std::size_t mIndTmpTime;  //! the index of temporary time
+    std::vector<std::vector<double> >
+        mRandomValues;         //! generated random values
+    std::size_t mIndTmpTime;   //! the index of temporary time
+    MarketData::Terms mTerms;  //! term structure
+
 public:
     /**
      * @brief This constructs a new PathAbstract.
@@ -35,8 +38,12 @@ public:
      * @param insTerms shared pointer of the term structure
      */
     PathAbstract( std::size_t inNPath,
-                  std::shared_ptr< const std::vector< double > > insTerms ) :
-        mNPath( inNPath ), msTerms( insTerms )
+                  std::shared_ptr<const std::vector<double> > insTerms ) :
+        mNPath( inNPath ), mTerms( insTerms )
+    {
+    }
+    PathAbstract( std::size_t inNPath, const MarketData::Terms& inTerms ) :
+        mNPath( inNPath ), mTerms( inTerms )
     {
     }
     /**
@@ -44,7 +51,7 @@ public:
      * @param inIndPath index of path
      * @return const std::vector<double>& nth random path
      */
-    const std::vector< double >& operator[]( std::size_t inIndPath ) const
+    const std::vector<double>& operator[]( std::size_t inIndPath ) const
     {
         return mRandomValues.at( inIndPath );
     }
@@ -53,7 +60,7 @@ public:
      * @param inIndPath index of path
      * @return const std::vector<double>& nth random path
      */
-    const std::vector< double >& at( std::size_t inIndPath ) const
+    const std::vector<double>& at( std::size_t inIndPath ) const
     {
         return mRandomValues.at( inIndPath );
     }
@@ -91,12 +98,18 @@ private:
     double mTmpSqrtInterval;
     std::random_device mDevice;
     std::mt19937 mGenerator;
-    std::normal_distribution< double > mDistribution;
+    std::normal_distribution<double> mDistribution;
 
 public:
     PathBrownPlain( std::size_t inNPath,
-                    std::shared_ptr< const std::vector< double > > insTerms ) :
+                    std::shared_ptr<const std::vector<double> > insTerms ) :
         PathAbstract( inNPath, insTerms ),
+        mGenerator( mDevice() ),
+        mDistribution( 0.0, 1.0 )
+    {
+    }
+    PathBrownPlain( std::size_t inNPath, const MarketData::Terms& inTerms ) :
+        PathAbstract( inNPath, inTerms ),
         mGenerator( mDevice() ),
         mDistribution( 0.0, 1.0 )
     {
@@ -104,8 +117,7 @@ public:
     void setIndexTime( std::size_t inIndex ) override
     {
         PathAbstract::setIndexTime( inIndex );
-        mTmpSqrtInterval =
-            std::sqrt( msTerms->at( inIndex ) - msTerms->at( inIndex - 1 ) );
+        mTmpSqrtInterval = std::sqrt( mTerms[inIndex] - mTerms[inIndex - 1] );
     }
     double generateRandomVal() override;
 };
@@ -122,13 +134,21 @@ private:
     double mPrevRandomValue;
     std::random_device mDevice;
     std::mt19937 mGenerator;
-    std::normal_distribution< double > mDistribution;
+    std::normal_distribution<double> mDistribution;
 
 public:
     PathBrownAntithetic(
         std::size_t inNPath,
-        std::shared_ptr< const std::vector< double > > insTerms ) :
+        std::shared_ptr<const std::vector<double> > insTerms ) :
         PathAbstract( inNPath, insTerms ),
+        mIsNextNew( true ),
+        mGenerator( mDevice() ),
+        mDistribution( 0.0, 1.0 )
+    {
+    }
+    PathBrownAntithetic( std::size_t inNPath,
+                         const MarketData::Terms& inTerms ) :
+        PathAbstract( inNPath, inTerms ),
         mIsNextNew( true ),
         mGenerator( mDevice() ),
         mDistribution( 0.0, 1.0 )
@@ -137,9 +157,8 @@ public:
     void setIndexTime( std::size_t inIndex ) override
     {
         PathAbstract::setIndexTime( inIndex );
-        mTmpSqrtInterval =
-            std::sqrt( msTerms->at( inIndex ) - msTerms->at( inIndex - 1 ) );
-        mIsNextNew = true;
+        mTmpSqrtInterval = std::sqrt( mTerms[inIndex] - mTerms[inIndex - 1] );
+        mIsNextNew       = true;
     }
     double generateRandomVal() override;
 };

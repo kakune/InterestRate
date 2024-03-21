@@ -37,6 +37,9 @@ protected:
     virtual double radial( double inDist ) const                = 0;
     virtual double derivRadial( double inDist,
                                 std::size_t inOrder = 1 ) const = 0;
+    void build(
+        std::vector<std::shared_ptr<const std::vector<double>>> insRefVars,
+        std::shared_ptr<const std::vector<double>> insRefVals );
 
 public:
     RBFAbstract( double inMinDistance = 0.2, double inFactorDecay = 0.001 ) :
@@ -47,9 +50,6 @@ public:
         mCoeffs( 0 )
     {
     }
-    void build(
-        std::vector<std::shared_ptr<const std::vector<double>>> insRefVars,
-        std::shared_ptr<const std::vector<double>> insRefVals );
 
     double operator()( const std::vector<double>& inVar ) const;
     double deriv( const std::vector<double>& inVar, std::size_t inDim,
@@ -63,9 +63,13 @@ private:
     double derivRadial( double inDist, std::size_t inOrder = 1 ) const override;
 
 public:
-    RBFGaussian( double inMinDistance = 0.2, double inFactorDecay = 0.001 ) :
+    RBFGaussian(
+        std::vector<std::shared_ptr<const std::vector<double>>> insRefVars,
+        std::shared_ptr<const std::vector<double>> insRefVals,
+        double inMinDistance = 0.2, double inFactorDecay = 0.001 ) :
         RBFAbstract( inMinDistance, inFactorDecay )
     {
+        build( insRefVars, insRefVals );
     }
 };
 

@@ -22,17 +22,17 @@ namespace Random
 void PathAbstract::initRandomValues()
 {
     if ( mRandomValues.size() == mNPath &&
-         mRandomValues.at( 0 ).size() == msTerms->size() )
+         mRandomValues.at( 0 ).size() == mTerms.size() )
     {
         return;
     }
-    mRandomValues.resize( mNPath, std::vector< double >( msTerms->size() ) );
+    mRandomValues.resize( mNPath, std::vector<double>( mTerms.size() ) );
 }
 
 void PathAbstract::makePath()
 {
     initRandomValues();
-    for ( std::size_t iTerm = 1; iTerm < msTerms->size(); ++iTerm )
+    for ( std::size_t iTerm = 1; iTerm < mTerms.size(); ++iTerm )
     {
         setIndexTime( iTerm );
         for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
@@ -46,7 +46,7 @@ void PathAbstract::makePath()
 void PathAbstract::makeRandomVariables()
 {
     initRandomValues();
-    for ( std::size_t iTerm = 1; iTerm < msTerms->size(); ++iTerm )
+    for ( std::size_t iTerm = 1; iTerm < mTerms.size(); ++iTerm )
     {
         setIndexTime( iTerm );
         for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )

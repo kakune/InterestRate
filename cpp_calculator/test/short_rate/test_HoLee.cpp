@@ -5,39 +5,44 @@
 #include <random>
 #include <vector>
 
-#include "process/market.hpp"
+#include "process/market_data.hpp"
 #include "process/random.hpp"
-#include "process/short_rate.hpp"
+#include "process/short_rate_MC.hpp"
+
+Process::MarketData::Terms makeTerms( std::size_t inNTerms, double inMaturity )
+{
+    double lDt = inMaturity / double( inNTerms - 1 );
+    std::vector<double> lTerms( inNTerms + 2, 0 );
+    for ( std::size_t iTerm = 1; iTerm < inNTerms + 2; ++iTerm )
+    {
+        lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
+    }
+    return Process::MarketData::Terms( lTerms );
+}
 
 double testDifAnalytical( std::size_t inNTerms, std::size_t inNPath,
                           double inMaturity, double inInitialRate,
                           double inVol )
 {
-    double lDt = inMaturity / double( inNTerms - 1 );
-    std::vector<double> lTerms( inNTerms + 1, 0 );
-    for ( std::size_t iTerm = 1; iTerm < inNTerms + 1; ++iTerm )
-    {
-        lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
-    }
-    auto lsTerms  = std::make_shared<std::vector<double> >( lTerms );
+    auto lTerms   = makeTerms( inNTerms, inMaturity );
     auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-        inNPath, lsTerms );
+        inNPath, lTerms );
 
-    Process::ShortRate::HoLeeBuilder lBuilder;
-    lBuilder.setTerms( lsTerms );
+    Process::ShortRateMC::HoLeeBuilder lBuilder;
+    lBuilder.setTerms( lTerms );
     lBuilder.setNPath( inNPath );
     lBuilder.setVol( inVol );
     lBuilder.setInitSpotRate( inInitialRate );
     lBuilder.setRandom( std::move( luRandom ) );
 
-    Process::ShortRate::HoLee lHoLee = lBuilder.build();
-    lHoLee.build();
+    Process::ShortRateMC::HoLee lHoLee = lBuilder.build();
+    Process::MarketData::ZCB lHoLeeZCB( lHoLee.calcSpotRates() );
 
     double lResult = 0.0;
     for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
     {
-        double lNumerical  = lHoLee.priceZCB( 0, iTerm );
-        double lAnalytical = lHoLee.analyticalPriceZCB( 0, iTerm );
+        double lNumerical  = lHoLeeZCB( 0.0, lTerms[iTerm] );
+        double lAnalytical = lHoLee.analyticalPriceZCB( 0.0, lTerms[iTerm] );
         // std::cout << lNumerical << "," << lAnalytical << std::endl;
         lResult = std::max(
             lResult, std::abs( lNumerical - lAnalytical ) / lAnalytical );
@@ -51,46 +56,41 @@ double testConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
                            std::size_t inSeed = 0 )
 {
     double lDt = inMaturity / double( inNTerms - 1 );
-    std::vector<double> lTerms( inNTerms + 2, 0 );
     std::vector<double> lZCB( inNTerms + 2, 1.0 );
-
     std::mt19937_64 lEngine( inSeed );
     std::uniform_real_distribution<double> lRandomGen(
-        ( inMeanDriftZCB - inVolDriftZCB ) / double( inNTerms + 2 ),
-        ( inMeanDriftZCB + inVolDriftZCB ) / double( inNTerms + 2 ) );
+        ( inMeanDriftZCB - inVolDriftZCB ) / double( inNTerms ),
+        ( inMeanDriftZCB + inVolDriftZCB ) / double( inNTerms ) );
 
     for ( std::size_t iTerm = 1; iTerm < inNTerms + 2; ++iTerm )
     {
-        lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
-        lZCB[iTerm]   = lZCB[iTerm - 1] - lRandomGen( lEngine );
+        lZCB[iTerm] = lZCB[iTerm - 1] - lRandomGen( lEngine );
     }
-    auto lsTerms  = std::make_shared<std::vector<double> >( lTerms );
+
+    auto lTerms   = makeTerms( inNTerms, inMaturity );
     auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-        inNPath, lsTerms );
+        inNPath, lTerms );
 
-    Process::Market::Data lMarketData( lsTerms );
-    lMarketData.setZCB( lZCB );
+    Process::MarketData::ZCB lMarketZCB( lTerms, lZCB );
 
-    Process::ShortRate::HoLeeBuilder lBuilder;
-    lBuilder.setTerms( lsTerms );
+    Process::ShortRateMC::HoLeeWithMarketBuilder lBuilder;
+    lBuilder.setTerms( lTerms );
     lBuilder.setNPath( inNPath );
     lBuilder.setVol( inVol );
-    lBuilder.setMarketData(
-        std::make_shared<Process::Market::Data>( lMarketData ) );
+    lBuilder.setMarketZCB( lMarketZCB );
     lBuilder.setRandom( std::move( luRandom ) );
 
-    Process::ShortRate::HoLee lHoLee = lBuilder.build();
-    lHoLee.build();
+    Process::ShortRateMC::HoLeeWithMarket lHoLee = lBuilder.build();
+    Process::MarketData::ZCB lHoLeeZCB( lHoLee.calcSpotRates(), 2 );
 
     double lResult = 0.0;
 
     for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
     {
-        // std::cout << lZCB[iTerm] << "," << lHoLee.priceZCB( 0, iTerm )
-        //           << std::endl;
+        // std::cout << lZCB[iTerm] << "," << lHoLeeZCB[iTerm] << std::endl;
         lResult = std::max(
-            lResult, std::abs( ( lZCB[iTerm] - lHoLee.priceZCB( 0, iTerm ) ) /
-                               lZCB[iTerm] ) );
+            lResult,
+            std::abs( ( lZCB[iTerm] - lHoLeeZCB[iTerm] ) / lZCB[iTerm] ) );
     }
     return lResult;
 }

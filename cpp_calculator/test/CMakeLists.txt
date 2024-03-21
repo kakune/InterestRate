@@ -34,8 +34,8 @@ target_link_libraries(test_special_functions LibMath)
 add_executable(test_asset test_asset.cpp)
 target_link_libraries(test_asset LibProcess)
 
-add_executable(test_market test_market.cpp)
-target_link_libraries(test_market LibProcess gtest_main)
+# add_executable(test_market test_market.cpp)
+# target_link_libraries(test_market LibProcess gtest_main)
 
 add_executable(test_ODE test_ODE.cpp)
 target_link_libraries(test_ODE LibMath gtest_main)

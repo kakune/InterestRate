@@ -3,22 +3,21 @@
 #include <iostream>
 #include <vector>
 
-#include "process/short_rate.hpp"
+#include "process/short_rate_MC.hpp"
 
 double testConstantPriceZCB( std::size_t inNTerms, std::size_t inNPath,
                              double inMaturity, double inRate )
 {
     double lDt = inMaturity / double( inNTerms - 1 );
-    std::vector<double> lTerms( inNTerms + 1, 0 );
+    std::vector<double> lTermsVec( inNTerms + 1, 0 );
     for ( std::size_t iTerm = 1; iTerm < inNTerms + 1; ++iTerm )
     {
-        lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
+        lTermsVec[iTerm] = lTermsVec[iTerm - 1] + lDt;
     }
-    auto lsTerms = std::make_shared<std::vector<double> >( lTerms );
+    auto lTerms = Process::MarketData::Terms( lTermsVec );
 
-    Process::ShortRate::ConstantRate lObj( lsTerms, nullptr, inRate );
-    lObj.build();
-    return lObj.priceZCB( 0.0, inMaturity );
+    Process::ShortRateMC::ConstantRate lObj( lTerms, inRate );
+    return Process::MarketData::ZCB( lObj.calcSpotRates() )( 0.0, inMaturity );
 }
 
 double testConstantForwardRate( std::size_t inNTerms, std::size_t inNPath,
@@ -26,16 +25,16 @@ double testConstantForwardRate( std::size_t inNTerms, std::size_t inNPath,
                                 double inStartTime, double inTerminalTime )
 {
     double lDt = inMaturity / double( inNTerms - 1 );
-    std::vector<double> lTerms( inNTerms + 1, 0.0 );
+    std::vector<double> lTermsVec( inNTerms + 1, 0.0 );
     for ( std::size_t iTerm = 1; iTerm < inNTerms + 1; ++iTerm )
     {
-        lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
+        lTermsVec[iTerm] = lTermsVec[iTerm - 1] + lDt;
     }
-    auto lsTerms = std::make_shared<std::vector<double> >( lTerms );
+    auto lTerms = Process::MarketData::Terms( lTermsVec );
 
-    Process::ShortRate::ConstantRate lObj( lsTerms, nullptr, inRate );
-    lObj.build();
-    return lObj.forwardRate( inStartTime, inTerminalTime );
+    Process::ShortRateMC::ConstantRate lObj( lTerms, inRate );
+    return Process::MarketData::ZCB( lObj.calcSpotRates() )
+        .forwardRate( inStartTime, inTerminalTime );
 }
 
 double testConstantInstantaneousForwardRate( std::size_t inNTerms,
@@ -44,16 +43,16 @@ double testConstantInstantaneousForwardRate( std::size_t inNTerms,
                                              double inFRTime )
 {
     double lDt = inMaturity / double( inNTerms - 1 );
-    std::vector<double> lTerms( inNTerms + 1, 0 );
+    std::vector<double> lTermsVec( inNTerms + 1, 0 );
     for ( std::size_t iTerm = 1; iTerm < inNTerms + 1; ++iTerm )
     {
-        lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
+        lTermsVec[iTerm] = lTermsVec[iTerm - 1] + lDt;
     }
-    auto lsTerms = std::make_shared<std::vector<double> >( lTerms );
+    auto lTerms = Process::MarketData::Terms( lTermsVec );
 
-    Process::ShortRate::ConstantRate lObj( lsTerms, nullptr, inRate );
-    lObj.build();
-    return lObj.instantaneousForwardRate( inFRTime );
+    Process::ShortRateMC::ConstantRate lObj( lTerms, inRate );
+    return Process::MarketData::ZCB( lObj.calcSpotRates() )
+        .instantaneousForwardRate( inFRTime );
 }
 
 TEST( ShortRateConstantTest, PriceZCB )

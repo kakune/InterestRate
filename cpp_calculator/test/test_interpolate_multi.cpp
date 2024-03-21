@@ -23,9 +23,9 @@ double testRBFGaussianPolynomial1D( double inX, double inShift, double inDeg,
     {
         lSampleYs.at( iX ) = pow( lSampleXs.at( iX ) + inShift, inDeg );
     }
-    Math::InterpolateMulti::RBFGaussian lSpline( 0.2, 0.001 );
-    lSpline.build( { std::make_shared<std::vector<double>>( lSampleXs ) },
-                   std::make_shared<std::vector<double>>( lSampleYs ) );
+    Math::InterpolateMulti::RBFGaussian lSpline(
+        { std::make_shared<std::vector<double>>( lSampleXs ) },
+        std::make_shared<std::vector<double>>( lSampleYs ), 0.2, 0.001 );
     double lResult;
     if ( inDerivOrder > 0 )
     {
@@ -65,10 +65,10 @@ double testRBFGaussianPolynomial2D(
             pow( lSampleXs[iX] + inShift.first, inDeg.first ) *
             pow( lSampleYs[iX] + inShift.second, inDeg.second );
     }
-    Math::InterpolateMulti::RBFGaussian lSpline( 0.2, 0.001 );
-    lSpline.build( { std::make_shared<std::vector<double>>( lSampleXs ),
-                     std::make_shared<std::vector<double>>( lSampleYs ) },
-                   std::make_shared<std::vector<double>>( lSampleVals ) );
+    Math::InterpolateMulti::RBFGaussian lSpline(
+        { std::make_shared<std::vector<double>>( lSampleXs ),
+          std::make_shared<std::vector<double>>( lSampleYs ) },
+        std::make_shared<std::vector<double>>( lSampleVals ), 0.2, 0.001 );
     double lResult;
     if ( inDerivOrder > 0 )
     {

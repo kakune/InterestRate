@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "prepare_model.hpp"
-#include "process/market.hpp"
+#include "process/market_data.hpp"
 #include "utils/csv.hpp"
 #include "utils/parameters.hpp"
 
@@ -38,16 +38,15 @@ int main( int argc, char* argv[] )
                  -lMapMarket["Maturity"][i] / lParamsMarket( "Compound" ) ) );
     }
 
-    Process::Market::Data lMarketData(
-        std::make_shared<std::vector<double> >( lMapMarket["Maturity"] ), 100,
-        2 );
-    lMarketData.setZCB( lMapMarket["ZCB"] );
+    Process::MarketData::ZCB lMarketZCB(
+        Process::MarketData::Terms( lMapMarket["Maturity"] ),
+        lMapMarket["ZCB"] );
 
-    auto lsTerms = APP::ShortRate::prepareTerms( lParams );
-    std::unique_ptr<Process::ShortRate::ModelAbstract> luModel =
-        APP::ShortRate::prepareModelFromMarket( lNameModel, lParams, lsTerms,
-                                                lMarketData );
-    luModel->build();
+    Process::MarketData::Terms lTerms = APP::ShortRate::prepareTerms( lParams );
+    std::unique_ptr<Process::ShortRateMC::ModelAbstract> luModel =
+        APP::ShortRate::prepareModelFromMarket( lNameModel, lParams, lTerms,
+                                                lMarketZCB );
+    Process::MarketData::ZCB lZCB( luModel->calcSpotRates() );
 
     std::ofstream lFileOutput( lPathOutput );
     if ( lFileOutput.is_open() )
@@ -55,21 +54,19 @@ int main( int argc, char* argv[] )
         lFileOutput
             << "Start,Maturity,PriceZCB,ForwardRate,InstantaneousForwardRate"
             << std::endl;
-        for ( std::size_t iStart = 0; iStart < lsTerms->size(); ++iStart )
+        for ( std::size_t iStart = 0; iStart < lTerms.size(); ++iStart )
         {
-            double lTmpStartTime = lsTerms->operator[]( iStart );
-            for ( std::size_t iMaturity = iStart + 1;
-                  iMaturity < lsTerms->size(); ++iMaturity )
+            double lTmpStartTime = lTerms[iStart];
+            for ( std::size_t iMaturity = iStart + 1; iMaturity < lTerms.size();
+                  ++iMaturity )
             {
-                double lTmpMaturityTime = lsTerms->operator[]( iMaturity );
+                double lTmpMaturityTime = lTerms[iMaturity];
                 lFileOutput
                     << std::setprecision( 12 ) << lTmpStartTime << ","
                     << lTmpMaturityTime << ","
-                    << luModel->priceZCB( lTmpStartTime, lTmpMaturityTime )
-                    << ","
-                    << luModel->forwardRate( lTmpStartTime, lTmpMaturityTime )
-                    << ","
-                    << luModel->instantaneousForwardRate( lTmpMaturityTime )
+                    << lZCB( lTmpStartTime, lTmpMaturityTime ) << ","
+                    << lZCB.forwardRate( lTmpStartTime, lTmpMaturityTime )
+                    << "," << lZCB.instantaneousForwardRate( lTmpMaturityTime )
                     << std::endl;
             }
         }
