@@ -21,9 +21,6 @@ double HoLee::driftCoeff(
     const std::vector<std::vector<double>>& inSpots ) const
 {
     return 0.0;
-    // return msMarketData->mInterpInstantaneousForwardRate.deriv(
-    //            mTerms[inIndTerm - 1], 1 ) +
-    //        mVol2 * ( mTerms[inIndTerm - 1] - mTerms.front() );
 }
 double HoLee::volCoeff( std::size_t inIndPath, std::size_t inIndTerm,
                         const std::vector<std::vector<double>>& inSpots ) const

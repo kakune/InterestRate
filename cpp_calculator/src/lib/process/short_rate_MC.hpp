@@ -8,8 +8,8 @@
 #ifndef PROCESS_SHORT_RATE_MC_HPP
 #define PROCESS_SHORT_RATE_MC_HPP
 
-#include "short_rate_MC/core.hpp"
-#include "short_rate_MC/one-factor_Affine.hpp"
-#include "short_rate_MC/one-factor_Gauss.hpp"
+#include "short_rate_MC_one/Affine.hpp"
+#include "short_rate_MC_one/Gauss.hpp"
+#include "short_rate_MC_one/core.hpp"
 
 #endif

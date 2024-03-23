@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "process/market_data.hpp"
-#include "process/short_rate_MC/core.hpp"
+#include "process/short_rate_MC_one/core.hpp"
 
 namespace Process
 {
@@ -90,7 +90,7 @@ public:
         std::size_t inNPath, const MarketData::Terms inTerms,
         std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
         double inVol, const MarketData::ZCB& inMarketZCB ) :
-        OneFactorAbstract( inNPath, inTerms, inMarketZCB.initSpotRate(),
+        OneFactorAbstract( inNPath, inTerms, inMarketZCB.initialSpotRate(),
                            std::move( inuRandomPath ) ),
         mVol( inVol ),
         mVol2( inVol * inVol ),
@@ -204,9 +204,8 @@ public:
     VasicekWithMarket(
         std::size_t inNPath, const MarketData::Terms inTerms,
         std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
-        double inVol, double inKappa,
-        const MarketData::ZCB& inMarketZCB ) :
-        OneFactorAbstract( inNPath, inTerms, inMarketZCB.initSpotRate(),
+        double inVol, double inKappa, const MarketData::ZCB& inMarketZCB ) :
+        OneFactorAbstract( inNPath, inTerms, inMarketZCB.initialSpotRate(),
                            std::move( inuRandomPath ) ),
         mVol( inVol ),
         mKappa( inKappa ),
@@ -398,7 +397,7 @@ public:
                    Math::Interpolate1D::NewtonSpline inInterpVol,
                    Math::Interpolate1D::NewtonSpline inInterpKappa,
                    MarketData::ZCB inMarketZCB ) :
-        OneFactorAbstract( inNPath, inTerms, inMarketZCB.initSpotRate(),
+        OneFactorAbstract( inNPath, inTerms, inMarketZCB.initialSpotRate(),
                            std::move( inuRandomPath ) ),
         mInterpVol( inInterpVol ),
         mInterpKappa( inInterpKappa ),

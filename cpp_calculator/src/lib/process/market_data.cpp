@@ -1,6 +1,6 @@
 /**
  * @file interpolate_1d.cpp
- * @brief This implements classes for market data. 
+ * @brief This implements classes for market data.
  * @author kakune
  * @date 3/21/2024
  */
@@ -159,7 +159,7 @@ double ZCB::derivInstantaneousForwardRate( double inTime ) const
     double lP2   = msSpline->deriv( inTime, 2 );
     return ( -lP2 + lP1 * lP1 * lInvP ) * lInvP;
 }
-double ZCB::initSpotRate() const
+double ZCB::initialSpotRate() const
 {
     return instantaneousForwardRate( 0.95 * mTerms[0] + 0.05 * mTerms[1] );
 }

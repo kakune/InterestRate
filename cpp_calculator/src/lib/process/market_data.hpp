@@ -159,7 +159,7 @@ public:
      * @brief This gives the spot rate at term[0].
      * @return double r(Term[0])
      */
-    double initSpotRate() const;
+    double initialSpotRate() const;
 };
 
 ;
