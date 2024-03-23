@@ -14,7 +14,7 @@
 
 namespace Process
 {
-namespace ShortRateMC
+namespace ShortRateMCOne
 {
 
 MarketData::SpotRates ModelAbstract::calcSpotRates() const
@@ -59,5 +59,5 @@ MarketData::SpotRates OneFactorAbstract::calcSpotRates() const
     return MarketData::SpotRates( mTerms, lSpots );
 }
 
-}  // namespace ShortRateMC
+}  // namespace ShortRateMCOne
 }  // namespace Process

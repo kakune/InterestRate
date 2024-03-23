@@ -43,7 +43,7 @@ int main( int argc, char* argv[] )
         lMapMarket["ZCB"] );
 
     Process::MarketData::Terms lTerms = APP::ShortRate::prepareTerms( lParams );
-    std::unique_ptr<Process::ShortRateMC::ModelAbstract> luModel =
+    std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> luModel =
         APP::ShortRate::prepareModelFromMarket( lNameModel, lParams, lTerms,
                                                 lMarketZCB );
     Process::MarketData::ZCB lZCB( luModel->calcSpotRates() );

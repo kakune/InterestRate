@@ -16,7 +16,7 @@
 
 namespace Process
 {
-namespace ShortRateMC
+namespace ShortRateMCOne
 {
 
 double ConstantAffine::driftCoeff(
@@ -32,5 +32,5 @@ double ConstantAffine::volCoeff(
     return std::sqrt( mGamma * inSpots[inIndPath][inIndTerm - 1] + mDelta );
 }
 
-}  // namespace ShortRateMC
+}  // namespace ShortRateMCOne
 }  // namespace Process

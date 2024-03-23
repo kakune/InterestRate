@@ -28,14 +28,14 @@ double testDifAnalytical( std::size_t inNTerms, std::size_t inNPath,
     auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
         inNPath, lTerms );
 
-    Process::ShortRateMC::HoLeeBuilder lBuilder;
+    Process::ShortRateMCOne::HoLeeBuilder lBuilder;
     lBuilder.setTerms( lTerms );
     lBuilder.setNPath( inNPath );
     lBuilder.setVol( inVol );
     lBuilder.setInitSpotRate( inInitialRate );
     lBuilder.setRandom( std::move( luRandom ) );
 
-    Process::ShortRateMC::HoLee lHoLee = lBuilder.build();
+    Process::ShortRateMCOne::HoLee lHoLee = lBuilder.build();
     Process::MarketData::ZCB lHoLeeZCB( lHoLee.calcSpotRates() );
 
     double lResult = 0.0;
@@ -73,14 +73,14 @@ double testConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
 
     Process::MarketData::ZCB lMarketZCB( lTerms, lZCB );
 
-    Process::ShortRateMC::HoLeeWithMarketBuilder lBuilder;
+    Process::ShortRateMCOne::HoLeeWithMarketBuilder lBuilder;
     lBuilder.setTerms( lTerms );
     lBuilder.setNPath( inNPath );
     lBuilder.setVol( inVol );
     lBuilder.setMarketZCB( lMarketZCB );
     lBuilder.setRandom( std::move( luRandom ) );
 
-    Process::ShortRateMC::HoLeeWithMarket lHoLee = lBuilder.build();
+    Process::ShortRateMCOne::HoLeeWithMarket lHoLee = lBuilder.build();
     Process::MarketData::ZCB lHoLeeZCB( lHoLee.calcSpotRates(), 2 );
 
     double lResult = 0.0;

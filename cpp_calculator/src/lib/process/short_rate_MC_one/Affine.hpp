@@ -19,7 +19,7 @@
 
 namespace Process
 {
-namespace ShortRateMC
+namespace ShortRateMCOne
 {
 
 /**
@@ -80,7 +80,7 @@ public:
     }
 };
 
-}  // namespace ShortRateMC
+}  // namespace ShortRateMCOne
 }  // namespace Process
 
 #endif

@@ -21,7 +21,7 @@ int main( int argc, char* argv[] )
     lParams.setNameCurrentSection( lNameSection );
 
     Process::MarketData::Terms lTerms = APP::ShortRate::prepareTerms( lParams );
-    std::unique_ptr<Process::ShortRateMC::ModelAbstract> luModel =
+    std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> luModel =
         APP::ShortRate::prepareModelFromParam( lNameModel, lParams, lTerms );
     Process::MarketData::ZCB lZCB( luModel->calcSpotRates() );
 

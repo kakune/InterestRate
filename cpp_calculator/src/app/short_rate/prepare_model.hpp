@@ -28,7 +28,7 @@ Process::MarketData::Terms prepareTerms( const Utils::Parameters& inParams )
     return Process::MarketData::Terms( lTerms );
 }
 
-std::unique_ptr<Process::ShortRateMC::ModelAbstract> prepareModelFromParam(
+std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> prepareModelFromParam(
     std::string inNameModel, const Utils::Parameters& inParams,
     const Process::MarketData::Terms& inTerms )
 {
@@ -36,7 +36,7 @@ std::unique_ptr<Process::ShortRateMC::ModelAbstract> prepareModelFromParam(
         inParams( "NPath" ), inTerms );
     if ( inNameModel == "Vasicek" )
     {
-        Process::ShortRateMC::VasicekBuilder lBuilder;
+        Process::ShortRateMCOne::VasicekBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
@@ -44,23 +44,23 @@ std::unique_ptr<Process::ShortRateMC::ModelAbstract> prepareModelFromParam(
         lBuilder.setVol( inParams( "Vol" ) );
         lBuilder.setKappa( inParams( "Kappa" ) );
         lBuilder.setMean( inParams( "Mean" ) );
-        return std::move( std::make_unique<Process::ShortRateMC::Vasicek>(
+        return std::move( std::make_unique<Process::ShortRateMCOne::Vasicek>(
             lBuilder.build() ) );
     }
     if ( inNameModel == "HoLee" )
     {
-        Process::ShortRateMC::HoLeeBuilder lBuilder;
+        Process::ShortRateMCOne::HoLeeBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setInitSpotRate( inParams( "InitRate" ) );
         lBuilder.setVol( inParams( "Vol" ) );
         return std::move(
-            std::make_unique<Process::ShortRateMC::HoLee>( lBuilder.build() ) );
+            std::make_unique<Process::ShortRateMCOne::HoLee>( lBuilder.build() ) );
     }
     if ( inNameModel == "ConstantAffine" )
     {
-        Process::ShortRateMC::ConstantAffineBuilder lBuilder;
+        Process::ShortRateMCOne::ConstantAffineBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
@@ -68,20 +68,20 @@ std::unique_ptr<Process::ShortRateMC::ModelAbstract> prepareModelFromParam(
         lBuilder.setDrift( inParams( "Lambda" ), inParams( "Eta" ) );
         lBuilder.setVol( inParams( "Gamma" ), inParams( "Delta" ) );
         return std::move(
-            std::make_unique<Process::ShortRateMC::ConstantAffine>(
+            std::make_unique<Process::ShortRateMCOne::ConstantAffine>(
                 lBuilder.build() ) );
     }
     return nullptr;
 }
 
-std::unique_ptr<Process::ShortRateMC::ModelAbstract> prepareModelFromParam(
+std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> prepareModelFromParam(
     std::string inNameModel, const Utils::Parameters& inParams )
 {
     return ( prepareModelFromParam( inNameModel, inParams,
                                     prepareTerms( inParams ) ) );
 }
 
-std::unique_ptr<Process::ShortRateMC::ModelAbstract> prepareModelFromMarket(
+std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> prepareModelFromMarket(
     std::string inNameModel, const Utils::Parameters& inParams,
     const Process::MarketData::Terms inTerms,
     const Process::MarketData::ZCB inMarketZCB )
@@ -90,31 +90,31 @@ std::unique_ptr<Process::ShortRateMC::ModelAbstract> prepareModelFromMarket(
         inParams( "NPath" ), inTerms );
     if ( inNameModel == "Vasicek" )
     {
-        Process::ShortRateMC::VasicekWithMarketBuilder lBuilder;
+        Process::ShortRateMCOne::VasicekWithMarketBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setVol( inParams( "Vol" ) );
         lBuilder.setMarketZCB( inMarketZCB );
         return std::move(
-            std::make_unique<Process::ShortRateMC::VasicekWithMarket>(
+            std::make_unique<Process::ShortRateMCOne::VasicekWithMarket>(
                 lBuilder.build() ) );
     }
     if ( inNameModel == "HoLee" )
     {
-        Process::ShortRateMC::HoLeeWithMarketBuilder lBuilder;
+        Process::ShortRateMCOne::HoLeeWithMarketBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setVol( inParams( "Vol" ) );
         lBuilder.setMarketZCB( inMarketZCB );
         return std::move(
-            std::make_unique<Process::ShortRateMC::HoLeeWithMarket>(
+            std::make_unique<Process::ShortRateMCOne::HoLeeWithMarket>(
                 lBuilder.build() ) );
     }
     return nullptr;
 }
-std::unique_ptr<Process::ShortRateMC::ModelAbstract> prepareModelFromMarket(
+std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> prepareModelFromMarket(
     std::string inNameModel, const Utils::Parameters& inParams,
     const Process::MarketData::ZCB inMarketZCB )
 {

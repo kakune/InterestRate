@@ -16,7 +16,7 @@ double testConstantPriceZCB( std::size_t inNTerms, std::size_t inNPath,
     }
     auto lTerms = Process::MarketData::Terms( lTermsVec );
 
-    Process::ShortRateMC::ConstantRate lObj( lTerms, inRate );
+    Process::ShortRateMCOne::ConstantRate lObj( lTerms, inRate );
     return Process::MarketData::ZCB( lObj.calcSpotRates() )( 0.0, inMaturity );
 }
 
@@ -32,7 +32,7 @@ double testConstantForwardRate( std::size_t inNTerms, std::size_t inNPath,
     }
     auto lTerms = Process::MarketData::Terms( lTermsVec );
 
-    Process::ShortRateMC::ConstantRate lObj( lTerms, inRate );
+    Process::ShortRateMCOne::ConstantRate lObj( lTerms, inRate );
     return Process::MarketData::ZCB( lObj.calcSpotRates() )
         .forwardRate( inStartTime, inTerminalTime );
 }
@@ -50,7 +50,7 @@ double testConstantInstantaneousForwardRate( std::size_t inNTerms,
     }
     auto lTerms = Process::MarketData::Terms( lTermsVec );
 
-    Process::ShortRateMC::ConstantRate lObj( lTerms, inRate );
+    Process::ShortRateMCOne::ConstantRate lObj( lTerms, inRate );
     return Process::MarketData::ZCB( lObj.calcSpotRates() )
         .instantaneousForwardRate( inFRTime );
 }

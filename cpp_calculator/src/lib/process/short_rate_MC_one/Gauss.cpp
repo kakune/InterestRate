@@ -13,7 +13,7 @@
 
 namespace Process
 {
-namespace ShortRateMC
+namespace ShortRateMCOne
 {
 
 double HoLee::driftCoeff(
@@ -207,5 +207,5 @@ double GSRWithMarket::factorCoeff(
     return lResult * lVol * lTmpInvKappa;
 }
 
-}  // namespace ShortRateMC
+}  // namespace ShortRateMCOne
 }  // namespace Process

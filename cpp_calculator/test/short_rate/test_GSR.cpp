@@ -33,7 +33,7 @@ double testDifVasicek( std::size_t inNTerms, std::size_t inNPath,
     std::vector<double> lKappas( inNTerms + 2, inKappa );
     std::vector<double> lMeans( inNTerms + 2, inMean );
 
-    Process::ShortRateMC::VasicekBuilder lBuilderVasicek;
+    Process::ShortRateMCOne::VasicekBuilder lBuilderVasicek;
     lBuilderVasicek.setTerms( lTerms );
     lBuilderVasicek.setNPath( inNPath );
     lBuilderVasicek.setRandom( std::move( luRandomVasicek ) );
@@ -42,7 +42,7 @@ double testDifVasicek( std::size_t inNTerms, std::size_t inNPath,
     lBuilderVasicek.setKappa( inKappa );
     lBuilderVasicek.setMean( inMean );
 
-    Process::ShortRateMC::GSRBuilder lBuilderGSR;
+    Process::ShortRateMCOne::GSRBuilder lBuilderGSR;
     lBuilderGSR.setTerms( lTerms );
     lBuilderGSR.setNPath( inNPath );
     lBuilderGSR.setRandom( std::move( luRandomGSR ) );
@@ -51,8 +51,8 @@ double testDifVasicek( std::size_t inNTerms, std::size_t inNPath,
     lBuilderGSR.setInterpKappa( lKappas );
     lBuilderGSR.setInterpMean( lMeans );
 
-    Process::ShortRateMC::Vasicek lVasicek = lBuilderVasicek.build();
-    Process::ShortRateMC::GSR lGSR         = lBuilderGSR.build();
+    Process::ShortRateMCOne::Vasicek lVasicek = lBuilderVasicek.build();
+    Process::ShortRateMCOne::GSR lGSR         = lBuilderGSR.build();
 
     Process::MarketData::ZCB lVasicekZCB( lVasicek.calcSpotRates() );
     Process::MarketData::ZCB lGSRZCB( lGSR.calcSpotRates() );
@@ -91,7 +91,7 @@ double testDifVasicekWithMarket( std::size_t inNTerms, std::size_t inNPath,
     }
     Process::MarketData::ZCB lMarketZCB( lTerms, lZCB );
 
-    Process::ShortRateMC::VasicekWithMarketBuilder lBuilderVasicek;
+    Process::ShortRateMCOne::VasicekWithMarketBuilder lBuilderVasicek;
     lBuilderVasicek.setTerms( lTerms );
     lBuilderVasicek.setNPath( inNPath );
     lBuilderVasicek.setRandom( std::move( luRandomVasicek ) );
@@ -99,7 +99,7 @@ double testDifVasicekWithMarket( std::size_t inNTerms, std::size_t inNPath,
     lBuilderVasicek.setKappa( inKappa );
     lBuilderVasicek.setMarketZCB( lMarketZCB );
 
-    Process::ShortRateMC::GSRWithMarketBuilder lBuilderGSR;
+    Process::ShortRateMCOne::GSRWithMarketBuilder lBuilderGSR;
     lBuilderGSR.setTerms( lTerms );
     lBuilderGSR.setNPath( inNPath );
     lBuilderGSR.setRandom( std::move( luRandomGSR ) );
@@ -107,8 +107,9 @@ double testDifVasicekWithMarket( std::size_t inNTerms, std::size_t inNPath,
     lBuilderGSR.setInterpKappa( lKappas );
     lBuilderGSR.setMarketZCB( lMarketZCB );
 
-    Process::ShortRateMC::VasicekWithMarket lVasicek = lBuilderVasicek.build();
-    Process::ShortRateMC::GSRWithMarket lGSR         = lBuilderGSR.build();
+    Process::ShortRateMCOne::VasicekWithMarket lVasicek =
+        lBuilderVasicek.build();
+    Process::ShortRateMCOne::GSRWithMarket lGSR = lBuilderGSR.build();
 
     Process::MarketData::ZCB lVasicekZCB( lVasicek.calcSpotRates() );
     Process::MarketData::ZCB lGSRZCB( lGSR.calcSpotRates() );

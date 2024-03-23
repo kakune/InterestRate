@@ -17,11 +17,11 @@ Process::MarketData::Terms makeTerms( std::size_t inNTerms, double inMaturity )
     return Process::MarketData::Terms( lTerms );
 }
 
-Process::ShortRateMC::ConstantAffine rateBuild(
+Process::ShortRateMCOne::ConstantAffine rateBuild(
     std::size_t inNTerms, std::size_t inNPath, double inMaturity, double inRate,
     double inLambda, double inEta, double inGamma, double inDelta )
 {
-    Process::ShortRateMC::ConstantAffineBuilder lBuilder;
+    Process::ShortRateMCOne::ConstantAffineBuilder lBuilder;
     auto lTerms = makeTerms( inNTerms, inMaturity );
     lBuilder.setInitSpotRate( inRate );
     lBuilder.setNPath( 100 );
