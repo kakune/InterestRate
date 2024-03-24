@@ -18,21 +18,40 @@
 #include <iostream>
 namespace Math
 {
-Vec::Vec( int inNSize ) : mNSize( inNSize ), mData( inNSize ) {}
+Vec::Vec( std::size_t inNSize, double inVal ) :
+    mNSize( inNSize ), mData( inVal, inNSize )
+{
+}
 Vec::Vec( std::initializer_list<double> inVal ) :
     mNSize( inVal.size() ), mData( inVal.size() )
 {
-    int i = 0;
+    std::size_t i = 0;
     for ( const auto& val : inVal ) { mData[i++] = val; }
 }
 Vec::Vec( const std::vector<double>& inVal ) :
-    mNSize( inVal.size() ), mData( inVal.size() )
+    mNSize( inVal.size() ), mData( &inVal.data()[0], inVal.size() )
 {
-    int i = 0;
-    for ( const auto& val : inVal ) { mData[i++] = val; }
 }
-double& Vec::operator()( int i ) { return mData[i]; }
-const double& Vec::operator()( int i ) const { return mData[i]; }
+Vec::Vec( const std::valarray<double>& inVal ) :
+    mNSize( inVal.size() ), mData( &inVal[0], inVal.size() )
+{
+}
+double& Vec::operator()( std::size_t i ) { return mData[i]; }
+const double& Vec::operator()( std::size_t i ) const { return mData[i]; }
+
+const Vec& Vec::operator+() const& { return *this; }
+Vec Vec::operator+() &&
+{
+    Vec lResult = std::move( *this );
+    return lResult;
+}
+Vec Vec::operator-() const& { return Vec( -mData ); }
+Vec Vec::operator-() &&
+{
+    Vec lResult   = std::move( *this );
+    lResult.mData = -lResult.mData;
+    return lResult;
+}
 Vec& Vec::operator+=( const Vec& inVec )
 {
     assert( mNSize == inVec.mNSize );
@@ -85,21 +104,95 @@ Vec Vec::operator/( const Vec& inRhs ) const
     lResult /= inRhs;
     return lResult;
 }
+Vec& Vec::operator+=( double inVal )
+{
+    mData += inVal;
+    return *this;
+}
+Vec Vec::operator+( double inRhs ) const
+{
+    Vec lResult = *this;
+    lResult += inRhs;
+    return lResult;
+}
+Vec& Vec::operator-=( double inVal )
+{
+    mData -= inVal;
+    return *this;
+}
+Vec Vec::operator-( double inRhs ) const
+{
+    Vec lResult = *this;
+    lResult -= inRhs;
+    return lResult;
+}
+Vec& Vec::operator*=( double inVal )
+{
+    mData *= inVal;
+    return *this;
+}
+Vec Vec::operator*( double inRhs ) const
+{
+    Vec lResult = *this;
+    lResult *= inRhs;
+    return lResult;
+}
+Vec& Vec::operator/=( double inVal )
+{
+    mData /= inVal;
+    return *this;
+}
+Vec Vec::operator/( double inRhs ) const
+{
+    Vec lResult = *this;
+    lResult /= inRhs;
+    return lResult;
+}
+Vec operator+( double inLhs, const Vec& inRhs )
+{
+    Vec lResult( inRhs );
+    lResult.mData += inLhs;
+    return lResult;
+}
+Vec operator-( double inLhs, const Vec& inRhs )
+{
+    Vec lResult( -inRhs.mData );
+    lResult.mData += inLhs;
+    return lResult;
+}
+Vec operator*( double inLhs, const Vec& inRhs )
+{
+    Vec lResult( inRhs );
+    lResult.mData *= inLhs;
+    return lResult;
+}
+Vec operator/( double inLhs, const Vec& inRhs )
+{
+    Vec lResult( inLhs / inRhs.mData );
+    return lResult;
+}
+std::size_t Vec::size() const { return mNSize; }
+double Vec::sum() const { return mData.sum(); }
 const Vec& Vec::print() const
 {
-    for ( int i = 0; i < mNSize; i++ ) { std::cout << mData[i] << " "; }
+    for ( std::size_t i = 0; i < mNSize; i++ ) { std::cout << mData[i] << " "; }
     std::cout << std::endl;
     return *this;
 }
 Vec& Vec::print()
 {
-    for ( int i = 0; i < mNSize; i++ ) { std::cout << mData[i] << " "; }
+    for ( std::size_t i = 0; i < mNSize; i++ ) { std::cout << mData[i] << " "; }
     std::cout << std::endl;
     return *this;
 }
 
-Mat::Mat( int inNRow, int inNCol ) :
-    mNRow( inNRow ), mNCol( inNCol ), mData( inNRow * inNCol )
+Mat::Mat( std::size_t inNRow, std::size_t inNCol, double inVal ) :
+    mNRow( inNRow ), mNCol( inNCol ), mData( inVal, inNRow * inNCol )
+{
+}
+Mat::Mat( std::size_t inNRow, std::size_t inNCol,
+          const std::valarray<double>& inVal ) :
+    mNRow( inNRow ), mNCol( inNCol ), mData( inVal )
 {
 }
 Mat::Mat( std::initializer_list<std::initializer_list<double>> inVal ) :
@@ -107,11 +200,11 @@ Mat::Mat( std::initializer_list<std::initializer_list<double>> inVal ) :
     mNCol( inVal.begin()->size() ),
     mData( inVal.size() * inVal.begin()->size() )
 {
-    int iRow = 0;
+    std::size_t iRow = 0;
     for ( const auto& row : inVal )
     {
         assert( row.size() == mNCol );
-        int iCol = 0;
+        std::size_t iCol = 0;
         for ( const auto& val : row )
         {
             mData[iRow + ( iCol++ * mNRow )] = val;
@@ -124,17 +217,39 @@ Mat::Mat( const std::vector<std::vector<double>>& inVal ) :
     mNCol( inVal.begin()->size() ),
     mData( inVal.size() * inVal.begin()->size() )
 {
-    int i = 0;
+    std::size_t i = 0;
     for ( const auto& row : inVal )
     {
         assert( row.size() == mNCol );
         for ( const auto& val : row ) { mData[i++] = val; }
     }
 }
-double& Mat::operator()( int i, int j ) { return mData[i + j * mNRow]; }
-const double& Mat::operator()( int i, int j ) const
+
+double& Mat::operator()( std::size_t i, std::size_t j )
 {
     return mData[i + j * mNRow];
+}
+const double& Mat::operator()( std::size_t i, std::size_t j ) const
+{
+    return mData[i + j * mNRow];
+}
+const Mat& Mat::operator+() const& { return *this; }
+Mat Mat::operator+() &&
+{
+    Mat lResult = std::move( *this );
+    return lResult;
+}
+Mat Mat::operator-() const&
+{
+    Mat lResult( *this );
+    lResult.mData = -mData;
+    return lResult;
+}
+Mat Mat::operator-() &&
+{
+    Mat lResult   = std::move( *this );
+    lResult.mData = -lResult.mData;
+    return lResult;
 }
 Mat& Mat::operator+=( const Mat& inMat )
 {
@@ -196,13 +311,82 @@ Mat Mat::operator/( const Mat& inRhs ) const
     lResult /= inRhs;
     return lResult;
 }
-
+Mat& Mat::operator+=( double inVal )
+{
+    mData += inVal;
+    return *this;
+}
+Mat Mat::operator+( double inRhs ) const
+{
+    Mat lResult( *this );
+    lResult.mData += inRhs;
+    return lResult;
+}
+Mat& Mat::operator-=( double inVal )
+{
+    mData -= inVal;
+    return *this;
+}
+Mat Mat::operator-( double inRhs ) const
+{
+    Mat lResult( *this );
+    lResult.mData -= inRhs;
+    return lResult;
+}
+Mat& Mat::operator*=( double inVal )
+{
+    mData *= inVal;
+    return *this;
+}
+Mat Mat::operator*( double inRhs ) const
+{
+    Mat lResult( *this );
+    lResult.mData *= inRhs;
+    return lResult;
+}
+Mat& Mat::operator/=( double inVal )
+{
+    mData /= inVal;
+    return *this;
+}
+Mat Mat::operator/( double inRhs ) const
+{
+    Mat lResult( *this );
+    lResult.mData /= inRhs;
+    return lResult;
+}
+Mat operator+( double inLhs, const Mat& inRhs )
+{
+    Mat lResult( inRhs );
+    lResult.mData += inLhs;
+    return lResult;
+}
+Mat operator-( double inLhs, const Mat& inRhs )
+{
+    Mat lResult( inRhs.mNRow, inRhs.mNCol );
+    lResult.mData = ( inLhs - inRhs.mData );
+    return lResult;
+}
+Mat operator*( double inLhs, const Mat& inRhs )
+{
+    Mat lResult( inRhs );
+    lResult.mData *= inLhs;
+    return lResult;
+}
+Mat operator/( double inLhs, const Mat& inRhs )
+{
+    Mat lResult( inRhs.mNRow, inRhs.mNCol );
+    lResult.mData = ( inLhs / inRhs.mData );
+    return lResult;
+}
+std::size_t Mat::sizeRow() const { return mNRow; }
+std::size_t Mat::sizeCol() const { return mNCol; }
 Mat Mat::transpose() const
 {
     Mat lResult( mNCol, mNRow );
-    for ( int i = 0; i < mNRow; ++i )
+    for ( std::size_t i = 0; i < mNRow; ++i )
     {
-        for ( int j = 0; j < mNCol; ++j )
+        for ( std::size_t j = 0; j < mNCol; ++j )
         {
             lResult( j, i ) = ( *this )( i, j );
         }
@@ -225,9 +409,9 @@ Mat& Mat::choleskyDecompose()
 
 const Mat& Mat::print() const
 {
-    for ( int i = 0; i < mNRow; i++ )
+    for ( std::size_t i = 0; i < mNRow; i++ )
     {
-        for ( int j = 0; j < mNCol; j++ )
+        for ( std::size_t j = 0; j < mNCol; j++ )
         {
             std::cout << mData[i + j * mNRow] << " ";
         }
@@ -237,9 +421,9 @@ const Mat& Mat::print() const
 }
 Mat& Mat::print()
 {
-    for ( int i = 0; i < mNRow; i++ )
+    for ( std::size_t i = 0; i < mNRow; i++ )
     {
-        for ( int j = 0; j < mNCol; j++ )
+        for ( std::size_t j = 0; j < mNCol; j++ )
         {
             std::cout << mData[i + j * mNRow] << " ";
         }
@@ -302,6 +486,13 @@ Mat dot( const Mat& inLhs, const Mat& inRhs )
                  lResult.mNRow );
     return lResult;
 }
+Mat dotVecVecToMat( const Vec& inLhs, const Vec& inRhs )
+{
+    std::valarray<double> lResult( 0.0, inLhs.size() * inRhs.size() );
+    cblas_dger( CblasColMajor, inLhs.size(), inRhs.size(), 1.0, &inLhs.mData[0],
+                1, &inRhs.mData[0], 1, &lResult[0], inLhs.size() );
+    return Mat( inLhs.size(), inRhs.size(), lResult );
+}
 
 Mat choleskyDecompose( const Mat& inMat )
 {
@@ -314,6 +505,26 @@ Vec solveEqLowerTriangular( const Mat& inMat, const Vec& inVec )
 {
     Vec lResult = inVec;
     return lResult.solveEqLCholesky( inMat );
+}
+Vec& Vec::multiplyUpperMatFromLeft( const Mat& inLhs )
+{
+    cblas_dtrmv( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+                 inLhs.mNRow, &inLhs.mData[0], inLhs.mNRow, &mData[0], 1 );
+    return *this;
+}
+Vec& Vec::multiplyLowerMatFromLeft( const Mat& inLhs )
+{
+    cblas_dtrmv( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+                 inLhs.mNRow, &inLhs.mData[0], inLhs.mNRow, &mData[0], 1 );
+    return *this;
+}
+Vec dotUpperMatVec( const Mat& inLhs, Vec inRhs )
+{
+    return inRhs.multiplyUpperMatFromLeft( inLhs );
+}
+Vec dotLowerMatVec( const Mat& inLhs, Vec inRhs )
+{
+    return inRhs.multiplyLowerMatFromLeft( inLhs );
 }
 
 }  // namespace Math

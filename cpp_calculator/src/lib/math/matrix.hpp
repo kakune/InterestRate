@@ -20,16 +20,24 @@ class Mat;
 
 class Vec
 {
-public:
+private:
     std::valarray<double> mData;
-    int mNSize;
+    std::size_t mNSize;
 
-    Vec( int inNSize );
+public:
+    Vec( std::size_t inNSize, double inVal = 0 );
     Vec( std::initializer_list<double> inVal );
     Vec( const std::vector<double>& inVal );
+    Vec( const std::valarray<double>& inVal );
 
-    double& operator()( int i );
-    const double& operator()( int i ) const;
+    double& operator()( std::size_t i );
+    const double& operator()( std::size_t i ) const;
+
+    const Vec& operator+() const&;
+    Vec operator+() &&;
+    Vec operator-() const&;
+    Vec operator-() &&;
+
     Vec& operator+=( const Vec& inVec );
     Vec operator+( const Vec& inRhs ) const;
     Vec& operator-=( const Vec& inVec );
@@ -38,23 +46,62 @@ public:
     Vec operator*( const Vec& inRhs ) const;
     Vec& operator/=( const Vec& inVec );
     Vec operator/( const Vec& inRhs ) const;
+
+    Vec& operator+=( double inVal );
+    Vec operator+( double inRhs ) const;
+    Vec& operator-=( double inVal );
+    Vec operator-( double inRhs ) const;
+    Vec& operator*=( double inVal );
+    Vec operator*( double inRhs ) const;
+    Vec& operator/=( double inVal );
+    Vec operator/( double inRhs ) const;
+
+    friend Vec operator+( double inLhs, const Vec& inRhs );
+    friend Vec operator-( double inLhs, const Vec& inRhs );
+    friend Vec operator*( double inLhs, const Vec& inRhs );
+    friend Vec operator/( double inLhs, const Vec& inRhs );
+
+    std::size_t size() const;
+    double sum() const;
     const Vec& print() const;
     Vec& print();
 
     Vec& solveEqLCholesky( const Mat& inL );
+
+    friend void solveEqPositiveDefinite( Mat& inMat, Vec& inVec );
+    friend double dot( const Vec& inLhs, const Vec& inRhs );
+    friend Vec dot( const Mat& inLhs, const Vec& inRhs );
+    friend Vec dot( const Vec& inLhs, const Mat& inRhs );
+    friend Vec solveEqLowerTriangular( const Mat& inMat, const Vec& inVec );
+    friend Mat dotVecVecToMat( const Vec& inLhs, const Vec& inRhs );
+
+    Vec& multiplyUpperMatFromLeft( const Mat& inLhs );
+    Vec& multiplyLowerMatFromLeft( const Mat& inLhs );
+    friend Vec dotUpperMatVec( const Mat& inLhs, Vec inRhs );
+    friend Vec dotLowerMatVec( const Mat& inLhs, Vec inRhs );
 };
+
 class Mat
 {
-public:
+private:
     std::valarray<double> mData;
-    int mNRow, mNCol;
+    std::size_t mNRow, mNCol;
 
-    Mat( int inNRow, int inNCol );
+public:
+    Mat( std::size_t inNRow, std::size_t inNCol, double inVal = 0 );
+    Mat( std::size_t inNRow, std::size_t inNCol,
+         const std::valarray<double>& inVal );
     Mat( std::initializer_list<std::initializer_list<double>> inVal );
     Mat( const std::vector<std::vector<double>>& inVal );
 
-    double& operator()( int i, int j );
-    const double& operator()( int i, int j ) const;
+    double& operator()( std::size_t i, std::size_t j );
+    const double& operator()( std::size_t i, std::size_t j ) const;
+
+    const Mat& operator+() const&;
+    Mat operator+() &&;
+    Mat operator-() const&;
+    Mat operator-() &&;
+
     Mat& operator+=( const Mat& inMat );
     Mat operator+( const Mat& inRhs ) const;
     Mat& operator-=( const Mat& inMat );
@@ -63,20 +110,42 @@ public:
     Mat operator*( const Mat& inRhs ) const;
     Mat& operator/=( const Mat& inMat );
     Mat operator/( const Mat& inRhs ) const;
+
+    Mat& operator+=( double inVal );
+    Mat operator+( double inRhs ) const;
+    Mat& operator-=( double inVal );
+    Mat operator-( double inRhs ) const;
+    Mat& operator*=( double inVal );
+    Mat operator*( double inRhs ) const;
+    Mat& operator/=( double inVal );
+    Mat operator/( double inRhs ) const;
+
+    friend Mat operator+( double inLhs, const Mat& inRhs );
+    friend Mat operator-( double inLhs, const Mat& inRhs );
+    friend Mat operator*( double inLhs, const Mat& inRhs );
+    friend Mat operator/( double inLhs, const Mat& inRhs );
+
+    std::size_t sizeRow() const;
+    std::size_t sizeCol() const;
     Mat transpose() const;
     const Mat& print() const;
     Mat& print();
 
+    friend Vec& Vec::solveEqLCholesky( const Mat& inL );
     Mat& choleskyDecompose();
-};
 
-void solveEqPositiveDefinite( Mat& inMat, Vec& inVec );
-double dot( const Vec& inLhs, const Vec& inRhs );
-Vec dot( const Mat& inLhs, const Vec& inRhs );
-Vec dot( const Vec& inLhs, const Mat& inRhs );
-Mat dot( const Mat& inLhs, const Mat& inRhs );
-Mat choleskyDecompose( const Mat& inMat );
-Vec solveEqLowerTriangular( const Mat& inMat, const Vec& inVec );
+    friend void solveEqPositiveDefinite( Mat& inMat, Vec& inVec );
+    friend Vec dot( const Mat& inLhs, const Vec& inRhs );
+    friend Vec dot( const Vec& inLhs, const Mat& inRhs );
+    friend Mat dot( const Mat& inLhs, const Mat& inRhs );
+    friend Mat choleskyDecompose( const Mat& inMat );
+    friend Vec solveEqLowerTriangular( const Mat& inMat, const Vec& inVec );
+
+    friend Vec& Vec::multiplyUpperMatFromLeft( const Mat& inLhs );
+    friend Vec& Vec::multiplyLowerMatFromLeft( const Mat& inLhs );
+    friend Vec dotUpperMatVec( const Mat& inLhs, Vec inRhs );
+    friend Vec dotLowerMatVec( const Mat& inLhs, Vec inRhs );
+};
 
 }  // namespace Math
 

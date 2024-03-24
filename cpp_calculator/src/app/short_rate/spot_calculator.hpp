@@ -28,14 +28,14 @@ Process::MarketData::Terms prepareTerms( const Utils::Parameters& inParams )
     return Process::MarketData::Terms( lTerms );
 }
 
-std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> prepareModelFromParam(
+Process::MarketData::SpotRates calcSpotRateFromParam(
     std::string inNameModel, const Utils::Parameters& inParams,
     const Process::MarketData::Terms& inTerms )
 {
-    auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-        inParams( "NPath" ), inTerms );
     if ( inNameModel == "Vasicek" )
     {
+        auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
+            inParams( "NPath" ), inTerms );
         Process::ShortRateMCOne::VasicekBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
@@ -44,22 +44,26 @@ std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> prepareModelFromParam(
         lBuilder.setVol( inParams( "Vol" ) );
         lBuilder.setKappa( inParams( "Kappa" ) );
         lBuilder.setMean( inParams( "Mean" ) );
-        return std::move( std::make_unique<Process::ShortRateMCOne::Vasicek>(
-            lBuilder.build() ) );
+        return Process::MarketData::SpotRates(
+            lBuilder.build().calcSpotRates() );
     }
     if ( inNameModel == "HoLee" )
     {
+        auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
+            inParams( "NPath" ), inTerms );
         Process::ShortRateMCOne::HoLeeBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setInitSpotRate( inParams( "InitRate" ) );
         lBuilder.setVol( inParams( "Vol" ) );
-        return std::move(
-            std::make_unique<Process::ShortRateMCOne::HoLee>( lBuilder.build() ) );
+        return Process::MarketData::SpotRates(
+            lBuilder.build().calcSpotRates() );
     }
     if ( inNameModel == "ConstantAffine" )
     {
+        auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
+            inParams( "NPath" ), inTerms );
         Process::ShortRateMCOne::ConstantAffineBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
@@ -67,58 +71,83 @@ std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> prepareModelFromParam(
         lBuilder.setInitSpotRate( inParams( "InitRate" ) );
         lBuilder.setDrift( inParams( "Lambda" ), inParams( "Eta" ) );
         lBuilder.setVol( inParams( "Gamma" ), inParams( "Delta" ) );
-        return std::move(
-            std::make_unique<Process::ShortRateMCOne::ConstantAffine>(
-                lBuilder.build() ) );
+        return Process::MarketData::SpotRates(
+            lBuilder.build().calcSpotRates() );
     }
-    return nullptr;
+    return Process::MarketData::SpotRates(
+        inTerms,
+        std::vector<std::vector<double> >(
+            inParams( "NPath" ), std::vector<double>( inTerms.size() ) ) );
 }
 
-std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> prepareModelFromParam(
+Process::MarketData::SpotRates calcSpotRateFromParam(
     std::string inNameModel, const Utils::Parameters& inParams )
 {
-    return ( prepareModelFromParam( inNameModel, inParams,
+    return ( calcSpotRateFromParam( inNameModel, inParams,
                                     prepareTerms( inParams ) ) );
 }
 
-std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> prepareModelFromMarket(
+Process::MarketData::SpotRates calcSpotRateFromMarket(
     std::string inNameModel, const Utils::Parameters& inParams,
     const Process::MarketData::Terms inTerms,
     const Process::MarketData::ZCB inMarketZCB )
 {
-    auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-        inParams( "NPath" ), inTerms );
     if ( inNameModel == "Vasicek" )
     {
+        auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
+            inParams( "NPath" ), inTerms );
         Process::ShortRateMCOne::VasicekWithMarketBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setVol( inParams( "Vol" ) );
         lBuilder.setMarketZCB( inMarketZCB );
-        return std::move(
-            std::make_unique<Process::ShortRateMCOne::VasicekWithMarket>(
-                lBuilder.build() ) );
+        return Process::MarketData::SpotRates(
+            lBuilder.build().calcSpotRates() );
     }
     if ( inNameModel == "HoLee" )
     {
+        auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
+            inParams( "NPath" ), inTerms );
         Process::ShortRateMCOne::HoLeeWithMarketBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setVol( inParams( "Vol" ) );
         lBuilder.setMarketZCB( inMarketZCB );
-        return std::move(
-            std::make_unique<Process::ShortRateMCOne::HoLeeWithMarket>(
-                lBuilder.build() ) );
+        return Process::MarketData::SpotRates(
+            lBuilder.build().calcSpotRates() );
     }
-    return nullptr;
+    if ( inNameModel == "G2pp" )
+    {
+        auto luRandom =
+            std::make_unique<Process::RandomVec::PathBrownAntithetic>(
+                inParams( "NPath" ), inTerms, 2 );
+        Process::ShortRateMCMulti::G2ppWithMarketBuilder lBuilder;
+        lBuilder.setTerms( inTerms );
+        lBuilder.setRandom( std::move( luRandom ) );
+        lBuilder.setNPath( inParams( "NPath" ) );
+        Math::Mat lVol( 2, 2, 0.0 );
+        lVol( 0, 0 ) = inParams( "Sigma" );
+        lVol( 1, 0 ) = inParams( "Eta" ) * inParams( "Rho" );
+        lVol( 1, 1 ) = inParams( "Eta" ) *
+                       std::sqrt( 1.0 - inParams( "Rho" ) * inParams( "Rho" ) );
+        lBuilder.setDrift( { -inParams( "A" ), -inParams( "B" ) } );
+        lBuilder.setVol( lVol );
+        lBuilder.setMarketZCB( inMarketZCB );
+        return Process::MarketData::SpotRates(
+            lBuilder.build().calcSpotRates() );
+    }
+    return Process::MarketData::SpotRates(
+        inTerms,
+        std::vector<std::vector<double> >(
+            inParams( "NPath" ), std::vector<double>( inTerms.size() ) ) );
 }
-std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> prepareModelFromMarket(
+Process::MarketData::SpotRates calcSpotRateFromMarket(
     std::string inNameModel, const Utils::Parameters& inParams,
     const Process::MarketData::ZCB inMarketZCB )
 {
-    return prepareModelFromMarket( inNameModel, inParams,
+    return calcSpotRateFromMarket( inNameModel, inParams,
                                    prepareTerms( inParams ), inMarketZCB );
 }
 

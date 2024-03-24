@@ -40,7 +40,12 @@ target_link_libraries(test_asset LibProcess)
 add_executable(test_ODE test_ODE.cpp)
 target_link_libraries(test_ODE LibMath gtest_main)
 
+
+add_executable(test_speed test_speed.cpp)
+target_link_libraries(test_speed LibMath LibProcess)
+
 add_subdirectory(short_rate)
+add_subdirectory(short_rate_multi)
 
 
 if(CUDA_ENABLED)

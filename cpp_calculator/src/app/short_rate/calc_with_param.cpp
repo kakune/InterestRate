@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "prepare_model.hpp"
+#include "spot_calculator.hpp"
 #include "utils/parameters.hpp"
 
 int main( int argc, char* argv[] )
@@ -21,9 +21,9 @@ int main( int argc, char* argv[] )
     lParams.setNameCurrentSection( lNameSection );
 
     Process::MarketData::Terms lTerms = APP::ShortRate::prepareTerms( lParams );
-    std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> luModel =
-        APP::ShortRate::prepareModelFromParam( lNameModel, lParams, lTerms );
-    Process::MarketData::ZCB lZCB( luModel->calcSpotRates() );
+    Process::MarketData::SpotRates lSpots =
+        APP::ShortRate::calcSpotRateFromParam( lNameModel, lParams, lTerms );
+    Process::MarketData::ZCB lZCB( lSpots );
 
     std::ofstream lFileOutput( lPathOutput );
     if ( lFileOutput.is_open() )

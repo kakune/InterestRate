@@ -1,5 +1,5 @@
 /**
- * @file one-factor_Gauss.cpp
+ * @file Gauss.cpp
  * @brief This implements one-factor Gaussian short-rate models. (see Chap.10 of
  * Andersen & Piterbarg)
  * @author kakune

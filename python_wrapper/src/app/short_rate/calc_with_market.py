@@ -6,7 +6,7 @@ from lib.cpp.cmake import buildCmakeRelease, runExe
 from lib.plot.graph import scatter3D
 from lib.utils.parameters import Parameters
 
-gNameModel = "HoLee"
+gNameModel = "G2pp"
 gNameSection = "PARAM1"
 gNameSectionMarket = "JGB"
 gNameCSVMarket = "JGB"

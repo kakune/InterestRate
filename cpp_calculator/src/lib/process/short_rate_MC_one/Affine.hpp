@@ -1,13 +1,13 @@
 /**
- * @file one-factor_Affine.hpp
+ * @file Affine.hpp
  * @brief This defines one-factor Affine short-rate models. (see 3.2.4 of
  * Brigo)
  * @author kakune
  * @date 3/14/2024
  */
 
-#ifndef PROCESS_SHORT_RATE_MC_ONE_FACTOR_AFFINE_HPP
-#define PROCESS_SHORT_RATE_MC_ONE_FACTOR_AFFINE_HPP
+#ifndef PROCESS_SHORT_RATE_MC_ONE_AFFINE_HPP
+#define PROCESS_SHORT_RATE_MC_ONE_AFFINE_HPP
 
 #include <iostream>
 #include <memory>

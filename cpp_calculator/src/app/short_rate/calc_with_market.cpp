@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "prepare_model.hpp"
 #include "process/market_data.hpp"
+#include "spot_calculator.hpp"
 #include "utils/csv.hpp"
 #include "utils/parameters.hpp"
 
@@ -43,10 +43,10 @@ int main( int argc, char* argv[] )
         lMapMarket["ZCB"] );
 
     Process::MarketData::Terms lTerms = APP::ShortRate::prepareTerms( lParams );
-    std::unique_ptr<Process::ShortRateMCOne::ModelAbstract> luModel =
-        APP::ShortRate::prepareModelFromMarket( lNameModel, lParams, lTerms,
+    Process::MarketData::SpotRates lSpots =
+        APP::ShortRate::calcSpotRateFromMarket( lNameModel, lParams, lTerms,
                                                 lMarketZCB );
-    Process::MarketData::ZCB lZCB( luModel->calcSpotRates() );
+    Process::MarketData::ZCB lZCB( lSpots );
 
     std::ofstream lFileOutput( lPathOutput );
     if ( lFileOutput.is_open() )

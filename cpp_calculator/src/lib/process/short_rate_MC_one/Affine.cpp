@@ -1,5 +1,5 @@
 /**
- * @file one-factor_Affine.cpp
+ * @file Affine.cpp
  * @brief This implements one-factor Affine short-rate models. (see 3.2.4 of
  * Brigo)
  * @author kakune

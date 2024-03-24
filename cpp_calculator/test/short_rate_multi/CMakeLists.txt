@@ -1,0 +1,5 @@
+add_executable(test_constant_multi test_constant_multi.cpp)
+target_link_libraries(test_constant_multi LibProcess gtest_main)
+
+add_executable(test_constant_gauss_multi test_constant_gauss_multi.cpp)
+target_link_libraries(test_constant_gauss_multi LibProcess gtest_main)

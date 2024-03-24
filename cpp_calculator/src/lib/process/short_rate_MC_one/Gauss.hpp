@@ -1,13 +1,13 @@
 /**
- * @file one-factor_Gauss.hpp
+ * @file Gauss.hpp
  * @brief This defines one-factor Gaussian short-rate models. (see Chap.10 of
  * Andersen & Piterbarg)
  * @author kakune
  * @date 3/8/2024
  */
 
-#ifndef PROCESS_SHORT_RATE_MC_ONE_FACTOR_GAUSS_HPP
-#define PROCESS_SHORT_RATE_MC_ONE_FACTOR_GAUSS_HPP
+#ifndef PROCESS_SHORT_RATE_MC_ONE_GAUSS_HPP
+#define PROCESS_SHORT_RATE_MC_ONE_GAUSS_HPP
 
 #include <iostream>
 #include <memory>

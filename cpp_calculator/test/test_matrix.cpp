@@ -8,20 +8,20 @@
 
 double testDotVecVec( Math::Vec inLhs, Math::Vec inRhs )
 {
-    return Math::dot( inLhs, inRhs );
+    return dot( inLhs, inRhs );
 }
 double testDotVecMat( Math::Vec inLhs, Math::Mat inRhs, std::size_t inInd )
 {
-    return Math::dot( inLhs, inRhs )( inInd );
+    return dot( inLhs, inRhs )( inInd );
 }
 double testDotMatVec( Math::Mat inLhs, Math::Vec inRhs, std::size_t inInd )
 {
-    return Math::dot( inLhs, inRhs )( inInd );
+    return dot( inLhs, inRhs )( inInd );
 }
 double testDotMatMat( Math::Mat inLhs, Math::Mat inRhs, std::size_t inIndLeft,
                       std::size_t inIndRight )
 {
-    return Math::dot( inLhs, inRhs )( inIndLeft, inIndRight );
+    return dot( inLhs, inRhs )( inIndLeft, inIndRight );
 }
 double testCholeskyDecomposition( Math::Mat inMat, std::size_t inIndLeft,
                                   std::size_t inIndRight )
@@ -33,7 +33,7 @@ double testCholeskyDecomposition( Math::Mat inMat, std::size_t inIndLeft,
 double testSolveEqPositiveDefinite( Math::Mat inMat, Math::Vec inVec,
                                     std::size_t inInd )
 {
-    Math::solveEqPositiveDefinite( inMat, inVec );
+    solveEqPositiveDefinite( inMat, inVec );
     return inVec( inInd );
 }
 
