@@ -23,7 +23,7 @@ namespace ShortRateMCMulti
 
 /**
  * @brief This is multi-factor short-rate Gaussian model with constant coeff
- * without $\varphi$.
+ * without shift $\varphi$.
  */
 class ConstantGauss : public MultiFactorAbstract
 {
@@ -31,12 +31,18 @@ private:
     Math::Vec mDriftCoeff;  //! coefficient of dt
     Math::Mat
         mVolCoeff;  //! coefficient of dW which must be LowerTriangular Matrix
+
+    // DriftCoeff * State * dt
     Math::Vec driftCoeff(
         std::size_t inIndPath, std::size_t inIndTerm,
         const std::vector<std::vector<Math::Vec>>& inSpots ) const override;
+
+    // VolCoeff.dW
     Math::Vec volTerm( std::size_t inIndPath, std::size_t inIndTerm,
                        const std::vector<std::vector<Math::Vec>>& inSpots,
                        const Math::Vec& inRandomVec ) const override;
+
+    // sum of components of state
     double transfStateToRate( const Math::Vec& inState,
                               double inTime ) const override;
 
@@ -92,14 +98,17 @@ private:
     MarketData::ZCB mMarketZCB;  //! the market data
 
     double mA, mB;
-    double mFactorA, mFactorB, mFactorAB;
+    double mFactorA, mFactorB, mFactorAB;  //! factor for transfStateToRate
 
+    // (-a*x, -b*y)dt
     Math::Vec driftCoeff(
         std::size_t inIndPath, std::size_t inIndTerm,
         const std::vector<std::vector<Math::Vec>>& inSpots ) const override;
+    // VolCoeff.(dW_1, dW_2)
     Math::Vec volTerm( std::size_t inIndPath, std::size_t inIndTerm,
                        const std::vector<std::vector<Math::Vec>>& inSpots,
                        const Math::Vec& inRandomVec ) const override;
+    // r = x + y + \phi
     double transfStateToRate( const Math::Vec& inState,
                               double inTime ) const override;
 
@@ -166,61 +175,6 @@ public:
                                mDriftCoeff, mVolCoeff, *muMarketZCB );
     }
 };
-
-// /**
-//  * @brief This is HoLee short-rate model quoting market data.
-//  */
-// class HoLeeWithMarket : public OneFactorAbstract
-// {
-// private:
-//     double mVol;   //! volatility of rate
-//     double mVol2;  //! square of mVol
-//     double driftCoeff(
-//         std::size_t inIndPath, std::size_t inIndTerm,
-//         const std::vector<std::vector<double>>& inSpots ) const override;
-//     double volCoeff(
-//         std::size_t inIndPath, std::size_t inIndTerm,
-//         const std::vector<std::vector<double>>& inSpots ) const override;
-//     MarketData::ZCB mMarketZCB;
-
-// public:
-//     HoLeeWithMarket(
-//         std::size_t inNPath, const MarketData::Terms inTerms,
-//         std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
-//         double inVol, const MarketData::ZCB& inMarketZCB ) :
-//         OneFactorAbstract( inNPath, inTerms, inMarketZCB.initialSpotRate(),
-//                            std::move( inuRandomPath ) ),
-//         mVol( inVol ),
-//         mVol2( inVol * inVol ),
-//         mMarketZCB( inMarketZCB )
-//     {
-//     }
-// };
-
-// class HoLeeWithMarketBuilder : public OneFactorAbstractBuilder
-// {
-// private:
-//     double mVol;
-//     std::unique_ptr<MarketData::ZCB> muMarketZCB;
-
-// public:
-//     HoLeeWithMarketBuilder& setVol( double inVol )
-//     {
-//         mVol = inVol;
-//         return *this;
-//     }
-//     HoLeeWithMarketBuilder& setMarketZCB( const MarketData::ZCB& inMarketZCB
-//     )
-//     {
-//         muMarketZCB = std::make_unique<MarketData::ZCB>( inMarketZCB );
-//         return *this;
-//     }
-//     HoLeeWithMarket build()
-//     {
-//         return HoLeeWithMarket( mNPath, *muTerms, std::move( muRandomPath ),
-//                                 mVol, *muMarketZCB );
-//     }
-// };
 
 }  // namespace ShortRateMCMulti
 }  // namespace Process

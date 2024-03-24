@@ -170,7 +170,7 @@ namespace RandomVec
 {
 
 /**
- * @brief This is the abstract class for random path classes.
+ * @brief This is the abstract class for random vector classes.
  */
 class PathAbstract
 {
@@ -187,6 +187,7 @@ public:
      * @brief This constructs a new PathAbstract.
      * @param inNPath the number of Path
      * @param insTerms shared pointer of the term structure
+     * @param inDim the dimension of generated vectors
      */
     PathAbstract( std::size_t inNPath,
                   std::shared_ptr<const std::vector<double> > insTerms,

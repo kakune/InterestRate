@@ -1,9 +1,9 @@
 /**
- * @file one-factor_Gauss.cpp
- * @brief This implements one-factor Gaussian short-rate models. (see Chap.10 of
- * Andersen & Piterbarg)
+ * @file Gauss.cpp
+ * @brief This implements multi-factor Gaussian short-rate models. (see Chap.4
+ * of Brigo)
  * @author kakune
- * @date 3/8/2024
+ * @date 3/24/2024
  */
 
 #include <iostream>
