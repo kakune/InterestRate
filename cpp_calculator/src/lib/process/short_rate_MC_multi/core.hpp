@@ -93,7 +93,7 @@ public:
         muTerms = std::make_unique<MarketData::Terms>( inTerms );
         return *this;
     }
-    ModelAbstractBuilder& setInitState( Math::Vec inInitState )
+    ModelAbstractBuilder& setInitState( const Math::Vec& inInitState )
     {
         mInitState = inInitState;
         return *this;

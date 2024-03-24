@@ -121,6 +121,7 @@ public:
         return HoLeeWithMarket( mNPath, *muTerms, std::move( muRandomPath ),
                                 mVol, *muMarketZCB );
     }
+    ModelAbstractBuilder& setInitSpotRate( double inInitSpotRate ) = delete;
 };
 
 /**
@@ -243,6 +244,7 @@ public:
         return VasicekWithMarket( mNPath, *muTerms, std::move( muRandomPath ),
                                   mVol, mKappa, *muMarketZCB );
     }
+    ModelAbstractBuilder& setInitSpotRate( double inInitSpotRate ) = delete;
 };
 
 /**
@@ -476,6 +478,7 @@ public:
         return GSRWithMarket( mNPath, *muTerms, std::move( muRandomPath ),
                               *muInterpVol, *muInterpKappa, *muMarketZCB );
     }
+    ModelAbstractBuilder& setInitSpotRate( double inInitSpotRate ) = delete;
 };
 
 }  // namespace ShortRateMCOne

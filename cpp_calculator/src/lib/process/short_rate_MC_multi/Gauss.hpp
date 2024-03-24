@@ -174,6 +174,7 @@ public:
         return G2ppWithMarket( mNPath, *muTerms, std::move( muRandomPath ),
                                mDriftCoeff, mVolCoeff, *muMarketZCB );
     }
+    ModelAbstract& setInitState( const Math::Vec& inInitState ) = delete;
 };
 
 }  // namespace ShortRateMCMulti
