@@ -173,6 +173,8 @@ Vec operator/( double inLhs, const Vec& inRhs )
 }
 std::size_t Vec::size() const { return mNSize; }
 double Vec::sum() const { return mData.sum(); }
+double Vec::min() const { return mData.min(); }
+double Vec::max() const { return mData.max(); }
 const Vec& Vec::print() const
 {
     for ( std::size_t i = 0; i < mNSize; i++ ) { std::cout << mData[i] << " "; }
@@ -185,6 +187,9 @@ Vec& Vec::print()
     std::cout << std::endl;
     return *this;
 }
+Vec sqrt( const Vec& inVec ) { return Vec( sqrt( inVec.mData ) ); }
+Vec exp( const Vec& inVec ) { return Vec( exp( inVec.mData ) ); }
+Vec log( const Vec& inVec ) { return Vec( log( inVec.mData ) ); }
 
 Mat::Mat( std::size_t inNRow, std::size_t inNCol, double inVal ) :
     mNRow( inNRow ), mNCol( inNCol ), mData( inVal, inNRow * inNCol )

@@ -6,14 +6,14 @@
  * @date 3/8/2024
  */
 
+#include "short_rate/one-factor/Gauss.hpp"
+
 #include <iostream>
 #include <memory>
 
-#include "process/short_rate_MC.hpp"
-
-namespace Process
+namespace ShortRate
 {
-namespace ShortRateMCOne
+namespace OneFactor
 {
 
 double HoLee::driftCoeff(
@@ -141,7 +141,7 @@ double GSR::volCoeff( std::size_t inIndPath, std::size_t inIndTerm,
     return mInterpVol( mTerms[inIndTerm - 1] );
 }
 
-MarketData::SpotRates GSRWithMarket::calcSpotRates() const
+Process::MarketData::SpotRates GSRWithMarket::calcSpotRates() const
 {
     std::vector<std::vector<double>> lSpots(
         mNPath, std::vector<double>( mTerms.size(), mInitSpotRate ) );
@@ -163,7 +163,7 @@ MarketData::SpotRates GSRWithMarket::calcSpotRates() const
                     volCoeff( iPath, iTerm, lSpots, lFactors );
         }
     }
-    return MarketData::SpotRates( mTerms, lSpots );
+    return Process::MarketData::SpotRates( mTerms, lSpots );
 }
 
 double GSRWithMarket::driftCoeff(
@@ -207,5 +207,5 @@ double GSRWithMarket::factorCoeff(
     return lResult * lVol * lTmpInvKappa;
 }
 
-}  // namespace ShortRateMCOne
-}  // namespace Process
+}  // namespace OneFactor
+}  // namespace ShortRate

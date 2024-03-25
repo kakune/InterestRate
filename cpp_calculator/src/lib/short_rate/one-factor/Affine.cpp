@@ -6,17 +6,13 @@
  * @date 3/14/2024
  */
 
-#include <iostream>
-#include <limits>
-#include <memory>
+#include "short_rate/one-factor/Affine.hpp"
+
 #include <vector>
 
-#include "math/ODE.hpp"
-#include "process/short_rate_MC.hpp"
-
-namespace Process
+namespace ShortRate
 {
-namespace ShortRateMCOne
+namespace OneFactor
 {
 
 double ConstantAffine::driftCoeff(
@@ -32,5 +28,5 @@ double ConstantAffine::volCoeff(
     return std::sqrt( mGamma * inSpots[inIndPath][inIndTerm - 1] + mDelta );
 }
 
-}  // namespace ShortRateMCOne
-}  // namespace Process
+}  // namespace OneFactor
+}  // namespace ShortRate

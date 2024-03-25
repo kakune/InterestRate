@@ -5,8 +5,8 @@
  * @date 1/29/2024
  */
 
-#ifndef PROCESS_SHORT_RATE_MC_ONE_CORE_HPP
-#define PROCESS_SHORT_RATE_MC_ONE_CORE_HPP
+#ifndef SHORT_RATE_ONE_FACTOR_CORE_HPP
+#define SHORT_RATE_ONE_FACTOR_CORE_HPP
 
 #include <memory>
 #include <vector>
@@ -15,9 +15,9 @@
 #include "process/market_data.hpp"
 #include "process/random.hpp"
 
-namespace Process
+namespace ShortRate
 {
-namespace ShortRateMCOne
+namespace OneFactor
 {
 
 /**
@@ -26,9 +26,9 @@ namespace ShortRateMCOne
 class ModelAbstract
 {
 protected:
-    const std::size_t mNPath;        //! the number of Path
-    const MarketData::Terms mTerms;  //! term structure
-    const double mInitSpotRate;      //! initial spot rate
+    const std::size_t mNPath;                 //! the number of Path
+    const Process::MarketData::Terms mTerms;  //! term structure
+    const double mInitSpotRate;               //! initial spot rate
     /**
      * @brief The coefficient of dt in SDE of r[inIndPath][inIndTerm]
      * @param inIndPath the index of path
@@ -45,7 +45,8 @@ public:
      * @param inNPath the number of Path
      * @param insTerms term structure
      */
-    ModelAbstract( std::size_t inNPath, const MarketData::Terms& inTerms,
+    ModelAbstract( std::size_t inNPath,
+                   const Process::MarketData::Terms& inTerms,
                    double inInitSpotRate ) :
         mNPath( inNPath ), mTerms( inTerms ), mInitSpotRate( inInitSpotRate )
     {
@@ -54,7 +55,7 @@ public:
     /**
      * @brief This calcurate spot rates and Disconunt Factors.
      */
-    virtual MarketData::SpotRates calcSpotRates() const;
+    virtual Process::MarketData::SpotRates calcSpotRates() const;
 };
 
 /**
@@ -64,8 +65,8 @@ class ModelAbstractBuilder
 {
 protected:
     double mInitSpotRate;
-    std::size_t mNPath;                          //! the number of Path
-    std::unique_ptr<MarketData::Terms> muTerms;  //! term structure
+    std::size_t mNPath;                                   //! the number of Path
+    std::unique_ptr<Process::MarketData::Terms> muTerms;  //! term structure
 
 public:
     ModelAbstractBuilder& setNPath( std::size_t inNPath )
@@ -76,12 +77,12 @@ public:
     ModelAbstractBuilder& setTerms(
         std::shared_ptr<const std::vector<double>> insTerms )
     {
-        muTerms = std::make_unique<MarketData::Terms>( insTerms );
+        muTerms = std::make_unique<Process::MarketData::Terms>( insTerms );
         return *this;
     }
-    ModelAbstractBuilder& setTerms( const MarketData::Terms& inTerms )
+    ModelAbstractBuilder& setTerms( const Process::MarketData::Terms& inTerms )
     {
-        muTerms = std::make_unique<MarketData::Terms>( inTerms );
+        muTerms = std::make_unique<Process::MarketData::Terms>( inTerms );
         return *this;
     }
     ModelAbstractBuilder& setInitSpotRate( double inInitSpotRate )
@@ -103,7 +104,8 @@ private:
         const std::vector<std::vector<double>>& inSpots ) const override;
 
 public:
-    ConstantRate( const MarketData::Terms& inTerms, double inInitSpotRate ) :
+    ConstantRate( const Process::MarketData::Terms& inTerms,
+                  double inInitSpotRate ) :
         ModelAbstract( 1, inTerms, inInitSpotRate )
     {
     }
@@ -130,14 +132,14 @@ protected:
 
 public:
     OneFactorAbstract(
-        std::size_t inNPath, const MarketData::Terms& inTerms,
+        std::size_t inNPath, const Process::MarketData::Terms& inTerms,
         double inInitSpotRate,
         std::unique_ptr<Process::Random::PathAbstract> inuRandomPath ) :
         ModelAbstract( inNPath, inTerms, inInitSpotRate ),
         muRandomPath( std::move( inuRandomPath ) )
     {
     }
-    virtual MarketData::SpotRates calcSpotRates() const override;
+    virtual Process::MarketData::SpotRates calcSpotRates() const override;
 };
 
 class OneFactorAbstractBuilder : public ModelAbstractBuilder
@@ -154,7 +156,7 @@ public:
     }
 };
 
-}  // namespace ShortRateMCOne
-}  // namespace Process
+}  // namespace OneFactor
+}  // namespace ShortRate
 
 #endif

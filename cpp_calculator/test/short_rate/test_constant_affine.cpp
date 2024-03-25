@@ -1,10 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <iostream>
-#include <vector>
-
-#include "process/short_rate_MC.hpp"
-#include "process/short_rate_PDE.hpp"
+#include "short_rate/PDE.hpp"
+#include "short_rate/one-factor.hpp"
 
 Process::MarketData::Terms makeTerms( std::size_t inNTerms, double inMaturity )
 {
@@ -17,11 +14,11 @@ Process::MarketData::Terms makeTerms( std::size_t inNTerms, double inMaturity )
     return Process::MarketData::Terms( lTerms );
 }
 
-Process::ShortRateMCOne::ConstantAffine rateBuild(
+ShortRate::OneFactor::ConstantAffine rateBuild(
     std::size_t inNTerms, std::size_t inNPath, double inMaturity, double inRate,
     double inLambda, double inEta, double inGamma, double inDelta )
 {
-    Process::ShortRateMCOne::ConstantAffineBuilder lBuilder;
+    ShortRate::OneFactor::ConstantAffineBuilder lBuilder;
     auto lTerms = makeTerms( inNTerms, inMaturity );
     lBuilder.setInitSpotRate( inRate );
     lBuilder.setNPath( 100 );
@@ -33,11 +30,13 @@ Process::ShortRateMCOne::ConstantAffine rateBuild(
     return lBuilder.build();
 }
 
-Process::ShortRatePDE::ConstantAffine rateBuildPDE(
-    double inStartTime, double inEndTime, double inStepTime, double inLambda,
-    double inEta, double inGamma, double inDelta )
+ShortRate::PDE::ConstantAffine rateBuildPDE( double inStartTime,
+                                             double inEndTime,
+                                             double inStepTime, double inLambda,
+                                             double inEta, double inGamma,
+                                             double inDelta )
 {
-    Process::ShortRatePDE::ConstantAffineBuilder lBuilder;
+    ShortRate::PDE::ConstantAffineBuilder lBuilder;
     lBuilder.setRegTime( inStartTime, inEndTime );
     lBuilder.setStepTime( inStepTime );
     lBuilder.setDrift( inLambda, inEta );

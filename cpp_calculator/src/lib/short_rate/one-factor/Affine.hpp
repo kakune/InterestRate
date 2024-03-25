@@ -6,20 +6,17 @@
  * @date 3/14/2024
  */
 
-#ifndef PROCESS_SHORT_RATE_MC_ONE_AFFINE_HPP
-#define PROCESS_SHORT_RATE_MC_ONE_AFFINE_HPP
+#ifndef SHORT_RATE_ONE_FACTOR_AFFINE_HPP
+#define SHORT_RATE_ONE_FACTOR_AFFINE_HPP
 
-#include <iostream>
 #include <memory>
 #include <vector>
 
-#include "math/interpolate_multi.hpp"
-#include "process/market_data.hpp"
-#include "process/short_rate_MC_one/core.hpp"
+#include "short_rate/one-factor/core.hpp"
 
-namespace Process
+namespace ShortRate
 {
-namespace ShortRateMCOne
+namespace OneFactor
 {
 
 /**
@@ -28,8 +25,9 @@ namespace ShortRateMCOne
 class ConstantAffine : public OneFactorAbstract
 {
 private:
-    double mLambda, mEta;   //! drift coefficients ( lambda x + eta )dt
-    double mGamma, mDelta;  //! vol coefficients ( gamma x + delta )dW
+    const double mLambda, mEta;   //! drift coefficients ( lambda x + eta )dt
+    const double mGamma, mDelta;  //! vol coefficients ( gamma x + delta )dW
+
     double driftCoeff(
         std::size_t inIndPath, std::size_t inIndTerm,
         const std::vector<std::vector<double>>& inSpots ) const override;
@@ -39,7 +37,7 @@ private:
 
 public:
     ConstantAffine(
-        std::size_t inNPath, const MarketData::Terms& inTerms,
+        std::size_t inNPath, const Process::MarketData::Terms& inTerms,
         double inInitSpotRate,
         std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
         double inLambda, double inEta, double inGamma, double inDelta ) :
@@ -80,7 +78,7 @@ public:
     }
 };
 
-}  // namespace ShortRateMCOne
-}  // namespace Process
+}  // namespace OneFactor
+}  // namespace ShortRate
 
 #endif

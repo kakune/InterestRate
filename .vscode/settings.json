@@ -139,4 +139,5 @@
         "*.nav",
         "*.snm",
     ],
+    "C_Cpp.errorSquiggles": "disabled",
 }

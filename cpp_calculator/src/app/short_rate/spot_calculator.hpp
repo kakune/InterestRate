@@ -6,12 +6,11 @@
 #include <vector>
 
 #include "process/market_data.hpp"
-#include "process/short_rate_MC.hpp"
+#include "short_rate/multi-factor.hpp"
+#include "short_rate/one-factor.hpp"
 #include "utils/parameters.hpp"
 
 namespace APP
-{
-namespace ShortRate
 {
 
 Process::MarketData::Terms prepareTerms( const Utils::Parameters& inParams )
@@ -36,7 +35,7 @@ Process::MarketData::SpotRates calcSpotRateFromParam(
     {
         auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
             inParams( "NPath" ), inTerms );
-        Process::ShortRateMCOne::VasicekBuilder lBuilder;
+        ShortRate::OneFactor::VasicekBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
@@ -51,7 +50,7 @@ Process::MarketData::SpotRates calcSpotRateFromParam(
     {
         auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
             inParams( "NPath" ), inTerms );
-        Process::ShortRateMCOne::HoLeeBuilder lBuilder;
+        ShortRate::OneFactor::HoLeeBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
@@ -64,7 +63,7 @@ Process::MarketData::SpotRates calcSpotRateFromParam(
     {
         auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
             inParams( "NPath" ), inTerms );
-        Process::ShortRateMCOne::ConstantAffineBuilder lBuilder;
+        ShortRate::OneFactor::ConstantAffineBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
@@ -96,7 +95,7 @@ Process::MarketData::SpotRates calcSpotRateFromMarket(
     {
         auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
             inParams( "NPath" ), inTerms );
-        Process::ShortRateMCOne::VasicekWithMarketBuilder lBuilder;
+        ShortRate::OneFactor::VasicekWithMarketBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
@@ -109,7 +108,7 @@ Process::MarketData::SpotRates calcSpotRateFromMarket(
     {
         auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
             inParams( "NPath" ), inTerms );
-        Process::ShortRateMCOne::HoLeeWithMarketBuilder lBuilder;
+        ShortRate::OneFactor::HoLeeWithMarketBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
@@ -123,7 +122,7 @@ Process::MarketData::SpotRates calcSpotRateFromMarket(
         auto luRandom =
             std::make_unique<Process::RandomVec::PathBrownAntithetic>(
                 inParams( "NPath" ), inTerms, 2 );
-        Process::ShortRateMCMulti::G2ppWithMarketBuilder lBuilder;
+        ShortRate::MultiFactor::G2ppWithMarketBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
         lBuilder.setNPath( inParams( "NPath" ) );
@@ -151,7 +150,6 @@ Process::MarketData::SpotRates calcSpotRateFromMarket(
                                    prepareTerms( inParams ), inMarketZCB );
 }
 
-}  // namespace ShortRate
 }  // namespace APP
 
 #endif

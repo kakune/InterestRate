@@ -6,17 +6,18 @@
  * @date 3/21/2024
  */
 
+#include "short_rate/PDE/one-factor_Affine.hpp"
+
 #include <iostream>
 #include <limits>
 #include <memory>
 #include <vector>
 
 #include "math/ODE.hpp"
-#include "process/short_rate_PDE.hpp"
 
-namespace Process
+namespace ShortRate
 {
-namespace ShortRatePDE
+namespace PDE
 {
 
 void AffineAbstract::buildAB()
@@ -114,5 +115,5 @@ std::vector<double> ConstantAffine::ODEForAB( double inTime,
     return lResult;
 }
 
-}  // namespace ShortRatePDE
-}  // namespace Process
+}  // namespace PDE
+}  // namespace ShortRate

@@ -20,9 +20,9 @@ int main( int argc, char* argv[] )
     lParams.setNameCommonSection( "COMMON" );
     lParams.setNameCurrentSection( lNameSection );
 
-    Process::MarketData::Terms lTerms = APP::ShortRate::prepareTerms( lParams );
+    Process::MarketData::Terms lTerms = APP::prepareTerms( lParams );
     Process::MarketData::SpotRates lSpots =
-        APP::ShortRate::calcSpotRateFromParam( lNameModel, lParams, lTerms );
+        APP::calcSpotRateFromParam( lNameModel, lParams, lTerms );
     Process::MarketData::ZCB lZCB( lSpots );
 
     std::ofstream lFileOutput( lPathOutput );

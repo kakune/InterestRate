@@ -5,19 +5,19 @@
  * @date 1/29/2024
  */
 
+#include "short_rate/one-factor/core.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <vector>
 
-#include "process/short_rate_MC.hpp"
-
-namespace Process
+namespace ShortRate
 {
-namespace ShortRateMCOne
+namespace OneFactor
 {
 
-MarketData::SpotRates ModelAbstract::calcSpotRates() const
+Process::MarketData::SpotRates ModelAbstract::calcSpotRates() const
 {
     std::vector<std::vector<double>> lSpots(
         mNPath, std::vector<double>( mTerms.size(), mInitSpotRate ) );
@@ -30,7 +30,7 @@ MarketData::SpotRates ModelAbstract::calcSpotRates() const
                                    driftCoeff( iPath, iTerm, lSpots ) * lTmpDt;
         }
     }
-    return MarketData::SpotRates( mTerms, lSpots );
+    return Process::MarketData::SpotRates( mTerms, lSpots );
 }
 
 double ConstantRate::driftCoeff(
@@ -40,7 +40,7 @@ double ConstantRate::driftCoeff(
     return 0.0;
 }
 
-MarketData::SpotRates OneFactorAbstract::calcSpotRates() const
+Process::MarketData::SpotRates OneFactorAbstract::calcSpotRates() const
 {
     std::vector<std::vector<double>> lSpots(
         mNPath, std::vector<double>( mTerms.size(), mInitSpotRate ) );
@@ -56,8 +56,8 @@ MarketData::SpotRates OneFactorAbstract::calcSpotRates() const
                                        volCoeff( iPath, iTerm, lSpots );
         }
     }
-    return MarketData::SpotRates( mTerms, lSpots );
+    return Process::MarketData::SpotRates( mTerms, lSpots );
 }
 
-}  // namespace ShortRateMCOne
-}  // namespace Process
+}  // namespace OneFactor
+}  // namespace ShortRate

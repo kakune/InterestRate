@@ -6,19 +6,20 @@
  * @date 3/24/2024
  */
 
-#ifndef PROCESS_SHORT_RATE_MC_MULTI_GAUSS_HPP
-#define PROCESS_SHORT_RATE_MC_MULTI_GAUSS_HPP
+#ifndef SHORT_RATE_MULTI_FACTOR_GAUSS_HPP
+#define SHORT_RATE_MULTI_FACTOR_GAUSS_HPP
 
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <vector>
 
 #include "process/market_data.hpp"
-#include "process/short_rate_MC_multi/core.hpp"
+#include "short_rate/multi-factor/core.hpp"
 
-namespace Process
+namespace ShortRate
 {
-namespace ShortRateMCMulti
+namespace MultiFactor
 {
 
 /**
@@ -28,8 +29,8 @@ namespace ShortRateMCMulti
 class ConstantGauss : public MultiFactorAbstract
 {
 private:
-    Math::Vec mDriftCoeff;  //! coefficient of dt
-    Math::Mat
+    const Math::Vec mDriftCoeff;  //! coefficient of dt
+    const Math::Mat
         mVolCoeff;  //! coefficient of dW which must be LowerTriangular Matrix
 
     // DriftCoeff * State * dt
@@ -44,11 +45,11 @@ private:
 
     // sum of components of state
     double transfStateToRate( const Math::Vec& inState,
-                              double inTime ) const override;
+                              std::size_t inIndTime ) const override;
 
 public:
     ConstantGauss(
-        std::size_t inNPath, const MarketData::Terms& inTerms,
+        std::size_t inNPath, const Process::MarketData::Terms& inTerms,
         const Math::Vec& inInitState,
         std::unique_ptr<Process::RandomVec::PathAbstract> inuRandomPath,
         const Math::Vec& inDriftCoeff, const Math::Mat& inVolCoeff ) :
@@ -92,13 +93,15 @@ public:
 class G2ppWithMarket : public MultiFactorAbstract
 {
 private:
-    Math::Vec mDriftCoeff;  //! coefficient of dt
-    Math::Mat
+    const Math::Vec mDriftCoeff;  //! coefficient of dt
+    const Math::Mat
         mVolCoeff;  //! coefficient of dW which must be LowerTriangular Matrix
-    MarketData::ZCB mMarketZCB;  //! the market data
+    const Process::MarketData::ZCB mMarketZCB;  //! the market data
 
     double mA, mB;
     double mFactorA, mFactorB, mFactorAB;  //! factor for transfStateToRate
+    std::vector<double>
+        mInstantaneousFRs;  //! instantaneous forward rates at each time
 
     // (-a*x, -b*y)dt
     Math::Vec driftCoeff(
@@ -110,39 +113,31 @@ private:
                        const Math::Vec& inRandomVec ) const override;
     // r = x + y + \phi
     double transfStateToRate( const Math::Vec& inState,
-                              double inTime ) const override;
+                              std::size_t inIndTime ) const override;
+    void prepareFactors();
 
 public:
     G2ppWithMarket(
-        std::size_t inNPath, const MarketData::Terms& inTerms,
+        std::size_t inNPath, const Process::MarketData::Terms& inTerms,
         std::unique_ptr<Process::RandomVec::PathAbstract> inuRandomPath,
         const Math::Vec& inDriftCoeff, const Math::Mat& inVolCoeff,
-        const MarketData::ZCB& inMarketZCB ) :
+        const Process::MarketData::ZCB& inMarketZCB ) :
         MultiFactorAbstract( inNPath, inTerms, Math::Vec( 2, 0.0 ),
                              std::move( inuRandomPath ) ),
         mDriftCoeff( inDriftCoeff ),
         mVolCoeff( inVolCoeff ),
-        mMarketZCB( inMarketZCB )
+        mMarketZCB( inMarketZCB ),
+        mInstantaneousFRs( inTerms.size() )
     {
         if ( inDriftCoeff.size() != 2 || inVolCoeff.sizeRow() != 2 ||
              inVolCoeff.sizeCol() != 2 )
         {
-            std::cerr
-                << "Error : "
-                   "Process::ShortRateMCMulti::G2ppWithMarket::G2ppWithMarket()"
-                << std::endl
-                << "size must be 2." << std::endl;
-            return;
+            throw std::invalid_argument(
+                "Error : "
+                "Process::ShortRateMCMulti::G2ppWithMarket::G2ppWithMarket()"
+                "\nsize must be 2." );
         }
-        mA            = -mDriftCoeff( 0 );
-        mB            = -mDriftCoeff( 1 );
-        double lSigma = mVolCoeff( 0, 0 );
-        double lEta   = std::sqrt( mVolCoeff( 1, 0 ) * mVolCoeff( 1, 0 ) +
-                                   mVolCoeff( 1, 1 ) * mVolCoeff( 1, 1 ) );
-        double lRho   = mVolCoeff( 1, 0 ) / lEta;
-        mFactorA      = 0.5 * lSigma * lSigma / ( mA * mA );
-        mFactorB      = 0.5 * lEta * lEta / ( mB * mB );
-        mFactorAB     = lRho * lSigma * lEta / ( mA * mB );
+        prepareFactors();
     }
 };
 
@@ -151,7 +146,7 @@ class G2ppWithMarketBuilder : public MultiFactorAbstractBuilder
 private:
     Math::Vec mDriftCoeff = Math::Vec( 0 );
     Math::Mat mVolCoeff   = Math::Mat( 0, 0 );
-    std::unique_ptr<MarketData::ZCB> muMarketZCB;
+    std::unique_ptr<Process::MarketData::ZCB> muMarketZCB;
 
 public:
     G2ppWithMarketBuilder& setDrift( const Math::Vec& inDriftCoeff )
@@ -164,9 +159,10 @@ public:
         mVolCoeff = inVolCoeff;
         return *this;
     }
-    G2ppWithMarketBuilder& setMarketZCB( const MarketData::ZCB& inMarketZCB )
+    G2ppWithMarketBuilder& setMarketZCB(
+        const Process::MarketData::ZCB& inMarketZCB )
     {
-        muMarketZCB = std::make_unique<MarketData::ZCB>( inMarketZCB );
+        muMarketZCB = std::make_unique<Process::MarketData::ZCB>( inMarketZCB );
         return *this;
     }
     G2ppWithMarket build()
@@ -177,7 +173,7 @@ public:
     ModelAbstract& setInitState( const Math::Vec& inInitState ) = delete;
 };
 
-}  // namespace ShortRateMCMulti
-}  // namespace Process
+}  // namespace MultiFactor
+}  // namespace ShortRate
 
 #endif

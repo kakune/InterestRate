@@ -2,6 +2,7 @@ add_subdirectory(utils)
 add_subdirectory(math)
 add_subdirectory(process)
 add_subdirectory(analytical)
+add_subdirectory(short_rate)
 
 if(CUDA_ENABLED)
     add_subdirectory(process_cuda)

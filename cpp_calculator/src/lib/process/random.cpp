@@ -12,8 +12,6 @@
 #include <iostream>
 #include <random>
 
-#include "math/interpolate_1d.hpp"
-
 namespace Process
 {
 namespace Random

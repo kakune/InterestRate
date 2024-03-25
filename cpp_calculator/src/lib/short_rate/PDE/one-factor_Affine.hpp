@@ -5,8 +5,8 @@
  * @date 3/21/2024
  */
 
-#ifndef PROCESS_SHORT_RATE_PDE_ONE_FACTOR_AFFINE_HPP
-#define PROCESS_SHORT_RATE_PDE_ONE_FACTOR_AFFINE_HPP
+#ifndef SHORT_RATE_PDE_ONE_FACTOR_AFFINE_HPP
+#define SHORT_RATE_PDE_ONE_FACTOR_AFFINE_HPP
 
 #include <algorithm>
 #include <memory>
@@ -14,11 +14,11 @@
 
 #include "math/interpolate_multi.hpp"
 #include "process/market_data.hpp"
-#include "process/short_rate_PDE/core.hpp"
+#include "short_rate/PDE/core.hpp"
 
-namespace Process
+namespace ShortRate
 {
-namespace ShortRatePDE
+namespace PDE
 {
 
 class AffineAbstract : public ModelAbstract
@@ -158,7 +158,7 @@ public:
     }
 };
 
-}  // namespace ShortRatePDE
-}  // namespace Process
+}  // namespace PDE
+}  // namespace ShortRate
 
 #endif

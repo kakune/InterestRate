@@ -6,14 +6,14 @@
  * @date 3/24/2024
  */
 
+#include "short_rate/multi-factor/Gauss.hpp"
+
 #include <iostream>
 #include <memory>
 
-#include "process/short_rate_MC.hpp"
-
-namespace Process
+namespace ShortRate
 {
-namespace ShortRateMCMulti
+namespace MultiFactor
 {
 
 Math::Vec ConstantGauss::driftCoeff(
@@ -30,7 +30,7 @@ Math::Vec ConstantGauss::volTerm(
     return dotLowerMatVec( mVolCoeff, inRandomVec );
 }
 double ConstantGauss::transfStateToRate( const Math::Vec& inState,
-                                         double inTime ) const
+                                         std::size_t inIndTime ) const
 {
     return inState.sum();
 }
@@ -84,15 +84,35 @@ Math::Vec G2ppWithMarket::volTerm(
     return dotLowerMatVec( mVolCoeff, inRandomVec );
 }
 double G2ppWithMarket::transfStateToRate( const Math::Vec& inState,
-                                          double inTime ) const
+                                          std::size_t inIndTime ) const
 {
-    double lDifTime = inTime - mTerms[0];
+    double lDifTime = mTerms[inIndTime] - mTerms[0];
     double lExpA    = 1.0 - std::exp( -mA * lDifTime );
     double lExpB    = 1.0 - std::exp( -mB * lDifTime );
-    return inState.sum() + mMarketZCB.instantaneousForwardRate( lDifTime ) +
+    return inState.sum() + mInstantaneousFRs[inIndTime] +
            mFactorA * lExpA * lExpA + mFactorB * lExpB * lExpB +
            mFactorAB * lExpA * lExpB;
+    // return inState.sum() +
+    //        mMarketZCB.instantaneousForwardRate( mTerms[inIndTime] ) +
+    //        mFactorA * lExpA * lExpA + mFactorB * lExpB * lExpB +
+    //        mFactorAB * lExpA * lExpB;
+}
+void G2ppWithMarket::prepareFactors()
+{
+    mA            = -mDriftCoeff( 0 );
+    mB            = -mDriftCoeff( 1 );
+    double lSigma = mVolCoeff( 0, 0 );
+    double lEta   = std::sqrt( mVolCoeff( 1, 0 ) * mVolCoeff( 1, 0 ) +
+                               mVolCoeff( 1, 1 ) * mVolCoeff( 1, 1 ) );
+    double lRho   = mVolCoeff( 1, 0 ) / lEta;
+    mFactorA      = 0.5 * lSigma * lSigma / ( mA * mA );
+    mFactorB      = 0.5 * lEta * lEta / ( mB * mB );
+    mFactorAB     = lRho * lSigma * lEta / ( mA * mB );
+    for ( std::size_t i = 0; i < mTerms.size(); ++i )
+    {
+        mInstantaneousFRs[i] = mMarketZCB.instantaneousForwardRate( mTerms[i] );
+    }
 }
 
-}  // namespace ShortRateMCMulti
-}  // namespace Process
+}  // namespace MultiFactor
+}  // namespace ShortRate

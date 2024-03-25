@@ -5,8 +5,8 @@
  * @date 3/23/2024
  */
 
-#ifndef PROCESS_SHORT_RATE_MC_MULTI_CORE_HPP
-#define PROCESS_SHORT_RATE_MC_MULTI_CORE_HPP
+#ifndef SHORT_RATE_CORE_HPP
+#define SHORT_RATE_CORE_HPP
 
 #include <memory>
 #include <vector>
@@ -15,9 +15,9 @@
 #include "process/market_data.hpp"
 #include "process/random.hpp"
 
-namespace Process
+namespace ShortRate
 {
-namespace ShortRateMCMulti
+namespace MultiFactor
 {
 
 /**
@@ -26,10 +26,10 @@ namespace ShortRateMCMulti
 class ModelAbstract
 {
 protected:
-    const std::size_t mDim;          //! the dimension of state
-    const std::size_t mNPath;        //! the number of Path
-    const MarketData::Terms mTerms;  //! term structure
-    const Math::Vec mInitState;      //! initial spot state
+    const std::size_t mDim;                   //! the dimension of state
+    const std::size_t mNPath;                 //! the number of Path
+    const Process::MarketData::Terms mTerms;  //! term structure
+    const Math::Vec mInitState;               //! initial spot state
     /**
      * @brief The coefficient of dt in SDE of r[inIndPath][inIndTerm]
      * @param inIndPath the index of path
@@ -42,7 +42,7 @@ protected:
         const std::vector<std::vector<Math::Vec>>& inSpots ) const = 0;
 
     virtual double transfStateToRate( const Math::Vec& inState,
-                                      double inTime ) const;
+                                      std::size_t inIndTime ) const;
 
 public:
     /**
@@ -51,7 +51,8 @@ public:
      * @param inTerms term structure
      * @param inInitState the initial state
      */
-    ModelAbstract( std::size_t inNPath, const MarketData::Terms& inTerms,
+    ModelAbstract( std::size_t inNPath,
+                   const Process::MarketData::Terms& inTerms,
                    const Math::Vec& inInitState ) :
         mDim( inInitState.size() ),
         mNPath( inNPath ),
@@ -63,7 +64,7 @@ public:
     /**
      * @brief This calcurate spot rates and Disconunt Factors.
      */
-    virtual MarketData::SpotRates calcSpotRates() const;
+    virtual Process::MarketData::SpotRates calcSpotRates() const;
 };
 
 /**
@@ -73,8 +74,8 @@ class ModelAbstractBuilder
 {
 protected:
     Math::Vec mInitState = Math::Vec( 0 );
-    std::size_t mNPath;                          //! the number of Path
-    std::unique_ptr<MarketData::Terms> muTerms;  //! term structure
+    std::size_t mNPath;                                   //! the number of Path
+    std::unique_ptr<Process::MarketData::Terms> muTerms;  //! term structure
 
 public:
     ModelAbstractBuilder& setNPath( std::size_t inNPath )
@@ -85,12 +86,12 @@ public:
     ModelAbstractBuilder& setTerms(
         std::shared_ptr<const std::vector<double>> insTerms )
     {
-        muTerms = std::make_unique<MarketData::Terms>( insTerms );
+        muTerms = std::make_unique<Process::MarketData::Terms>( insTerms );
         return *this;
     }
-    ModelAbstractBuilder& setTerms( const MarketData::Terms& inTerms )
+    ModelAbstractBuilder& setTerms( const Process::MarketData::Terms& inTerms )
     {
-        muTerms = std::make_unique<MarketData::Terms>( inTerms );
+        muTerms = std::make_unique<Process::MarketData::Terms>( inTerms );
         return *this;
     }
     ModelAbstractBuilder& setInitState( const Math::Vec& inInitState )
@@ -112,7 +113,7 @@ private:
         const std::vector<std::vector<Math::Vec>>& inSpots ) const override;
 
 public:
-    ConstantRate( const MarketData::Terms& inTerms,
+    ConstantRate( const Process::MarketData::Terms& inTerms,
                   const Math::Vec& inInitState ) :
         ModelAbstract( 1, inTerms, inInitState )
     {
@@ -143,14 +144,14 @@ protected:
 
 public:
     MultiFactorAbstract(
-        std::size_t inNPath, const MarketData::Terms& inTerms,
+        std::size_t inNPath, const Process::MarketData::Terms& inTerms,
         const Math::Vec& inInitState,
         std::unique_ptr<Process::RandomVec::PathAbstract> inuRandomPath ) :
         ModelAbstract( inNPath, inTerms, inInitState ),
         muRandomPath( std::move( inuRandomPath ) )
     {
     }
-    virtual MarketData::SpotRates calcSpotRates() const override;
+    virtual Process::MarketData::SpotRates calcSpotRates() const override;
 };
 
 class MultiFactorAbstractBuilder : public ModelAbstractBuilder
@@ -167,7 +168,7 @@ public:
     }
 };
 
-}  // namespace ShortRateMCMulti
-}  // namespace Process
+}  // namespace MultiFactor
+}  // namespace ShortRate
 
 #endif

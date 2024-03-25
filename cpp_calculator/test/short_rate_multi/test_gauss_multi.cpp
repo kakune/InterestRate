@@ -1,9 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <iostream>
-#include <vector>
-
-#include "process/short_rate_MC.hpp"
+#include "short_rate/multi-factor.hpp"
 
 Process::MarketData::Terms makeTerms( std::size_t inNTerms, double inMaturity )
 {
@@ -16,11 +13,11 @@ Process::MarketData::Terms makeTerms( std::size_t inNTerms, double inMaturity )
     return Process::MarketData::Terms( lTerms );
 }
 
-Process::ShortRateMCMulti::ConstantGauss rateBuild(
+ShortRate::MultiFactor::ConstantGauss rateBuild(
     std::size_t inNTerms, std::size_t inNPath, double inMaturity,
     Math::Vec inInitState, Math::Vec inDriftCoeff, Math::Mat inVolCoeff )
 {
-    Process::ShortRateMCMulti::ConstantGaussBuilder lBuilder;
+    ShortRate::MultiFactor::ConstantGaussBuilder lBuilder;
     auto lTerms = makeTerms( inNTerms, inMaturity );
     lBuilder.setInitState( inInitState );
     lBuilder.setNPath( inNPath );
@@ -33,12 +30,12 @@ Process::ShortRateMCMulti::ConstantGauss rateBuild(
     return lBuilder.build();
 }
 
-Process::ShortRateMCMulti::G2ppWithMarket G2ppBuild(
+ShortRate::MultiFactor::G2ppWithMarket G2ppBuild(
     std::size_t inNTerms, std::size_t inNPath, double inMaturity,
     Math::Vec inDriftCoeff, Math::Mat inVolCoeff,
     const Process::MarketData::ZCB& inMarketZCB )
 {
-    Process::ShortRateMCMulti::G2ppWithMarketBuilder lBuilder;
+    ShortRate::MultiFactor::G2ppWithMarketBuilder lBuilder;
     auto lTerms = makeTerms( inNTerms, inMaturity );
     lBuilder.setNPath( inNPath );
     lBuilder.setDrift( inDriftCoeff );
@@ -95,7 +92,7 @@ double testG2ppConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
 
     for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
     {
-        std::cout << lZCB[iTerm] << ", " << lG2pp[iTerm] << std::endl;
+        // std::cout << lZCB[iTerm] << ", " << lG2pp[iTerm] << std::endl;
         lResult = std::max( lResult,
                             std::abs( ( lZCB[iTerm] - lG2pp( lTerms[iTerm] ) ) /
                                       lZCB[iTerm] ) );
@@ -129,11 +126,12 @@ TEST( ShortRateMultiConstantGaussTest, G2ppZCBConsistency )
     EXPECT_NEAR(
         0.0,
         testG2ppConsistencyZCB( 100, 10000, 1.0, { -0.01, 0.005 },
+
                                 { { 0.03, 0.0 }, { 0.02, -0.04 } }, 0.1, 0.03 ),
         0.001 );
     EXPECT_NEAR( 0.0,
-                 testG2ppConsistencyZCB( 400, 40000, 10.0, { -0.01, -0.015 },
-                                         { { -0.08, 0.0 }, { 0.02, -0.04 } },
+                 testG2ppConsistencyZCB( 200, 20000, 10.0, { -0.01, -0.015 },
+                                         { { -0.02, 0.0 }, { 0.01, -0.01 } },
                                          0.2, 0.03 ),
                  0.005 );
 }

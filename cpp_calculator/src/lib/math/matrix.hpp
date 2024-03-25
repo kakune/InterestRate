@@ -63,10 +63,16 @@ public:
 
     std::size_t size() const;
     double sum() const;
+    double min() const;
+    double max() const;
     const Vec& print() const;
     Vec& print();
 
     Vec& solveEqLCholesky( const Mat& inL );
+
+    friend Vec sqrt( const Vec& inVec );
+    friend Vec exp( const Vec& inVec );
+    friend Vec log( const Vec& inVec );
 
     friend void solveEqPositiveDefinite( Mat& inMat, Vec& inVec );
     friend double dot( const Vec& inLhs, const Vec& inRhs );

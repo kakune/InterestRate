@@ -5,8 +5,8 @@
  * @date 3/21/2024
  */
 
-#ifndef PROCESS_SHORT_RATE_PDE_CORE_HPP
-#define PROCESS_SHORT_RATE_PDE_CORE_HPP
+#ifndef SHORT_RATE_PDE_CORE_HPP
+#define SHORT_RATE_PDE_CORE_HPP
 
 #include <algorithm>
 #include <memory>
@@ -16,9 +16,9 @@
 #include "process/market_data.hpp"
 #include "process/random.hpp"
 
-namespace Process
+namespace ShortRate
 {
-namespace ShortRatePDE
+namespace PDE
 {
 
 /**
@@ -72,7 +72,7 @@ public:
     virtual ~ModelAbstractBuilder() = default;
 };
 
-}  // namespace ShortRatePDE
-}  // namespace Process
+}  // namespace PDE
+}  // namespace ShortRate
 
 #endif

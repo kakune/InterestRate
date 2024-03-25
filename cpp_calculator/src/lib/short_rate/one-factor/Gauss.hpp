@@ -6,19 +6,19 @@
  * @date 3/8/2024
  */
 
-#ifndef PROCESS_SHORT_RATE_MC_ONE_GAUSS_HPP
-#define PROCESS_SHORT_RATE_MC_ONE_GAUSS_HPP
+#ifndef SHORT_RATE_ONE_FACTOR_GAUSS_HPP
+#define SHORT_RATE_ONE_FACTOR_GAUSS_HPP
 
 #include <iostream>
 #include <memory>
 #include <vector>
 
 #include "process/market_data.hpp"
-#include "process/short_rate_MC_one/core.hpp"
+#include "short_rate/one-factor/core.hpp"
 
-namespace Process
+namespace ShortRate
 {
-namespace ShortRateMCOne
+namespace OneFactor
 {
 
 /**
@@ -27,7 +27,7 @@ namespace ShortRateMCOne
 class HoLee : public OneFactorAbstract
 {
 private:
-    double mVol;  //! volatility of rate
+    const double mVol;  //! volatility of rate
     double driftCoeff(
         std::size_t inIndPath, std::size_t inIndTerm,
         const std::vector<std::vector<double>>& inSpots ) const override;
@@ -36,7 +36,7 @@ private:
         const std::vector<std::vector<double>>& inSpots ) const override;
 
 public:
-    HoLee( std::size_t inNPath, const MarketData::Terms inTerms,
+    HoLee( std::size_t inNPath, const Process::MarketData::Terms inTerms,
            double inInitSpotRate,
            std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
            double inVol ) :
@@ -75,21 +75,21 @@ public:
 class HoLeeWithMarket : public OneFactorAbstract
 {
 private:
-    double mVol;   //! volatility of rate
-    double mVol2;  //! square of mVol
+    const double mVol;   //! volatility of rate
+    const double mVol2;  //! square of mVol
     double driftCoeff(
         std::size_t inIndPath, std::size_t inIndTerm,
         const std::vector<std::vector<double>>& inSpots ) const override;
     double volCoeff(
         std::size_t inIndPath, std::size_t inIndTerm,
         const std::vector<std::vector<double>>& inSpots ) const override;
-    MarketData::ZCB mMarketZCB;
+    Process::MarketData::ZCB mMarketZCB;
 
 public:
     HoLeeWithMarket(
-        std::size_t inNPath, const MarketData::Terms inTerms,
+        std::size_t inNPath, const Process::MarketData::Terms inTerms,
         std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
-        double inVol, const MarketData::ZCB& inMarketZCB ) :
+        double inVol, const Process::MarketData::ZCB& inMarketZCB ) :
         OneFactorAbstract( inNPath, inTerms, inMarketZCB.initialSpotRate(),
                            std::move( inuRandomPath ) ),
         mVol( inVol ),
@@ -103,7 +103,7 @@ class HoLeeWithMarketBuilder : public OneFactorAbstractBuilder
 {
 private:
     double mVol;
-    std::unique_ptr<MarketData::ZCB> muMarketZCB;
+    std::unique_ptr<Process::MarketData::ZCB> muMarketZCB;
 
 public:
     HoLeeWithMarketBuilder& setVol( double inVol )
@@ -111,9 +111,10 @@ public:
         mVol = inVol;
         return *this;
     }
-    HoLeeWithMarketBuilder& setMarketZCB( const MarketData::ZCB& inMarketZCB )
+    HoLeeWithMarketBuilder& setMarketZCB(
+        const Process::MarketData::ZCB& inMarketZCB )
     {
-        muMarketZCB = std::make_unique<MarketData::ZCB>( inMarketZCB );
+        muMarketZCB = std::make_unique<Process::MarketData::ZCB>( inMarketZCB );
         return *this;
     }
     HoLeeWithMarket build()
@@ -130,7 +131,7 @@ public:
 class Vasicek : public OneFactorAbstract
 {
 private:
-    double mVol, mKappa, mMean;
+    const double mVol, mKappa, mMean;
     double driftCoeff(
         std::size_t inIndPath, std::size_t inIndTerm,
         const std::vector<std::vector<double>>& inSpots ) const override;
@@ -139,7 +140,7 @@ private:
         const std::vector<std::vector<double>>& inSpots ) const override;
 
 public:
-    Vasicek( std::size_t inNPath, const MarketData::Terms inTerms,
+    Vasicek( std::size_t inNPath, const Process::MarketData::Terms inTerms,
              double inInitSpotRate,
              std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
              double inVol, double inKappa, double inMean ) :
@@ -191,21 +192,23 @@ public:
 class VasicekWithMarket : public OneFactorAbstract
 {
 private:
-    double mVol, mKappa;
-    double mMeanFactor1, mMeanFactor2;
+    const double mVol, mKappa;
+    const double mMeanFactor1, mMeanFactor2;
+    const Process::MarketData::ZCB mMarketZCB;
+
     double driftCoeff(
         std::size_t inIndPath, std::size_t inIndTerm,
         const std::vector<std::vector<double>>& inSpots ) const override;
     double volCoeff(
         std::size_t inIndPath, std::size_t inIndTerm,
         const std::vector<std::vector<double>>& inSpots ) const override;
-    MarketData::ZCB mMarketZCB;
 
 public:
     VasicekWithMarket(
-        std::size_t inNPath, const MarketData::Terms inTerms,
+        std::size_t inNPath, const Process::MarketData::Terms inTerms,
         std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
-        double inVol, double inKappa, const MarketData::ZCB& inMarketZCB ) :
+        double inVol, double inKappa,
+        const Process::MarketData::ZCB& inMarketZCB ) :
         OneFactorAbstract( inNPath, inTerms, inMarketZCB.initialSpotRate(),
                            std::move( inuRandomPath ) ),
         mVol( inVol ),
@@ -221,7 +224,7 @@ class VasicekWithMarketBuilder : public OneFactorAbstractBuilder
 {
 private:
     double mVol, mKappa, mMean;
-    std::unique_ptr<MarketData::ZCB> muMarketZCB;
+    std::unique_ptr<Process::MarketData::ZCB> muMarketZCB;
 
 public:
     VasicekWithMarketBuilder& setVol( double inVol )
@@ -234,9 +237,10 @@ public:
         mKappa = inKappa;
         return *this;
     }
-    VasicekWithMarketBuilder& setMarketZCB( const MarketData::ZCB& inMarketZCB )
+    VasicekWithMarketBuilder& setMarketZCB(
+        const Process::MarketData::ZCB& inMarketZCB )
     {
-        muMarketZCB = std::make_unique<MarketData::ZCB>( inMarketZCB );
+        muMarketZCB = std::make_unique<Process::MarketData::ZCB>( inMarketZCB );
         return *this;
     }
     VasicekWithMarket build()
@@ -253,14 +257,15 @@ public:
 class GSR : public OneFactorAbstract
 {
 private:
-    Math::Interpolate1D::NewtonSpline mInterpVol, mInterpKappa, mInterpMean;
+    const Math::Interpolate1D::NewtonSpline mInterpVol, mInterpKappa,
+        mInterpMean;
     double driftCoeff( std::size_t inIndPath, std::size_t inIndTerm,
                        const std::vector<std::vector<double>>& inSpots ) const;
     double volCoeff( std::size_t inIndPath, std::size_t inIndTerm,
                      const std::vector<std::vector<double>>& inSpots ) const;
 
 public:
-    GSR( std::size_t inNPath, const MarketData::Terms& inTerms,
+    GSR( std::size_t inNPath, const Process::MarketData::Terms& inTerms,
          double inInitSpotRate,
          std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
          Math::Interpolate1D::NewtonSpline inInterpVol,
@@ -367,8 +372,9 @@ public:
 class GSRWithMarket : public OneFactorAbstract
 {
 private:
-    Math::Interpolate1D::NewtonSpline mInterpVol, mInterpKappa;
-    MarketData::ZCB mMarketZCB;
+    const Math::Interpolate1D::NewtonSpline mInterpVol, mInterpKappa;
+    const Process::MarketData::ZCB mMarketZCB;
+
     double driftCoeff(
         std::size_t inIndPath, std::size_t inIndTerm,
         const std::vector<std::vector<double>>& inSpots ) const override
@@ -394,11 +400,12 @@ private:
         const std::vector<std::vector<double>>& inFactors ) const;
 
 public:
-    GSRWithMarket( std::size_t inNPath, const MarketData::Terms& inTerms,
+    GSRWithMarket( std::size_t inNPath,
+                   const Process::MarketData::Terms& inTerms,
                    std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
                    Math::Interpolate1D::NewtonSpline inInterpVol,
                    Math::Interpolate1D::NewtonSpline inInterpKappa,
-                   MarketData::ZCB inMarketZCB ) :
+                   Process::MarketData::ZCB inMarketZCB ) :
         OneFactorAbstract( inNPath, inTerms, inMarketZCB.initialSpotRate(),
                            std::move( inuRandomPath ) ),
         mInterpVol( inInterpVol ),
@@ -406,7 +413,7 @@ public:
         mMarketZCB( inMarketZCB )
     {
     }
-    MarketData::SpotRates calcSpotRates() const override;
+    Process::MarketData::SpotRates calcSpotRates() const override;
 };
 
 class GSRWithMarketBuilder : public OneFactorAbstractBuilder
@@ -415,7 +422,7 @@ private:
     std::size_t mNDegVol, mNDegKappa;
     std::unique_ptr<Math::Interpolate1D::NewtonSpline> muInterpVol,
         muInterpKappa;
-    std::unique_ptr<MarketData::ZCB> muMarketZCB;
+    std::unique_ptr<Process::MarketData::ZCB> muMarketZCB;
 
 public:
     GSRWithMarketBuilder( std::size_t inNDegVol   = 3,
@@ -468,9 +475,10 @@ public:
             std::make_shared<const std::vector<double>>( inKappas ) );
         return *this;
     }
-    GSRWithMarketBuilder& setMarketZCB( const MarketData::ZCB& inMarketZCB )
+    GSRWithMarketBuilder& setMarketZCB(
+        const Process::MarketData::ZCB& inMarketZCB )
     {
-        muMarketZCB = std::make_unique<MarketData::ZCB>( inMarketZCB );
+        muMarketZCB = std::make_unique<Process::MarketData::ZCB>( inMarketZCB );
         return *this;
     }
     GSRWithMarket build()
@@ -481,7 +489,7 @@ public:
     ModelAbstractBuilder& setInitSpotRate( double inInitSpotRate ) = delete;
 };
 
-}  // namespace ShortRateMCOne
-}  // namespace Process
+}  // namespace OneFactor
+}  // namespace ShortRate
 
 #endif

@@ -5,19 +5,19 @@
  * @date 3/23/2024
  */
 
+#include "short_rate/multi-factor/core.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <vector>
 
-#include "process/short_rate_MC.hpp"
-
-namespace Process
+namespace ShortRate
 {
-namespace ShortRateMCMulti
+namespace MultiFactor
 {
 
-MarketData::SpotRates ModelAbstract::calcSpotRates() const
+Process::MarketData::SpotRates ModelAbstract::calcSpotRates() const
 {
     std::vector<std::vector<Math::Vec>> lSpots(
         mNPath, std::vector<Math::Vec>( mTerms.size(), mInitState ) );
@@ -34,17 +34,16 @@ MarketData::SpotRates ModelAbstract::calcSpotRates() const
         mNPath, std::vector<double>( mTerms.size() ) );
     for ( std::size_t iTerm = 0; iTerm < mTerms.size(); ++iTerm )
     {
-        double lTmpTime = mTerms[iTerm];
         for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
         {
             lRates[iPath][iTerm] =
-                transfStateToRate( lSpots[iPath][iTerm], lTmpTime );
+                transfStateToRate( lSpots[iPath][iTerm], iTerm );
         }
     }
-    return MarketData::SpotRates( mTerms, lRates );
+    return Process::MarketData::SpotRates( mTerms, lRates );
 }
 double ModelAbstract::transfStateToRate( const Math::Vec& inState,
-                                         double inTime ) const
+                                         std::size_t inIndTime ) const
 {
     return inState( 0 );
 }
@@ -56,7 +55,7 @@ Math::Vec ConstantRate::driftCoeff(
     return Math::Vec( mDim, 0.0 );
 }
 
-MarketData::SpotRates MultiFactorAbstract::calcSpotRates() const
+Process::MarketData::SpotRates MultiFactorAbstract::calcSpotRates() const
 {
     std::vector<std::vector<Math::Vec>> lSpots(
         mNPath, std::vector<Math::Vec>( mTerms.size(), mInitState ) );
@@ -76,15 +75,14 @@ MarketData::SpotRates MultiFactorAbstract::calcSpotRates() const
         mNPath, std::vector<double>( mTerms.size() ) );
     for ( std::size_t iTerm = 0; iTerm < mTerms.size(); ++iTerm )
     {
-        double lTmpTime = mTerms[iTerm];
         for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
         {
             lRates[iPath][iTerm] =
-                transfStateToRate( lSpots[iPath][iTerm], lTmpTime );
+                transfStateToRate( lSpots[iPath][iTerm], iTerm );
         }
     }
-    return MarketData::SpotRates( mTerms, lRates );
+    return Process::MarketData::SpotRates( mTerms, lRates );
 }
 
-}  // namespace ShortRateMCMulti
-}  // namespace Process
+}  // namespace MultiFactor
+}  // namespace ShortRate

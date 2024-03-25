@@ -1,13 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <iostream>
-#include <memory>
-#include <random>
-#include <vector>
-
-#include "process/market_data.hpp"
-#include "process/random.hpp"
-#include "process/short_rate_MC.hpp"
+#include "short_rate/one-factor.hpp"
 
 Process::MarketData::Terms makeTerms( std::size_t inNTerms, double inMaturity )
 {
@@ -28,14 +21,14 @@ double testDifAnalytical( std::size_t inNTerms, std::size_t inNPath,
     auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
         inNPath, lTerms );
 
-    Process::ShortRateMCOne::HoLeeBuilder lBuilder;
+    ShortRate::OneFactor::HoLeeBuilder lBuilder;
     lBuilder.setTerms( lTerms );
     lBuilder.setNPath( inNPath );
     lBuilder.setVol( inVol );
     lBuilder.setInitSpotRate( inInitialRate );
     lBuilder.setRandom( std::move( luRandom ) );
 
-    Process::ShortRateMCOne::HoLee lHoLee = lBuilder.build();
+    ShortRate::OneFactor::HoLee lHoLee = lBuilder.build();
     Process::MarketData::ZCB lHoLeeZCB( lHoLee.calcSpotRates() );
 
     double lResult = 0.0;
@@ -73,14 +66,14 @@ double testConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
 
     Process::MarketData::ZCB lMarketZCB( lTerms, lZCB );
 
-    Process::ShortRateMCOne::HoLeeWithMarketBuilder lBuilder;
+    ShortRate::OneFactor::HoLeeWithMarketBuilder lBuilder;
     lBuilder.setTerms( lTerms );
     lBuilder.setNPath( inNPath );
     lBuilder.setVol( inVol );
     lBuilder.setMarketZCB( lMarketZCB );
     lBuilder.setRandom( std::move( luRandom ) );
 
-    Process::ShortRateMCOne::HoLeeWithMarket lHoLee = lBuilder.build();
+    ShortRate::OneFactor::HoLeeWithMarket lHoLee = lBuilder.build();
     Process::MarketData::ZCB lHoLeeZCB( lHoLee.calcSpotRates(), 2 );
 
     double lResult = 0.0;
