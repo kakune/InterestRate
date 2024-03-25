@@ -134,7 +134,10 @@ calc_with_paramはあらゆるパラメータを天下り的に与えること�
     - ブラウン運動に従うpathを生成する。
 - asset
     - SDEに従う原資産モデル。
-- short_rate
+- market_data
+    - Marketの情報および生成した金利などを保管するクラス群。
+
+#### short_rate
     - 金利のshort rateモデル。
 
 #### process_cuda
