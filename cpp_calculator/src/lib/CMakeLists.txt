@@ -3,6 +3,7 @@ add_subdirectory(math)
 add_subdirectory(process)
 add_subdirectory(analytical)
 add_subdirectory(short_rate)
+add_subdirectory(LIBOR)
 
 if(CUDA_ENABLED)
     add_subdirectory(process_cuda)

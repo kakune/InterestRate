@@ -46,6 +46,7 @@ target_link_libraries(test_speed LibMath LibProcess)
 
 add_subdirectory(short_rate)
 add_subdirectory(short_rate_multi)
+add_subdirectory(LIBOR)
 
 
 if(CUDA_ENABLED)
