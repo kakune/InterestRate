@@ -58,7 +58,7 @@ class SpotRates
 {
 private:
     const std::size_t mNPath;  //! the number of path
-    const Terms mTerms;        //! tenor
+    const Terms mTerms;        //! terms
     const std::shared_ptr<const std::vector<std::vector<double>>>
         msDataSpotRate;  //! spot rates
     const std::shared_ptr<const std::vector<std::vector<double>>>
@@ -165,6 +165,37 @@ public:
      * @return double r(Term[0])
      */
     double initialSpotRate() const;
+};
+
+/**
+ * @brief This stores forward rate data at each path and each term.
+ */
+class ForwardRates
+{
+private:
+    const std::size_t mNPath;             //! the number of path
+    const Terms mTerms;                   //! terms
+    const std::vector<double> mIndTenor;  //! indices of tenor of FR
+    const std::shared_ptr<const std::vector<std::vector<double>>>
+        msDataForwardRate;  //! forward rates
+
+public:
+    /**
+     * @brief This constructs a new Forward Rates.
+     * @param inTerms Term structure
+     * @param inIndTenor indices of tenor of FR
+     * @param insDataForwardRate forward rate
+     */
+    ForwardRates( const Terms& inTerms, const std::vector<double>& inIndTenor,
+                  std::shared_ptr<const std::vector<std::vector<double>>>
+                      insDataForwardRate );
+    ForwardRates( const Terms& inTerms, const std::vector<double>& inIndTenor,
+                  std::vector<std::vector<double>> inDataForwardRate );
+    const std::vector<double>& operator[]( std::size_t inIndex ) const;
+    double term( std::size_t inIndex ) const;
+    const Terms& getTerms() const;
+    std::size_t sizeTerms() const;
+    std::size_t sizePath() const;
 };
 
 }  // namespace MarketData

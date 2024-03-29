@@ -173,5 +173,35 @@ double ZCB::initialSpotRate() const
     return instantaneousForwardRate( 0.95 * mTerms[0] + 0.05 * mTerms[1] );
 }
 
+ForwardRates::ForwardRates(
+    const Terms& inTerms, const std::vector<double>& inIndTenor,
+    std::shared_ptr<const std::vector<std::vector<double>>>
+        insDataForwardRate ) :
+    mTerms( inTerms ),
+    mNPath( insDataForwardRate->size() ),
+    mIndTenor( inIndTenor ),
+    msDataForwardRate( insDataForwardRate )
+{
+}
+ForwardRates::ForwardRates(
+    const Terms& inTerms, const std::vector<double>& inIndTenor,
+    std::vector<std::vector<double>> inDataForwardRate ) :
+    ForwardRates( inTerms, inIndTenor,
+                  std::make_shared<const std::vector<std::vector<double>>>(
+                      inDataForwardRate ) )
+{
+}
+const std::vector<double>& ForwardRates::operator[]( std::size_t inIndex ) const
+{
+    return msDataForwardRate->operator[]( inIndex );
+}
+double ForwardRates::term( std::size_t inIndex ) const
+{
+    return mTerms[inIndex];
+}
+const Terms& ForwardRates::getTerms() const { return mTerms; }
+std::size_t ForwardRates::sizeTerms() const { return mTerms.size(); }
+std::size_t ForwardRates::sizePath() const { return mNPath; }
+
 }  // namespace MarketData
 }  // namespace Process
