@@ -173,10 +173,10 @@ public:
 class ForwardRates
 {
 private:
-    const std::size_t mNPath;             //! the number of path
-    const Terms mTerms;                   //! terms
-    const std::vector<double> mIndTenor;  //! indices of tenor of FR
-    const std::shared_ptr<const std::vector<std::vector<double>>>
+    const std::size_t mNPath;                  //! the number of path
+    const Terms mTerms;                        //! terms
+    const std::vector<std::size_t> mIndTenor;  //! indices of tenor of FR
+    const std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
         msDataForwardRate;  //! forward rates
 
 public:
@@ -186,12 +186,14 @@ public:
      * @param inIndTenor indices of tenor of FR
      * @param insDataForwardRate forward rate
      */
-    ForwardRates( const Terms& inTerms, const std::vector<double>& inIndTenor,
-                  std::shared_ptr<const std::vector<std::vector<double>>>
+    ForwardRates( const Terms& inTerms,
+                  const std::vector<std::size_t>& inIndTenor,
+                  std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
                       insDataForwardRate );
-    ForwardRates( const Terms& inTerms, const std::vector<double>& inIndTenor,
-                  std::vector<std::vector<double>> inDataForwardRate );
-    const std::vector<double>& operator[]( std::size_t inIndex ) const;
+    ForwardRates( const Terms& inTerms,
+                  const std::vector<std::size_t>& inIndTenor,
+                  std::vector<std::vector<Math::Vec>> inDataForwardRate );
+    const std::vector<Math::Vec>& operator[]( std::size_t inIndex ) const;
     double term( std::size_t inIndex ) const;
     const Terms& getTerms() const;
     std::size_t sizeTerms() const;

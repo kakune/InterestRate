@@ -180,7 +180,7 @@ protected:
     std::vector<std::vector<Math::Vec> >
         mRandomValues;         //! generated random values
     std::size_t mIndTmpTime;   //! the index of temporary time
-    MarketData::Terms mTerms;  //! term structure
+    MarketData::Terms mTerms;  //! term structurez
 
 public:
     /**

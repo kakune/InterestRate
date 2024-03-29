@@ -174,8 +174,8 @@ double ZCB::initialSpotRate() const
 }
 
 ForwardRates::ForwardRates(
-    const Terms& inTerms, const std::vector<double>& inIndTenor,
-    std::shared_ptr<const std::vector<std::vector<double>>>
+    const Terms& inTerms, const std::vector<std::size_t>& inIndTenor,
+    std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
         insDataForwardRate ) :
     mTerms( inTerms ),
     mNPath( insDataForwardRate->size() ),
@@ -184,14 +184,15 @@ ForwardRates::ForwardRates(
 {
 }
 ForwardRates::ForwardRates(
-    const Terms& inTerms, const std::vector<double>& inIndTenor,
-    std::vector<std::vector<double>> inDataForwardRate ) :
+    const Terms& inTerms, const std::vector<std::size_t>& inIndTenor,
+    std::vector<std::vector<Math::Vec>> inDataForwardRate ) :
     ForwardRates( inTerms, inIndTenor,
-                  std::make_shared<const std::vector<std::vector<double>>>(
+                  std::make_shared<const std::vector<std::vector<Math::Vec>>>(
                       inDataForwardRate ) )
 {
 }
-const std::vector<double>& ForwardRates::operator[]( std::size_t inIndex ) const
+const std::vector<Math::Vec>& ForwardRates::operator[](
+    std::size_t inIndex ) const
 {
     return msDataForwardRate->operator[]( inIndex );
 }
