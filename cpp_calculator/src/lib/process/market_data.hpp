@@ -29,6 +29,9 @@ class Terms
 {
 private:
     const std::shared_ptr<const std::vector<double>> msData;
+    const std::vector<double> mDifTime;
+    std::vector<double> calcDifTime(
+        std::shared_ptr<const std::vector<double>> insTime );
 
 public:
     /**
@@ -39,6 +42,7 @@ public:
     Terms( std::vector<double> inData );
     double operator[]( std::size_t inIndex ) const;
     double at( std::size_t inIndex ) const;
+    double difTime( std::size_t inIndex ) const;
     std::size_t size() const;
     const std::shared_ptr<const std::vector<double>> ptr() const;
     double front() const;
