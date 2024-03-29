@@ -81,7 +81,9 @@
         "__tree": "cpp",
         "queue": "cpp",
         "stack": "cpp",
-        "*.tpp": "cpp"
+        "*.tpp": "cpp",
+        "__locale": "cpp",
+        "ios": "cpp"
     },
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/cpp_calculator/src/lib",

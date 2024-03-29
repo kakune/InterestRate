@@ -153,8 +153,7 @@ double ZCB::operator()( double inStartTime, double inMaturityTime ) const
 
 double ZCB::forwardRate( double inStartTime, double inTerminalTime ) const
 {
-    return ( std::log( operator()( inStartTime ) ) -
-             std::log( operator()( inTerminalTime ) ) ) /
+    return ( operator()( inStartTime ) / operator()( inTerminalTime ) - 1.0 ) /
            ( inTerminalTime - inStartTime );
 }
 

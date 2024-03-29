@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "math/interpolate_1d.hpp"
+#include "math/matrix.hpp"
 
 namespace Process
 {
@@ -56,8 +57,8 @@ public:
 class SpotRates
 {
 private:
-    std::size_t mNPath;  //! the number of path
-    const Terms mTerms;  //! tenor
+    const std::size_t mNPath;  //! the number of path
+    const Terms mTerms;        //! tenor
     const std::shared_ptr<const std::vector<std::vector<double>>>
         msDataSpotRate;  //! spot rates
     const std::shared_ptr<const std::vector<std::vector<double>>>
@@ -166,7 +167,6 @@ public:
     double initialSpotRate() const;
 };
 
-;
 }  // namespace MarketData
 }  // namespace Process
 

@@ -121,11 +121,12 @@ TEST( ShortRateConstantAffineTest, Constant )
                  0.001 );
     EXPECT_NEAR( std::exp( -6.0 ), testConstantPriceZCB( 10, 10, 20.0, 0.3 ),
                  0.001 );
-    EXPECT_NEAR( 0.1, testConstantForwardRate( 10, 10, 1.0, 0.1, 0.2, 0.5 ),
-                 0.001 );
-    EXPECT_NEAR( 0.2, testConstantForwardRate( 10, 10, 1.0, 0.2, 0.3, 0.7 ),
-                 0.001 );
-    EXPECT_NEAR( 0.3, testConstantForwardRate( 10, 10, 10.0, 0.3, 0.6, 10.0 ),
+    EXPECT_NEAR( ( std::exp( -0.02 ) / std::exp( -0.05 ) - 1.0 ) / 0.3,
+                 testConstantForwardRate( 10, 10, 1.0, 0.1, 0.2, 0.5 ), 0.001 );
+    EXPECT_NEAR( ( std::exp( -0.06 ) / std::exp( -0.14 ) - 1.0 ) / 0.4,
+                 testConstantForwardRate( 10, 10, 1.0, 0.2, 0.3, 0.7 ), 0.001 );
+    EXPECT_NEAR( ( std::exp( -0.18 ) / std::exp( -3.0 ) - 1.0 ) / 9.4,
+                 testConstantForwardRate( 10, 10, 10.0, 0.3, 0.6, 10.0 ),
                  0.001 );
     EXPECT_NEAR( 0.1,
                  testConstantInstantaneousForwardRate( 100, 10, 1.0, 0.1, 0.5 ),
