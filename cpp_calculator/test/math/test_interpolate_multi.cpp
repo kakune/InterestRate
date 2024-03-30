@@ -32,7 +32,7 @@ double testRBFGaussianPolynomial1D( double inX, double inShift, double inDeg,
         lResult = lSpline.deriv( { inX }, 0, inDerivOrder );
     }
     else { lResult = lSpline( { inX } ); }
-    std::cout << lResult << std::endl;
+    // std::cout << lResult << std::endl;
     return lResult;
 }
 
@@ -76,7 +76,7 @@ double testRBFGaussianPolynomial2D(
                                  inDerivOrder );
     }
     else { lResult = lSpline( { inVar.first, inVar.second } ); }
-    std::cout << lResult << std::endl;
+    // std::cout << lResult << std::endl;
     return lResult;
 }
 
