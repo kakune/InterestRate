@@ -52,7 +52,7 @@ double testCIR2ppConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
     Process::MarketData::ZCB lMarketZCB( lTerms, lZCB );
     auto lObj = G2ppBuild( inNTerms, inNPath, inMaturity, inConvSH, inMean,
                            inVol, lMarketZCB );
-    Process::MarketData::ZCB lG2pp( lObj.calcSpotRates() );
+    Process::MarketData::ZCB lG2pp = lObj.createSpotRates().createZCB();
 
     double lResult = 0.0;
 

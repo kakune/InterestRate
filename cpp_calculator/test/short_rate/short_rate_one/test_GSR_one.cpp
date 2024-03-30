@@ -48,8 +48,9 @@ double testDifVasicek( std::size_t inNTerms, std::size_t inNPath,
     ShortRate::OneFactor::Vasicek lVasicek = lBuilderVasicek.build();
     ShortRate::OneFactor::GSR lGSR         = lBuilderGSR.build();
 
-    Process::MarketData::ZCB lVasicekZCB( lVasicek.calcSpotRates() );
-    Process::MarketData::ZCB lGSRZCB( lGSR.calcSpotRates() );
+    Process::MarketData::ZCB lVasicekZCB =
+        lVasicek.createSpotRates().createZCB();
+    Process::MarketData::ZCB lGSRZCB = lGSR.createSpotRates().createZCB();
 
     double lResult = 0.0;
     for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
@@ -104,8 +105,9 @@ double testDifVasicekWithMarket( std::size_t inNTerms, std::size_t inNPath,
     ShortRate::OneFactor::VasicekWithMarket lVasicek = lBuilderVasicek.build();
     ShortRate::OneFactor::GSRWithMarket lGSR         = lBuilderGSR.build();
 
-    Process::MarketData::ZCB lVasicekZCB( lVasicek.calcSpotRates() );
-    Process::MarketData::ZCB lGSRZCB( lGSR.calcSpotRates() );
+    Process::MarketData::ZCB lVasicekZCB =
+        lVasicek.createSpotRates().createZCB();
+    Process::MarketData::ZCB lGSRZCB = lGSR.createSpotRates().createZCB();
 
     double lResult = 0.0;
     for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )

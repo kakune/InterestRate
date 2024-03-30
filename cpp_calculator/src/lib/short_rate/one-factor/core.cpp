@@ -17,7 +17,7 @@ namespace ShortRate
 namespace OneFactor
 {
 
-Process::MarketData::SpotRates ModelAbstract::calcSpotRates() const
+Process::ModelData::SpotRates ModelAbstract::createSpotRates() const
 {
     std::vector<std::vector<double>> lSpots(
         mNPath, std::vector<double>( mTerms.size(), mInitSpotRate ) );
@@ -30,7 +30,7 @@ Process::MarketData::SpotRates ModelAbstract::calcSpotRates() const
                                    driftCoeff( iPath, iTerm, lSpots ) * lTmpDt;
         }
     }
-    return Process::MarketData::SpotRates( mTerms, lSpots );
+    return Process::ModelData::SpotRates( mTerms, lSpots );
 }
 
 double ConstantRate::driftCoeff(
@@ -40,7 +40,7 @@ double ConstantRate::driftCoeff(
     return 0.0;
 }
 
-Process::MarketData::SpotRates OneFactorAbstract::calcSpotRates() const
+Process::ModelData::SpotRates OneFactorAbstract::createSpotRates() const
 {
     std::vector<std::vector<double>> lSpots(
         mNPath, std::vector<double>( mTerms.size(), mInitSpotRate ) );
@@ -56,7 +56,7 @@ Process::MarketData::SpotRates OneFactorAbstract::calcSpotRates() const
                                        volCoeff( iPath, iTerm, lSpots );
         }
     }
-    return Process::MarketData::SpotRates( mTerms, lSpots );
+    return Process::ModelData::SpotRates( mTerms, lSpots );
 }
 
 }  // namespace OneFactor

@@ -49,7 +49,7 @@ double testConstantPriceZCB( std::size_t inNTerms, std::size_t inNPath,
 {
     auto lObj =
         rateBuild( inNTerms, inNPath, inMaturity, inRate, 0.0, 0.0, 0.0, 0.0 );
-    return Process::MarketData::ZCB( lObj.calcSpotRates() )( 0.0, inMaturity );
+    return lObj.createSpotRates().createZCB()( 0.0, inMaturity );
 }
 double testConstantForwardRate( std::size_t inNTerms, std::size_t inNPath,
                                 double inMaturity, double inRate,
@@ -57,8 +57,8 @@ double testConstantForwardRate( std::size_t inNTerms, std::size_t inNPath,
 {
     auto lObj =
         rateBuild( inNTerms, inNPath, inMaturity, inRate, 0.0, 0.0, 0.0, 0.0 );
-    return Process::MarketData::ZCB( lObj.calcSpotRates() )
-        .forwardRate( inStartTime, inTerminalTime );
+    return lObj.createSpotRates().createZCB().forwardRate( inStartTime,
+                                                           inTerminalTime );
 }
 double testConstantInstantaneousForwardRate( std::size_t inNTerms,
                                              std::size_t inNPath,
@@ -67,8 +67,8 @@ double testConstantInstantaneousForwardRate( std::size_t inNTerms,
 {
     auto lObj =
         rateBuild( inNTerms, inNPath, inMaturity, inRate, 0.0, 0.0, 0.0, 0.0 );
-    return Process::MarketData::ZCB( lObj.calcSpotRates() )
-        .instantaneousForwardRate( inFRTime );
+    return lObj.createSpotRates().createZCB().instantaneousForwardRate(
+        inFRTime );
 }
 
 double testCIRPriceZCB( std::size_t inNTerms, std::size_t inNPath,
@@ -77,7 +77,7 @@ double testCIRPriceZCB( std::size_t inNTerms, std::size_t inNPath,
 {
     auto lObj = rateBuild( inNTerms, inNPath, inMaturity, inRate, -inK,
                            inK * inMean, inVol * inVol, 0.0 );
-    return Process::MarketData::ZCB( lObj.calcSpotRates() )( 0.0, inMaturity );
+    return lObj.createSpotRates().createZCB()( 0.0, inMaturity );
 }
 double testCIRInstantaneousForwardRate( std::size_t inNTerms,
                                         std::size_t inNPath, double inMaturity,
@@ -86,8 +86,8 @@ double testCIRInstantaneousForwardRate( std::size_t inNTerms,
 {
     auto lObj = rateBuild( inNTerms, inNPath, inMaturity, inRate, -inK,
                            inK * inMean, inVol * inVol, 0.0 );
-    return Process::MarketData::ZCB( lObj.calcSpotRates() )
-        .instantaneousForwardRate( inMaturity );
+    return lObj.createSpotRates().createZCB().instantaneousForwardRate(
+        inMaturity );
 }
 
 double testCIRPriceZCBByAB( double inStartTime, double inMaturityTime,

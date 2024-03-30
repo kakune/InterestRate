@@ -31,7 +31,8 @@ double testDifAnalytical( std::size_t inNTerms, std::size_t inNPath,
     lBuilder.setMean( inMean );
 
     ShortRate::OneFactor::Vasicek lVasicek = lBuilder.build();
-    Process::MarketData::ZCB lVasicekZCB( lVasicek.calcSpotRates() );
+    Process::MarketData::ZCB lVasicekZCB =
+        lVasicek.createSpotRates().createZCB();
 
     double lResult = 0.0;
     for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
@@ -77,15 +78,15 @@ double testConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
     lBuilder.setRandom( std::move( luRandom ) );
 
     ShortRate::OneFactor::VasicekWithMarket lVasicek = lBuilder.build();
-    Process::MarketData::SpotRates lSpot             = lVasicek.calcSpotRates();
-    Process::MarketData::ZCB lVasicekZCB( lSpot, 3 );
+    Process::ModelData::SpotRates lSpot  = lVasicek.createSpotRates();
+    Process::MarketData::ZCB lVasicekZCB = lSpot.createZCB();
 
     double lResult = 0.0;
 
     for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
     {
-        std::cout << lTerms[iTerm] << "," << lZCB[iTerm] << ","
-                  << lVasicekZCB[iTerm] << std::endl;
+        // std::cout << lTerms[iTerm] << "," << lZCB[iTerm] << ","
+        //           << lVasicekZCB[iTerm] << std::endl;
         lResult = std::max(
             lResult,
             std::abs( ( lZCB[iTerm] - lVasicekZCB[iTerm] ) / lZCB[iTerm] ) );

@@ -29,7 +29,7 @@ double testDifAnalytical( std::size_t inNTerms, std::size_t inNPath,
     lBuilder.setRandom( std::move( luRandom ) );
 
     ShortRate::OneFactor::HoLee lHoLee = lBuilder.build();
-    Process::MarketData::ZCB lHoLeeZCB( lHoLee.calcSpotRates() );
+    Process::MarketData::ZCB lHoLeeZCB = lHoLee.createSpotRates().createZCB();
 
     double lResult = 0.0;
     for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
@@ -74,7 +74,8 @@ double testConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
     lBuilder.setRandom( std::move( luRandom ) );
 
     ShortRate::OneFactor::HoLeeWithMarket lHoLee = lBuilder.build();
-    Process::MarketData::ZCB lHoLeeZCB( lHoLee.calcSpotRates(), 2 );
+    Process::MarketData::ZCB lHoLeeZCB =
+        lHoLee.createSpotRates().createZCB( 2 );
 
     double lResult = 0.0;
 

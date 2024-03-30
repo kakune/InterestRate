@@ -21,9 +21,9 @@ int main( int argc, char* argv[] )
     lParams.setNameCurrentSection( lNameSection );
 
     Process::MarketData::Terms lTerms = APP::prepareTerms( lParams );
-    Process::MarketData::SpotRates lSpots =
+    Process::ModelData::SpotRates lSpots =
         APP::calcSpotRateFromParam( lNameModel, lParams, lTerms );
-    Process::MarketData::ZCB lZCB( lSpots );
+    Process::MarketData::ZCB lZCB = lSpots.createZCB();
 
     std::ofstream lFileOutput( lPathOutput );
     if ( lFileOutput.is_open() )

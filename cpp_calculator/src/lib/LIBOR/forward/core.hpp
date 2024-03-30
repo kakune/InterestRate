@@ -13,6 +13,7 @@
 
 #include "math/matrix.hpp"
 #include "process/market_data.hpp"
+#include "process/model_data.hpp"
 #include "process/random.hpp"
 
 namespace LIBOR
@@ -101,7 +102,7 @@ public:
     {
     }
     virtual ~ModelAbstract() = default;
-    virtual Process::MarketData::ForwardRates calcFRs() const;
+    virtual Process::ModelData::ForwardRates createForwardRates() const;
 };
 
 /**

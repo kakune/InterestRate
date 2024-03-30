@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "process/market_data.hpp"
+#include "process/model_data.hpp"
 #include "short_rate/one-factor/core.hpp"
 
 namespace ShortRate
@@ -413,7 +414,7 @@ public:
         mMarketZCB( inMarketZCB )
     {
     }
-    Process::MarketData::SpotRates calcSpotRates() const override;
+    Process::ModelData::SpotRates createSpotRates() const override;
 };
 
 class GSRWithMarketBuilder : public OneFactorAbstractBuilder

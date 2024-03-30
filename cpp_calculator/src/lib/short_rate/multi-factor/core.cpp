@@ -17,7 +17,7 @@ namespace ShortRate
 namespace MultiFactor
 {
 
-Process::MarketData::SpotRates ModelAbstract::calcSpotRates() const
+Process::ModelData::SpotRates ModelAbstract::createSpotRates() const
 {
     std::vector<std::vector<Math::Vec>> lSpots(
         mNPath, std::vector<Math::Vec>( mTerms.size(), mInitState ) );
@@ -40,7 +40,7 @@ Process::MarketData::SpotRates ModelAbstract::calcSpotRates() const
                 transfStateToRate( lSpots[iPath][iTerm], iTerm );
         }
     }
-    return Process::MarketData::SpotRates( mTerms, lRates );
+    return Process::ModelData::SpotRates( mTerms, lRates );
 }
 double ModelAbstract::transfStateToRate( const Math::Vec& inState,
                                          std::size_t inIndTime ) const
@@ -55,7 +55,7 @@ Math::Vec ConstantRate::driftCoeff(
     return Math::Vec( mDim, 0.0 );
 }
 
-Process::MarketData::SpotRates MultiFactorAbstract::calcSpotRates() const
+Process::ModelData::SpotRates MultiFactorAbstract::createSpotRates() const
 {
     std::vector<std::vector<Math::Vec>> lSpots(
         mNPath, std::vector<Math::Vec>( mTerms.size(), mInitState ) );
@@ -81,7 +81,7 @@ Process::MarketData::SpotRates MultiFactorAbstract::calcSpotRates() const
                 transfStateToRate( lSpots[iPath][iTerm], iTerm );
         }
     }
-    return Process::MarketData::SpotRates( mTerms, lRates );
+    return Process::ModelData::SpotRates( mTerms, lRates );
 }
 
 }  // namespace MultiFactor

@@ -27,7 +27,7 @@ Process::MarketData::Terms prepareTerms( const Utils::Parameters& inParams )
     return Process::MarketData::Terms( lTerms );
 }
 
-Process::MarketData::SpotRates calcSpotRateFromParam(
+Process::ModelData::SpotRates calcSpotRateFromParam(
     std::string inNameModel, const Utils::Parameters& inParams,
     const Process::MarketData::Terms& inTerms )
 {
@@ -43,8 +43,8 @@ Process::MarketData::SpotRates calcSpotRateFromParam(
         lBuilder.setVol( inParams( "Vol" ) );
         lBuilder.setKappa( inParams( "Kappa" ) );
         lBuilder.setMean( inParams( "Mean" ) );
-        return Process::MarketData::SpotRates(
-            lBuilder.build().calcSpotRates() );
+        return Process::ModelData::SpotRates(
+            lBuilder.build().createSpotRates() );
     }
     if ( inNameModel == "HoLee" )
     {
@@ -56,8 +56,8 @@ Process::MarketData::SpotRates calcSpotRateFromParam(
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setInitSpotRate( inParams( "InitRate" ) );
         lBuilder.setVol( inParams( "Vol" ) );
-        return Process::MarketData::SpotRates(
-            lBuilder.build().calcSpotRates() );
+        return Process::ModelData::SpotRates(
+            lBuilder.build().createSpotRates() );
     }
     if ( inNameModel == "ConstantAffine" )
     {
@@ -70,23 +70,23 @@ Process::MarketData::SpotRates calcSpotRateFromParam(
         lBuilder.setInitSpotRate( inParams( "InitRate" ) );
         lBuilder.setDrift( inParams( "Lambda" ), inParams( "Eta" ) );
         lBuilder.setVol( inParams( "Gamma" ), inParams( "Delta" ) );
-        return Process::MarketData::SpotRates(
-            lBuilder.build().calcSpotRates() );
+        return Process::ModelData::SpotRates(
+            lBuilder.build().createSpotRates() );
     }
-    return Process::MarketData::SpotRates(
+    return Process::ModelData::SpotRates(
         inTerms,
         std::vector<std::vector<double> >(
             inParams( "NPath" ), std::vector<double>( inTerms.size() ) ) );
 }
 
-Process::MarketData::SpotRates calcSpotRateFromParam(
+Process::ModelData::SpotRates calcSpotRateFromParam(
     std::string inNameModel, const Utils::Parameters& inParams )
 {
     return ( calcSpotRateFromParam( inNameModel, inParams,
                                     prepareTerms( inParams ) ) );
 }
 
-Process::MarketData::SpotRates calcSpotRateFromMarket(
+Process::ModelData::SpotRates calcSpotRateFromMarket(
     std::string inNameModel, const Utils::Parameters& inParams,
     const Process::MarketData::Terms inTerms,
     const Process::MarketData::ZCB inMarketZCB )
@@ -101,8 +101,8 @@ Process::MarketData::SpotRates calcSpotRateFromMarket(
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setVol( inParams( "Vol" ) );
         lBuilder.setMarketZCB( inMarketZCB );
-        return Process::MarketData::SpotRates(
-            lBuilder.build().calcSpotRates() );
+        return Process::ModelData::SpotRates(
+            lBuilder.build().createSpotRates() );
     }
     if ( inNameModel == "HoLee" )
     {
@@ -114,8 +114,8 @@ Process::MarketData::SpotRates calcSpotRateFromMarket(
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setVol( inParams( "Vol" ) );
         lBuilder.setMarketZCB( inMarketZCB );
-        return Process::MarketData::SpotRates(
-            lBuilder.build().calcSpotRates() );
+        return Process::ModelData::SpotRates(
+            lBuilder.build().createSpotRates() );
     }
     if ( inNameModel == "G2pp" )
     {
@@ -134,15 +134,15 @@ Process::MarketData::SpotRates calcSpotRateFromMarket(
         lBuilder.setDrift( { -inParams( "A" ), -inParams( "B" ) } );
         lBuilder.setVol( lVol );
         lBuilder.setMarketZCB( inMarketZCB );
-        return Process::MarketData::SpotRates(
-            lBuilder.build().calcSpotRates() );
+        return Process::ModelData::SpotRates(
+            lBuilder.build().createSpotRates() );
     }
-    return Process::MarketData::SpotRates(
+    return Process::ModelData::SpotRates(
         inTerms,
         std::vector<std::vector<double> >(
             inParams( "NPath" ), std::vector<double>( inTerms.size() ) ) );
 }
-Process::MarketData::SpotRates calcSpotRateFromMarket(
+Process::ModelData::SpotRates calcSpotRateFromMarket(
     std::string inNameModel, const Utils::Parameters& inParams,
     const Process::MarketData::ZCB inMarketZCB )
 {

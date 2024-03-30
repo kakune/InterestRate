@@ -23,7 +23,7 @@ Math::Vec ModelAbstract::transfStateToFR( const Math::Vec& inState,
     return inState;
 }
 
-Process::MarketData::ForwardRates ModelAbstract::calcFRs() const
+Process::ModelData::ForwardRates ModelAbstract::createForwardRates() const
 {
     std::vector<std::vector<Math::Vec>> lStates(
         mNPath, std::vector<Math::Vec>( mTerms.size(),
@@ -49,7 +49,7 @@ Process::MarketData::ForwardRates ModelAbstract::calcFRs() const
                 transfStateToFR( lStates[iPath][iTerm], iTerm );
         }
     }
-    return Process::MarketData::ForwardRates( mTerms, mIndTenor, lFRs );
+    return Process::ModelData::ForwardRates( mTerms, mIndTenor, lFRs );
 }
 
 std::vector<double> ModelAbstract::calcTauTenor(

@@ -39,7 +39,7 @@ double testConstant( std::size_t inNTerms, std::size_t inNPath,
 {
     auto lObj = LFMBuild( inNTerms, inNPath, inMaturity, inIndTenor, inInitFRs,
                           inVol, inCorr );
-    auto lFR  = lObj.calcFRs();
+    auto lFR  = lObj.createForwardRates();
     return 0.0;
 }
 

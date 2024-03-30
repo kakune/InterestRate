@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "process/market_data.hpp"
+#include "process/model_data.hpp"
 #include "spot_calculator.hpp"
 #include "utils/csv.hpp"
 #include "utils/parameters.hpp"
@@ -43,9 +44,9 @@ int main( int argc, char* argv[] )
         lMapMarket["ZCB"] );
 
     Process::MarketData::Terms lTerms = APP::prepareTerms( lParams );
-    Process::MarketData::SpotRates lSpots =
+    Process::ModelData::SpotRates lSpots =
         APP::calcSpotRateFromMarket( lNameModel, lParams, lTerms, lMarketZCB );
-    Process::MarketData::ZCB lZCB( lSpots );
+    Process::MarketData::ZCB lZCB = lSpots.createZCB();
 
     std::ofstream lFileOutput( lPathOutput );
     if ( lFileOutput.is_open() )
