@@ -1,0 +1,14 @@
+add_executable(test_constant_one test_constant_one.cpp)
+target_link_libraries(test_constant_one LibShortRate gtest_main)
+
+add_executable(test_HoLee_one test_HoLee_one.cpp)
+target_link_libraries(test_HoLee_one LibShortRate gtest_main)
+
+add_executable(test_Vasicek_one test_Vasicek_one.cpp)
+target_link_libraries(test_Vasicek_one LibShortRate gtest_main)
+
+add_executable(test_GSR_one test_GSR_one.cpp)
+target_link_libraries(test_GSR_one LibShortRate gtest_main)
+
+add_executable(test_constant_affine_one test_constant_affine_one.cpp)
+target_link_libraries(test_constant_affine_one LibShortRate gtest_main)

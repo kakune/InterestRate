@@ -1,0 +1,2 @@
+add_executable(test_Black_Scholes test_Black_Scholes.cpp)
+target_link_libraries(test_Black_Scholes LibAnalytical gtest_main)

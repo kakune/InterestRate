@@ -1,0 +1,14 @@
+add_executable(test_findroot_1d test_findroot_1d.cpp)
+target_link_libraries(test_findroot_1d LibMath gtest_main)
+
+add_executable(test_interpolate_1d test_interpolate_1d.cpp)
+target_link_libraries(test_interpolate_1d LibMath gtest_main)
+
+add_executable(test_interpolate_multi test_interpolate_multi.cpp)
+target_link_libraries(test_interpolate_multi LibMath gtest_main)
+
+add_executable(test_matrix test_matrix.cpp)
+target_link_libraries(test_matrix LibMath gtest_main)
+
+add_executable(test_ODE test_ODE.cpp)
+target_link_libraries(test_ODE LibMath gtest_main)

@@ -4,7 +4,7 @@
 #include <random>
 #include <vector>
 
-#include "process/market.hpp"
+#include "process/market_data.hpp"
 
 double testConsistencyZCB( std::size_t inNTerms, double inMaturity,
                            double inMean, double inVol, std::size_t inSeed = 0 )
@@ -25,8 +25,8 @@ double testConsistencyZCB( std::size_t inNTerms, double inMaturity,
     }
     auto lsTerms = std::make_shared<std::vector<double> >( lTerms );
 
-    Process::Market::Data lObj( lsTerms );
-    Process::Market::Data lObj2( lsTerms );
+    Process::MarketData::ZCB lObj( lsTerms );
+    Process::MarketData::ZCB lObj2( lsTerms );
 
     lObj.setZCB( lZCB );
     std::vector<double> lFR( inNTerms );
@@ -41,9 +41,9 @@ double testConsistencyZCB( std::size_t inNTerms, double inMaturity,
     {
         // std::cout << lZCB[iTerm] << "," << lObj2.mInterpZCB( lTerms[iTerm] )
         //           << std::endl;
-        lResult = std::max(
-            0.0, std::abs( ( lZCB[iTerm] - lObj2.mInterpZCB( lTerms[iTerm] ) ) /
-                           lZCB[iTerm] ) );
+        lResult =
+            std::max( 0.0, std::abs( ( lZCB[iTerm] - lObj2( lTerms[iTerm] ) ) /
+                                     lZCB[iTerm] ) );
     }
     return lResult;
 }
