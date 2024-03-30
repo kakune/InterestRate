@@ -47,7 +47,7 @@ def runExe(
 ):
     try:
         process = subprocess.run(
-            [inPathExe, *args], check=True, capture_output=True, text=True)
+            [inPathExe, *args], check=True)
     except subprocess.CalledProcessError as e:
         print(f"returncode:{e.returncode}")
         print(e.stderr)
