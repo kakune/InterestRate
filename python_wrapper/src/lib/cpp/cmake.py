@@ -1,18 +1,14 @@
 import subprocess
+import os
 
 
 def buildCmakeRelease(
     inPathSource: str
 ):
     try:
-        lMakeCommand = ["cmake", "-S",
-                        inPathSource, "-B", inPathSource + "/build", "-DCMAKE_BUILD_TYPE=Release"]
-        lBuildCommand = ["cmake", "--build", inPathSource + "/build"]
-        subprocess.run(lMakeCommand, check=True,
-                       capture_output=True, text=True)
-        subprocess.run(lBuildCommand, check=True,
-                       capture_output=True, text=True)
-        # print(process.stdout)
+        os.chdir(inPathSource)
+        subprocess.run(["make", "build"], check=True)
+
     except subprocess.CalledProcessError as e:
         print(f"returncode:{e.returncode}")
         print(e.stderr)
@@ -23,14 +19,9 @@ def buildCmakeReleaseCUDA(
     inPathSource: str
 ):
     try:
-        lMakeCommand = ["cmake", "-S",
-                        inPathSource, "-B", inPathSource + "/build", "-DCMAKE_BUILD_TYPE=Release", "-DCUDA_ENABLED=1"]
-        lBuildCommand = ["cmake", "--build", inPathSource + "/build"]
-        subprocess.run(lMakeCommand, check=True,
-                       capture_output=True, text=True)
-        subprocess.run(lBuildCommand, check=True,
-                       capture_output=True, text=True)
-        # print(process.stdout)
+        os.chdir(inPathSource)
+        subprocess.run(["make", "build", "CUDA_ENABLED=1"], check=True)
+
     except subprocess.CalledProcessError as e:
         print(f"returncode:{e.returncode}")
         print(e.stderr)
@@ -41,14 +32,9 @@ def buildCmakeDebug(
     inPathSource: str
 ):
     try:
-        lMakeCommand = ["cmake", "-S",
-                        inPathSource, "-B", inPathSource + "/build", "-DCMAKE_BUILD_TYPE=Debug"]
-        lBuildCommand = ["cmake", "--build", inPathSource + "/build"]
-        subprocess.run(lMakeCommand, check=True,
-                       capture_output=True, text=True)
-        subprocess.run(lBuildCommand, check=True,
-                       capture_output=True, text=True)
-        # print(process.stdout)
+        os.chdir(inPathSource)
+        subprocess.run(["make", "bebug"], check=True)
+
     except subprocess.CalledProcessError as e:
         print(f"returncode:{e.returncode}")
         print(e.stderr)

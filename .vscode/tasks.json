@@ -2,18 +2,13 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "cpp_run",
-            "type": "shell",
-            "command": "sh scripts/cmake_debug_run_main.sh ${workspaceFolder}/cpp_calculator",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
             "label": "test_run",
             "type": "shell",
-            "command": "sh scripts/cmake_test.sh ${workspaceFolder}/cpp_calculator ${file}",
+            "command": "bash",
+            "args": [
+                "-ic",
+                "source ~/.bashrc && make -C ${workspaceFolder}/cpp_calculator build run SOURCE_FILE=${file}"
+            ],
             "group": {
                 "kind": "test",
                 "isDefault": true
