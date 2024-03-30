@@ -29,9 +29,8 @@ std::map<std::string, std::vector<double>> readFile(
     }
 
     std::string line;
-    std::getline( file, line );  // 最初の行を読み飛ばす（ヘッダー行）
+    std::getline( file, line );
 
-    // ヘッダー行から列名を取得
     std::stringstream lStreamHeader( line );
     std::string lCellHeader;
     std::vector<std::string> lHeaderRow;
@@ -51,7 +50,6 @@ std::map<std::string, std::vector<double>> readFile(
             lRow.push_back( lCell );
         }
 
-        // 各列の値をmapのvectorに追加
         for ( size_t i = 0; i < lHeaderRow.size(); ++i )
         {
             try
@@ -79,6 +77,30 @@ std::map<std::string, std::vector<double>> readFile(
     file.close();
     return lMapResult;
 }
+
+void prepareZCBColumn( std::map<std::string, std::vector<double>>& inMapMarket,
+                       const Parameters& inParams )
+{
+    if ( inMapMarket.find( "ZCB" ) != inMapMarket.end() ) { return; }
+    if ( inMapMarket.find( "ZCBRate" ) != inMapMarket.end() )
+    {
+        double lFactor   = inParams( "ZCBRateFactor" );
+        double lCompound = inParams( "Compound" );
+        if ( lFactor <= 0.0 ) { lFactor = 1.0; }
+        if ( lCompound <= 0.0 ) { lCompound = 1.0; }
+        for ( std::size_t i = 0; i < inMapMarket["Maturity"].size(); ++i )
+        {
+            inMapMarket["ZCB"].push_back(
+                pow( 1.0 + lFactor * inMapMarket["ZCBRate"][i],
+                     -inMapMarket["Maturity"][i] / lCompound ) );
+        }
+        return;
+    }
+    std::cerr << "Error: Utils::CSV::prepareZCBColumn()" << std::endl
+              << "Cannot find corresponding column." << std::endl;
+    return;
+}
+
 }  // namespace CSV
 }  // namespace Utils
 

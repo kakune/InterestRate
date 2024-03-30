@@ -22,7 +22,7 @@ int main( int argc, char* argv[] )
 
     Process::MarketData::Terms lTerms = APP::prepareTerms( lParams );
     Process::ModelData::SpotRates lSpots =
-        APP::calcSpotRateFromParam( lNameModel, lParams, lTerms );
+        APP::createSpotRateFromParam( lNameModel, lParams, lTerms );
     Process::MarketData::ZCB lZCB = lSpots.createZCB();
 
     std::ofstream lFileOutput( lPathOutput );

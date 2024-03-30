@@ -27,7 +27,7 @@ Process::MarketData::Terms prepareTerms( const Utils::Parameters& inParams )
     return Process::MarketData::Terms( lTerms );
 }
 
-Process::ModelData::SpotRates calcSpotRateFromParam(
+Process::ModelData::SpotRates createSpotRateFromParam(
     std::string inNameModel, const Utils::Parameters& inParams,
     const Process::MarketData::Terms& inTerms )
 {
@@ -79,14 +79,14 @@ Process::ModelData::SpotRates calcSpotRateFromParam(
             inParams( "NPath" ), std::vector<double>( inTerms.size() ) ) );
 }
 
-Process::ModelData::SpotRates calcSpotRateFromParam(
+Process::ModelData::SpotRates createSpotRateFromParam(
     std::string inNameModel, const Utils::Parameters& inParams )
 {
-    return ( calcSpotRateFromParam( inNameModel, inParams,
-                                    prepareTerms( inParams ) ) );
+    return ( createSpotRateFromParam( inNameModel, inParams,
+                                      prepareTerms( inParams ) ) );
 }
 
-Process::ModelData::SpotRates calcSpotRateFromMarket(
+Process::ModelData::SpotRates createSpotRateFromMarket(
     std::string inNameModel, const Utils::Parameters& inParams,
     const Process::MarketData::Terms inTerms,
     const Process::MarketData::ZCB inMarketZCB )
@@ -142,12 +142,12 @@ Process::ModelData::SpotRates calcSpotRateFromMarket(
         std::vector<std::vector<double> >(
             inParams( "NPath" ), std::vector<double>( inTerms.size() ) ) );
 }
-Process::ModelData::SpotRates calcSpotRateFromMarket(
+Process::ModelData::SpotRates createSpotRateFromMarket(
     std::string inNameModel, const Utils::Parameters& inParams,
     const Process::MarketData::ZCB inMarketZCB )
 {
-    return calcSpotRateFromMarket( inNameModel, inParams,
-                                   prepareTerms( inParams ), inMarketZCB );
+    return createSpotRateFromMarket( inNameModel, inParams,
+                                     prepareTerms( inParams ), inMarketZCB );
 }
 
 }  // namespace APP

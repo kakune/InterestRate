@@ -31,21 +31,15 @@ int main( int argc, char* argv[] )
     lParamsMarket.setNameCurrentSection( lNameSectionMarket );
 
     auto lMapMarket = Utils::CSV::readFile( lPathCSVMarket );
-
-    for ( std::size_t i = 0; i < lMapMarket["Maturity"].size(); ++i )
-    {
-        lMapMarket["ZCB"].push_back(
-            pow( 1.0 + 0.01 * lMapMarket["ZCBRate"][i],
-                 -lMapMarket["Maturity"][i] / lParamsMarket( "Compound" ) ) );
-    }
+    Utils::CSV::prepareZCBColumn( lMapMarket, lParamsMarket );
 
     Process::MarketData::ZCB lMarketZCB(
         Process::MarketData::Terms( lMapMarket["Maturity"] ),
         lMapMarket["ZCB"] );
 
-    Process::MarketData::Terms lTerms = APP::prepareTerms( lParams );
-    Process::ModelData::SpotRates lSpots =
-        APP::calcSpotRateFromMarket( lNameModel, lParams, lTerms, lMarketZCB );
+    Process::MarketData::Terms lTerms    = APP::prepareTerms( lParams );
+    Process::ModelData::SpotRates lSpots = APP::createSpotRateFromMarket(
+        lNameModel, lParams, lTerms, lMarketZCB );
     Process::MarketData::ZCB lZCB = lSpots.createZCB();
 
     std::ofstream lFileOutput( lPathOutput );
