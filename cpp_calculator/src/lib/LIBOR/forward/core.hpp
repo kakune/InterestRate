@@ -33,10 +33,10 @@ protected:
     std::vector<std::size_t> mIndTenor;  //! indices of tenor
     std::vector<double> mTauTenor;       //! the intervals of tenor
     Math::Vec mInitFRs;                  //! initial forward rate
-    std::unique_ptr<Process::RandomVec::PathAbstract>
-        muRandomPath;  //! random vec
-    Math::Mat mCorr;   //! model correlation
-    Math::Mat mRho;    //! correlation of brownian motion
+    std::unique_ptr<Process::RandomVec::StdBrownAbstract>
+        muStdBrown;   //! random vec
+    Math::Mat mCorr;  //! model correlation
+    Math::Mat mRho;   //! correlation of brownian motion
 
     /**
      * @brief The drift term in SDE of f[inIndPath][inIndTerm]
@@ -88,7 +88,7 @@ public:
     ModelAbstract(
         std::size_t inNPath, const Process::MarketData::Terms& inTerms,
         const std::vector<std::size_t>& inIndTenor, const Math::Vec& inInitFRs,
-        std::unique_ptr<Process::RandomVec::PathAbstract> inuRandomPath,
+        std::unique_ptr<Process::RandomVec::StdBrownAbstract> inuStdBrown,
         const Math::Mat& inCorr ) :
         mNFR( inIndTenor.size() - 1 ),
         mNPath( inNPath ),
@@ -96,7 +96,7 @@ public:
         mIndTenor( inIndTenor ),
         mTauTenor( calcTauTenor( inIndTenor, inTerms ) ),
         mInitFRs( inInitFRs ),
-        muRandomPath( std::move( inuRandomPath ) ),
+        muStdBrown( std::move( inuStdBrown ) ),
         mCorr( inCorr ),
         mRho( dot( inCorr.transpose(), inCorr ) )
     {
@@ -114,8 +114,8 @@ protected:
     std::size_t mNPath;                                   //! the number of Path
     std::unique_ptr<Process::MarketData::Terms> muTerms;  //! term structure
     std::vector<std::size_t> mIndTenor;                   //! indices of tenor
-    std::unique_ptr<Process::RandomVec::PathAbstract>
-        muRandomPath;  //! random path
+    std::unique_ptr<Process::RandomVec::StdBrownAbstract>
+        muStdBrown;  //! random path
     Math::Vec mInitFRs = Math::Vec( 0 );
     Math::Mat mCorr    = Math::Mat( 0, 0 );
 
@@ -148,11 +148,11 @@ public:
         return *this;
     }
     ModelAbstractBuilder& setRandom(
-        std::unique_ptr<Process::RandomVec::PathAbstract> inuRandomPath,
+        std::unique_ptr<Process::RandomVec::StdBrownAbstract> inuStdBrown,
         const Math::Mat& inCorr )
     {
-        muRandomPath = std::move( inuRandomPath );
-        mCorr        = inCorr;
+        muStdBrown = std::move( inuStdBrown );
+        mCorr      = inCorr;
         return *this;
     }
     virtual ~ModelAbstractBuilder() = default;

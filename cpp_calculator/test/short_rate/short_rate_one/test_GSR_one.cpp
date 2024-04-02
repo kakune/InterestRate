@@ -19,10 +19,8 @@ double testDifVasicek( std::size_t inNTerms, std::size_t inNPath,
 {
     auto lTerms = makeTerms( inNTerms, inMaturity );
     auto luRandomVasicek =
-        std::make_unique<Process::Random::PathBrownAntithetic>( inNPath,
-                                                                lTerms );
-    auto luRandomGSR = std::make_unique<Process::Random::PathBrownAntithetic>(
-        inNPath, lTerms );
+        std::make_unique<Process::Random::StdBrownAntithetic>();
+    auto luRandomGSR = std::make_unique<Process::Random::StdBrownAntithetic>( );
     std::vector<double> lVols( inNTerms + 2, inVol );
     std::vector<double> lKappas( inNTerms + 2, inKappa );
     std::vector<double> lMeans( inNTerms + 2, inMean );
@@ -69,10 +67,8 @@ double testDifVasicekWithMarket( std::size_t inNTerms, std::size_t inNPath,
 {
     auto lTerms = makeTerms( inNTerms, inMaturity );
     auto luRandomVasicek =
-        std::make_unique<Process::Random::PathBrownAntithetic>( inNPath,
-                                                                lTerms );
-    auto luRandomGSR = std::make_unique<Process::Random::PathBrownAntithetic>(
-        inNPath, lTerms );
+        std::make_unique<Process::Random::StdBrownAntithetic>();
+    auto luRandomGSR = std::make_unique<Process::Random::StdBrownAntithetic>();
     std::vector<double> lVols( inNTerms + 2, inVol );
     std::vector<double> lKappas( inNTerms + 2, inKappa );
     std::vector<double> lZCB( inNTerms + 2, 1.0 );

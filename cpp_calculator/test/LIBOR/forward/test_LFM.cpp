@@ -27,9 +27,7 @@ LIBOR::Forward::ConstantLFM LFMBuild( std::size_t inNTerms, std::size_t inNPath,
     lBuilder.setVols( inVol );
     lBuilder.setInitFRs( inInitFRs );
     lBuilder.setRandom(
-        std::make_unique<Process::RandomVec::PathBrownAntithetic>( inNPath,
-                                                                   lTerms, 2 ),
-        inCorr );
+        std::make_unique<Process::RandomVec::StdBrownAntithetic>( 2 ), inCorr );
     return lBuilder.build();
 }
 

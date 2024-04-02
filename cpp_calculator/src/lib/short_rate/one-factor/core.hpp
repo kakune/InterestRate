@@ -119,8 +119,8 @@ public:
 class OneFactorAbstract : public ModelAbstract
 {
 protected:
-    std::unique_ptr<Process::Random::PathAbstract>
-        muRandomPath;  //! random path
+    std::unique_ptr<Process::Random::StdBrownAbstract>
+        muStdBrown;  //! random path
     /**
      * @brief The coefficient of dW in SDE of r[inIndPath][inIndTerm]
      * @param inIndPath the index of path
@@ -135,9 +135,9 @@ public:
     OneFactorAbstract(
         std::size_t inNPath, const Process::MarketData::Terms& inTerms,
         double inInitSpotRate,
-        std::unique_ptr<Process::Random::PathAbstract> inuRandomPath ) :
+        std::unique_ptr<Process::Random::StdBrownAbstract> inuStdBrown ) :
         ModelAbstract( inNPath, inTerms, inInitSpotRate ),
-        muRandomPath( std::move( inuRandomPath ) )
+        muStdBrown( std::move( inuStdBrown ) )
     {
     }
     virtual Process::ModelData::SpotRates createSpotRates() const override;
@@ -146,13 +146,13 @@ public:
 class OneFactorAbstractBuilder : public ModelAbstractBuilder
 {
 protected:
-    std::unique_ptr<Process::Random::PathAbstract>
-        muRandomPath;  //! random path
+    std::unique_ptr<Process::Random::StdBrownAbstract>
+        muStdBrown;  //! random path
 public:
     OneFactorAbstractBuilder& setRandom(
-        std::unique_ptr<Process::Random::PathAbstract> inuRandomPath )
+        std::unique_ptr<Process::Random::StdBrownAbstract> inuStdBrown )
     {
-        muRandomPath = std::move( inuRandomPath );
+        muStdBrown = std::move( inuStdBrown );
         return *this;
     }
 };

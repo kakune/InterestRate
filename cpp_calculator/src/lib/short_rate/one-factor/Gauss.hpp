@@ -39,7 +39,7 @@ private:
 public:
     HoLee( std::size_t inNPath, const Process::MarketData::Terms inTerms,
            double inInitSpotRate,
-           std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
+           std::unique_ptr<Process::Random::StdBrownAbstract> inuRandomPath,
            double inVol ) :
         OneFactorAbstract( inNPath, inTerms, inInitSpotRate,
                            std::move( inuRandomPath ) ),
@@ -65,8 +65,8 @@ public:
     }
     HoLee build()
     {
-        return HoLee( mNPath, *muTerms, mInitSpotRate,
-                      std::move( muRandomPath ), mVol );
+        return HoLee( mNPath, *muTerms, mInitSpotRate, std::move( muStdBrown ),
+                      mVol );
     }
 };
 
@@ -89,7 +89,7 @@ private:
 public:
     HoLeeWithMarket(
         std::size_t inNPath, const Process::MarketData::Terms inTerms,
-        std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
+        std::unique_ptr<Process::Random::StdBrownAbstract> inuRandomPath,
         double inVol, const Process::MarketData::ZCB& inMarketZCB ) :
         OneFactorAbstract( inNPath, inTerms, inMarketZCB.initialSpotRate(),
                            std::move( inuRandomPath ) ),
@@ -120,8 +120,8 @@ public:
     }
     HoLeeWithMarket build()
     {
-        return HoLeeWithMarket( mNPath, *muTerms, std::move( muRandomPath ),
-                                mVol, *muMarketZCB );
+        return HoLeeWithMarket( mNPath, *muTerms, std::move( muStdBrown ), mVol,
+                                *muMarketZCB );
     }
     ModelAbstractBuilder& setInitSpotRate( double inInitSpotRate ) = delete;
 };
@@ -143,7 +143,7 @@ private:
 public:
     Vasicek( std::size_t inNPath, const Process::MarketData::Terms inTerms,
              double inInitSpotRate,
-             std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
+             std::unique_ptr<Process::Random::StdBrownAbstract> inuRandomPath,
              double inVol, double inKappa, double inMean ) :
         OneFactorAbstract( inNPath, inTerms, inInitSpotRate,
                            std::move( inuRandomPath ) ),
@@ -183,7 +183,7 @@ public:
     Vasicek build()
     {
         return Vasicek( mNPath, *muTerms, mInitSpotRate,
-                        std::move( muRandomPath ), mVol, mKappa, mMean );
+                        std::move( muStdBrown ), mVol, mKappa, mMean );
     }
 };
 
@@ -207,7 +207,7 @@ private:
 public:
     VasicekWithMarket(
         std::size_t inNPath, const Process::MarketData::Terms inTerms,
-        std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
+        std::unique_ptr<Process::Random::StdBrownAbstract> inuRandomPath,
         double inVol, double inKappa,
         const Process::MarketData::ZCB& inMarketZCB ) :
         OneFactorAbstract( inNPath, inTerms, inMarketZCB.initialSpotRate(),
@@ -246,7 +246,7 @@ public:
     }
     VasicekWithMarket build()
     {
-        return VasicekWithMarket( mNPath, *muTerms, std::move( muRandomPath ),
+        return VasicekWithMarket( mNPath, *muTerms, std::move( muStdBrown ),
                                   mVol, mKappa, *muMarketZCB );
     }
     ModelAbstractBuilder& setInitSpotRate( double inInitSpotRate ) = delete;
@@ -268,7 +268,7 @@ private:
 public:
     GSR( std::size_t inNPath, const Process::MarketData::Terms& inTerms,
          double inInitSpotRate,
-         std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
+         std::unique_ptr<Process::Random::StdBrownAbstract> inuRandomPath,
          Math::Interpolate1D::NewtonSpline inInterpVol,
          Math::Interpolate1D::NewtonSpline inInterpKappa,
          Math::Interpolate1D::NewtonSpline inInterpMean ) :
@@ -362,7 +362,7 @@ public:
     }
     GSR build()
     {
-        return GSR( mNPath, *muTerms, mInitSpotRate, std::move( muRandomPath ),
+        return GSR( mNPath, *muTerms, mInitSpotRate, std::move( muStdBrown ),
                     *muInterpVol, *muInterpKappa, *muInterpMean );
     }
 };
@@ -401,12 +401,12 @@ private:
         const std::vector<std::vector<double>>& inFactors ) const;
 
 public:
-    GSRWithMarket( std::size_t inNPath,
-                   const Process::MarketData::Terms& inTerms,
-                   std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
-                   Math::Interpolate1D::NewtonSpline inInterpVol,
-                   Math::Interpolate1D::NewtonSpline inInterpKappa,
-                   Process::MarketData::ZCB inMarketZCB ) :
+    GSRWithMarket(
+        std::size_t inNPath, const Process::MarketData::Terms& inTerms,
+        std::unique_ptr<Process::Random::StdBrownAbstract> inuRandomPath,
+        Math::Interpolate1D::NewtonSpline inInterpVol,
+        Math::Interpolate1D::NewtonSpline inInterpKappa,
+        Process::MarketData::ZCB inMarketZCB ) :
         OneFactorAbstract( inNPath, inTerms, inMarketZCB.initialSpotRate(),
                            std::move( inuRandomPath ) ),
         mInterpVol( inInterpVol ),
@@ -484,7 +484,7 @@ public:
     }
     GSRWithMarket build()
     {
-        return GSRWithMarket( mNPath, *muTerms, std::move( muRandomPath ),
+        return GSRWithMarket( mNPath, *muTerms, std::move( muStdBrown ),
                               *muInterpVol, *muInterpKappa, *muMarketZCB );
     }
     ModelAbstractBuilder& setInitSpotRate( double inInitSpotRate ) = delete;

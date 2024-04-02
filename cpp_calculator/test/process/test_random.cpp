@@ -14,7 +14,7 @@ int main( int argc, char* argv[] )
         lTerms[iTerm] = lTerms[iTerm - 1] + dt;
     }
     auto lsTerms = std::make_shared<std::vector<double> >( lTerms );
-    Process::Random::PathBrownAntithetic lPathObj( lNPath, lsTerms );
+    Process::Random::StdBrownAntithetic lPathObj( lNPath, lsTerms );
     lPathObj.makePath();
     for ( std::size_t iTerm = 0; iTerm < lNTerms; ++iTerm )
     {
@@ -31,7 +31,7 @@ int main( int argc, char* argv[] )
         std::cout << std::endl;
     }
 
-    Process::RandomVec::PathBrownAntithetic lPathObjVec( lNPath, lsTerms, 3 );
+    Process::RandomVec::StdBrownAntithetic lPathObjVec( lNPath, lsTerms, 3 );
     for ( std::size_t iTerm = 0; iTerm < lNTerms; ++iTerm )
     {
         std::cout << lTerms[iTerm] << " ";

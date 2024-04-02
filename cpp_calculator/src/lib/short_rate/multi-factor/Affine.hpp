@@ -52,7 +52,7 @@ private:
 public:
     CIR2ppWithMarket(
         std::size_t inNPath, const Process::MarketData::Terms& inTerms,
-        std::unique_ptr<Process::RandomVec::PathAbstract> inuRandomPath,
+        std::unique_ptr<Process::RandomVec::StdBrownAbstract> inuRandomPath,
         const Math::Vec& inConvSH, const Math::Vec& inMean,
         const Math::Vec& inVol, const Process::MarketData::ZCB& inMarketZCB ) :
         MultiFactorAbstract( inNPath, inTerms, Math::Vec( 2, 0.0 ),
@@ -109,7 +109,7 @@ public:
     }
     CIR2ppWithMarket build()
     {
-        return CIR2ppWithMarket( mNPath, *muTerms, std::move( muRandomPath ),
+        return CIR2ppWithMarket( mNPath, *muTerms, std::move( muStdBrown ),
                                  mConvSH, mMean, mVol, *muMarketZCB );
     }
     ModelAbstractBuilder& setInitState( const Math::Vec& ) = delete;

@@ -150,7 +150,7 @@ Process::ModelData::SpotRates GSRWithMarket::createSpotRates() const
     for ( std::size_t iTerm = 1; iTerm < mTerms.size(); ++iTerm )
     {
         double lTmpDt = mTerms[iTerm] - mTerms[iTerm - 1];
-        muRandomPath->setIndexTime( iTerm );
+        muStdBrown->initialize();
         for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
         {
             lFactors[iPath][iTerm] =
@@ -159,7 +159,7 @@ Process::ModelData::SpotRates GSRWithMarket::createSpotRates() const
             lSpots[iPath][iTerm] =
                 lSpots[iPath][iTerm - 1] +
                 driftCoeff( iPath, iTerm, lSpots, lFactors ) * lTmpDt +
-                muRandomPath->generateRandomVal() *
+                (*muStdBrown)() * mTerms.sqrtDifTime(iTerm) * 
                     volCoeff( iPath, iTerm, lSpots, lFactors );
         }
     }

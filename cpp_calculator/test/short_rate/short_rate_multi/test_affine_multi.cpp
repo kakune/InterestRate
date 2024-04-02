@@ -26,8 +26,7 @@ ShortRate::MultiFactor::CIR2ppWithMarket G2ppBuild(
     lBuilder.setTerms( lTerms );
     lBuilder.setMarketZCB( inMarketZCB );
     lBuilder.setRandom(
-        std::make_unique<Process::RandomVec::PathBrownAntithetic>(
-            inNPath, lTerms, 2 ) );
+        std::make_unique<Process::RandomVec::StdBrownAntithetic>(  2 ) );
     return lBuilder.build();
 }
 

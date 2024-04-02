@@ -30,13 +30,13 @@ Process::ModelData::ForwardRates ModelAbstract::createForwardRates() const
                                         transfFRToState( mInitFRs, 0 ) ) );
     for ( std::size_t iTerm = 1; iTerm < mTerms.size(); ++iTerm )
     {
-        muRandomPath->setIndexTime( iTerm );
+        muStdBrown->initialize();
         for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
         {
             lStates[iPath][iTerm] =
                 lStates[iPath][iTerm - 1] + driftTerm( iPath, iTerm, lStates ) +
                 volTerm( iPath, iTerm, lStates,
-                         muRandomPath->generateRandomVal() );
+                         ( *muStdBrown )() * mTerms.sqrtDifTime( iTerm ) );
         }
     }
     std::vector<std::vector<Math::Vec>> lFRs(

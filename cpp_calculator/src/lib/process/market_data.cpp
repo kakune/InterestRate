@@ -21,12 +21,24 @@ std::vector<double> Terms::calcDifTime(
     std::vector<double> lResult( insTime->size(), 0.0 );
     for ( std::size_t i = 1; i < insTime->size(); ++i )
     {
-        lResult[i] = insTime->operator[]( i ) - insTime->operator[]( i - 1 );
+        lResult[i] = ( *insTime )[i] - ( *insTime )[i - 1];
+    }
+    return lResult;
+}
+std::vector<double> Terms::calcSqrtDifTime(
+    std::shared_ptr<const std::vector<double>> insTime )
+{
+    std::vector<double> lResult( insTime->size(), 0.0 );
+    for ( std::size_t i = 1; i < insTime->size(); ++i )
+    {
+        lResult[i] = std::sqrt( ( *insTime )[i] - ( *insTime )[i - 1] );
     }
     return lResult;
 }
 Terms::Terms( std::shared_ptr<const std::vector<double>> insData ) :
-    msData( insData ), mDifTime( calcDifTime( insData ) )
+    msData( insData ),
+    mDifTime( calcDifTime( insData ) ),
+    mSqrtDifTime( calcSqrtDifTime( insData ) )
 {
 }
 Terms::Terms( std::vector<double> inData ) :
@@ -39,6 +51,10 @@ double Terms::operator[]( std::size_t inIndex ) const
 }
 double Terms::at( std::size_t inIndex ) const { return msData->at( inIndex ); }
 double Terms::difTime( std::size_t inIndex ) const { return mDifTime[inIndex]; }
+double Terms::sqrtDifTime( std::size_t inIndex ) const
+{
+    return mSqrtDifTime[inIndex];
+}
 std::size_t Terms::size() const { return msData->size(); }
 const std::shared_ptr<const std::vector<double>> Terms::ptr() const
 {

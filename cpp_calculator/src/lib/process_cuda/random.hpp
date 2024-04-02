@@ -23,7 +23,7 @@ namespace Random
 /**
  * @brief This is the abstract class for random path classes.
  */
-class PathAbstract
+class StdBrownAbstract
 {
 protected:
     std::size_t mNPath, mNTerm;  //! the number of Path
@@ -32,12 +32,12 @@ protected:
 
 public:
     /**
-     * @brief This constructs a new PathAbstract.
+     * @brief This constructs a new StdBrownAbstract.
      * @param inNPath the number of Path
      * @param insTerms shared pointer of the term structure
      */
-    PathAbstract( std::size_t inNPath,
-                  std::shared_ptr<const std::vector<double> > insTerms ) :
+    StdBrownAbstract( std::size_t inNPath,
+                      std::shared_ptr<const std::vector<double> > insTerms ) :
         mNPath( inNPath ),
         mNTerm( insTerms->size() ),
         mpcTerms( nullptr ),
@@ -49,8 +49,8 @@ public:
                     cudaMemcpyHostToDevice );
     }
 
-    PathAbstract( std::size_t inNPath, std::size_t inNTerm,
-                  double* inpcTerms ) :
+    StdBrownAbstract( std::size_t inNPath, std::size_t inNTerm,
+                      double* inpcTerms ) :
         mNPath( inNPath ),
         mNTerm( inNTerm ),
         mpcTerms( inpcTerms ),
@@ -67,7 +67,7 @@ public:
         if ( mpcRandomValues == nullptr ) { makeRandomVals(); }
         return mpcRandomValues;
     }
-    virtual ~PathAbstract()
+    virtual ~StdBrownAbstract()
     {
         if ( mpcRandomValues != nullptr ) { cudaFree( mpcRandomValues ); }
     };
@@ -76,25 +76,25 @@ public:
 /**
  * @brief This is path of Brownian motion without using variance reduction.
  */
-class PathBrownPlain : public PathAbstract
+class PathBrownPlain : public StdBrownAbstract
 {
 public:
-    using PathAbstract::PathAbstract;
+    using StdBrownAbstract::StdBrownAbstract;
     void makeRandomVals( unsigned long long seed = 5556 ) override;
 };
 
-class PathBrownAntithetic : public PathAbstract
+class PathBrownAntithetic : public StdBrownAbstract
 {
 public:
     PathBrownAntithetic( std::size_t inNPath, std::size_t inNTerm,
                          double* inpcTerms ) :
-        PathAbstract( ( inNPath + 1 ) / 2 * 2, inNTerm, inpcTerms )
+        StdBrownAbstract( ( inNPath + 1 ) / 2 * 2, inNTerm, inpcTerms )
     {
     }
     PathBrownAntithetic(
         std::size_t inNPath,
         std::shared_ptr<const std::vector<double> > insTerms ) :
-        PathAbstract( ( inNPath + 1 ) / 2 * 2, insTerms )
+        StdBrownAbstract( ( inNPath + 1 ) / 2 * 2, insTerms )
     {
     }
     void makeRandomVals( unsigned long long seed = 5556 ) override;
@@ -104,7 +104,7 @@ public:
 //  * @brief This is path of Brownian motion with antithetic variates method.
 //  * path[i+1][t] = -path[i][t] (i:even)
 //  */
-// class PathBrownAntithetic : public PathAbstract
+// class PathBrownAntithetic : public StdBrownAbstract
 // {
 // private:
 //     double mTmpSqrtInterval;
@@ -118,7 +118,7 @@ public:
 //     PathBrownAntithetic(
 //         std::size_t inNPath,
 //         std::shared_ptr< const std::vector< double > > insTerms ) :
-//         PathAbstract( inNPath, insTerms ),
+//         StdBrownAbstract( inNPath, insTerms ),
 //         mIsNextNew( true ),
 //         mGenerator( mDevice() ),
 //         mDistribution( 0.0, 1.0 )
@@ -126,7 +126,7 @@ public:
 //     }
 //     void setIndexTime( std::size_t inIndex ) override
 //     {
-//         PathAbstract::setIndexTime( inIndex );
+//         StdBrownAbstract::setIndexTime( inIndex );
 //         mTmpSqrtInterval =
 //             std::sqrt( msTerms->at( inIndex ) - msTerms->at( inIndex - 1 ) );
 //         mIsNextNew = true;

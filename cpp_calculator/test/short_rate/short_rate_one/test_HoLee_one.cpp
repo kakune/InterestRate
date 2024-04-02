@@ -18,8 +18,7 @@ double testDifAnalytical( std::size_t inNTerms, std::size_t inNPath,
                           double inVol )
 {
     auto lTerms   = makeTerms( inNTerms, inMaturity );
-    auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-        inNPath, lTerms );
+    auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>();
 
     ShortRate::OneFactor::HoLeeBuilder lBuilder;
     lBuilder.setTerms( lTerms );
@@ -61,8 +60,7 @@ double testConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
     }
 
     auto lTerms   = makeTerms( inNTerms, inMaturity );
-    auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-        inNPath, lTerms );
+    auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>( );
 
     Process::MarketData::ZCB lMarketZCB( lTerms, lZCB );
 

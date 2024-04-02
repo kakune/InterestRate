@@ -51,10 +51,10 @@ public:
     ConstantGauss(
         std::size_t inNPath, const Process::MarketData::Terms& inTerms,
         const Math::Vec& inInitState,
-        std::unique_ptr<Process::RandomVec::PathAbstract> inuRandomPath,
+        std::unique_ptr<Process::RandomVec::StdBrownAbstract> inuStdBrown,
         const Math::Vec& inDriftCoeff, const Math::Mat& inVolCoeff ) :
         MultiFactorAbstract( inNPath, inTerms, inInitState,
-                             std::move( inuRandomPath ) ),
+                             std::move( inuStdBrown ) ),
         mDriftCoeff( inDriftCoeff ),
         mVolCoeff( inVolCoeff )
     {
@@ -82,8 +82,7 @@ public:
     ConstantGauss build()
     {
         return ConstantGauss( mNPath, *muTerms, mInitState,
-                              std::move( muRandomPath ), mDriftCoeff,
-                              mVolCoeff );
+                              std::move( muStdBrown ), mDriftCoeff, mVolCoeff );
     }
 };
 
@@ -119,11 +118,11 @@ private:
 public:
     G2ppWithMarket(
         std::size_t inNPath, const Process::MarketData::Terms& inTerms,
-        std::unique_ptr<Process::RandomVec::PathAbstract> inuRandomPath,
+        std::unique_ptr<Process::RandomVec::StdBrownAbstract> inuStdBrown,
         const Math::Vec& inDriftCoeff, const Math::Mat& inVolCoeff,
         const Process::MarketData::ZCB& inMarketZCB ) :
         MultiFactorAbstract( inNPath, inTerms, Math::Vec( 2, 0.0 ),
-                             std::move( inuRandomPath ) ),
+                             std::move( inuStdBrown ) ),
         mDriftCoeff( inDriftCoeff ),
         mVolCoeff( inVolCoeff ),
         mMarketZCB( inMarketZCB ),
@@ -167,7 +166,7 @@ public:
     }
     G2ppWithMarket build()
     {
-        return G2ppWithMarket( mNPath, *muTerms, std::move( muRandomPath ),
+        return G2ppWithMarket( mNPath, *muTerms, std::move( muStdBrown ),
                                mDriftCoeff, mVolCoeff, *muMarketZCB );
     }
     ModelAbstract& setInitState( const Math::Vec& inInitState ) = delete;

@@ -25,8 +25,8 @@ ShortRate::MultiFactor::ConstantGauss rateBuild(
     lBuilder.setVol( inVolCoeff );
     lBuilder.setTerms( lTerms );
     lBuilder.setRandom(
-        std::make_unique<Process::RandomVec::PathBrownAntithetic>(
-            inNPath, lTerms, inVolCoeff.sizeCol() ) );
+        std::make_unique<Process::RandomVec::StdBrownAntithetic>(
+            inVolCoeff.sizeCol() ) );
     return lBuilder.build();
 }
 
@@ -43,8 +43,7 @@ ShortRate::MultiFactor::G2ppWithMarket G2ppBuild(
     lBuilder.setTerms( lTerms );
     lBuilder.setMarketZCB( inMarketZCB );
     lBuilder.setRandom(
-        std::make_unique<Process::RandomVec::PathBrownAntithetic>(
-            inNPath, lTerms, 2 ) );
+        std::make_unique<Process::RandomVec::StdBrownAntithetic>( 2 ) );
     return lBuilder.build();
 }
 

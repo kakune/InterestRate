@@ -39,7 +39,7 @@ public:
     ConstantAffine(
         std::size_t inNPath, const Process::MarketData::Terms& inTerms,
         double inInitSpotRate,
-        std::unique_ptr<Process::Random::PathAbstract> inuRandomPath,
+        std::unique_ptr<Process::Random::StdBrownAbstract> inuRandomPath,
         double inLambda, double inEta, double inGamma, double inDelta ) :
         OneFactorAbstract( inNPath, inTerms, inInitSpotRate,
                            std::move( inuRandomPath ) ),
@@ -73,7 +73,7 @@ public:
     ConstantAffine build()
     {
         return ConstantAffine( mNPath, *muTerms, mInitSpotRate,
-                               std::move( muRandomPath ), mLambda, mEta, mGamma,
+                               std::move( muStdBrown ), mLambda, mEta, mGamma,
                                mDelta );
     }
 };

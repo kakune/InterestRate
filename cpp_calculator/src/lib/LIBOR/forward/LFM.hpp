@@ -35,7 +35,7 @@ public:
     ConstantLFM(
         std::size_t inNPath, const Process::MarketData::Terms& inTerms,
         const std::vector<std::size_t>& inIndTenor, const Math::Vec& inInitFRs,
-        std::unique_ptr<Process::RandomVec::PathAbstract> inuRandomPath,
+        std::unique_ptr<Process::RandomVec::StdBrownAbstract> inuRandomPath,
         const Math::Mat& inCorr, const Math::Vec& inVols ) :
         ModelAbstract( inNPath, inTerms, inIndTenor, inInitFRs,
                        std::move( inuRandomPath ), inCorr ),
@@ -59,7 +59,7 @@ public:
     ConstantLFM build()
     {
         return ConstantLFM( mNPath, *muTerms, mIndTenor, mInitFRs,
-                            std::move( muRandomPath ), mCorr, mVols );
+                            std::move( muStdBrown ), mCorr, mVols );
     }
 };
 

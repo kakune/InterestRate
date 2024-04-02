@@ -26,7 +26,7 @@ ShortRate::OneFactor::ConstantAffine rateBuild(
     lBuilder.setVol( inGamma, inDelta );
     lBuilder.setTerms( lTerms );
     lBuilder.setRandom(
-        std::make_unique<Process::Random::PathBrownAntithetic>( 100, lTerms ) );
+        std::make_unique<Process::Random::StdBrownAntithetic>() );
     return lBuilder.build();
 }
 

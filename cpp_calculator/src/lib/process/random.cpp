@@ -17,49 +17,11 @@ namespace Process
 namespace Random
 {
 
-void PathAbstract::initRandomValues()
-{
-    if ( mRandomValues.size() == mNPath &&
-         mRandomValues.at( 0 ).size() == mTerms.size() )
-    {
-        return;
-    }
-    mRandomValues.resize( mNPath, std::vector<double>( mTerms.size() ) );
-}
+double StdBrownPlain::operator()() { return mDistribution( mGenerator ); }
 
-void PathAbstract::makePath()
-{
-    initRandomValues();
-    for ( std::size_t iTerm = 1; iTerm < mTerms.size(); ++iTerm )
-    {
-        setIndexTime( iTerm );
-        for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
-        {
-            mRandomValues[iPath][iTerm] =
-                mRandomValues[iPath][iTerm - 1] + generateRandomVal();
-        }
-    }
-}
+void StdBrownAntithetic::initialize() { mIsNextNew = true; }
 
-void PathAbstract::makeRandomVariables()
-{
-    initRandomValues();
-    for ( std::size_t iTerm = 1; iTerm < mTerms.size(); ++iTerm )
-    {
-        setIndexTime( iTerm );
-        for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
-        {
-            mRandomValues[iPath][iTerm] = generateRandomVal();
-        }
-    }
-}
-
-double PathBrownPlain::generateRandomVal()
-{
-    return mDistribution( mGenerator ) * mTmpSqrtInterval;
-}
-
-double PathBrownAntithetic::generateRandomVal()
+double StdBrownAntithetic::operator()()
 {
     if ( !mIsNextNew )
     {
@@ -67,63 +29,28 @@ double PathBrownAntithetic::generateRandomVal()
         return -mPrevRandomValue;
     }
     mIsNextNew       = false;
-    mPrevRandomValue = mDistribution( mGenerator ) * mTmpSqrtInterval;
+    mPrevRandomValue = mDistribution( mGenerator );
     return mPrevRandomValue;
 }
 
 }  // namespace Random
+
 namespace RandomVec
 {
 
-void PathAbstract::initRandomValues()
-{
-    if ( mRandomValues.size() == mNPath &&
-         mRandomValues.at( 0 ).size() == mTerms.size() )
-    {
-        return;
-    }
-    mRandomValues.resize(
-        mNPath, std::vector<Math::Vec>( mTerms.size(), Math::Vec( mDim ) ) );
-}
-
-void PathAbstract::makePath()
-{
-    initRandomValues();
-    for ( std::size_t iTerm = 1; iTerm < mTerms.size(); ++iTerm )
-    {
-        setIndexTime( iTerm );
-        for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
-        {
-            mRandomValues[iPath][iTerm] =
-                mRandomValues[iPath][iTerm - 1] + generateRandomVal();
-        }
-    }
-}
-
-void PathAbstract::makeRandomVariables()
-{
-    initRandomValues();
-    for ( std::size_t iTerm = 1; iTerm < mTerms.size(); ++iTerm )
-    {
-        setIndexTime( iTerm );
-        for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
-        {
-            mRandomValues[iPath][iTerm] = generateRandomVal();
-        }
-    }
-}
-
-Math::Vec PathBrownPlain::generateRandomVal()
+Math::Vec StdBrownPlain::operator()()
 {
     Math::Vec lResult( mDim );
     for ( int i = 0; i < mDim; ++i )
     {
-        lResult( i ) = mDistribution( mGenerator ) * mTmpSqrtInterval;
+        lResult( i ) = mDistribution( mGenerator );
     }
     return lResult;
 }
 
-Math::Vec PathBrownAntithetic::generateRandomVal()
+void StdBrownAntithetic::initialize() { mIsNextNew = true; }
+
+Math::Vec StdBrownAntithetic::operator()()
 {
     if ( !mIsNextNew )
     {
@@ -133,7 +60,7 @@ Math::Vec PathBrownAntithetic::generateRandomVal()
     mIsNextNew = false;
     for ( int i = 0; i < mDim; ++i )
     {
-        mPrevRandomValue( i ) = mDistribution( mGenerator ) * mTmpSqrtInterval;
+        mPrevRandomValue( i ) = mDistribution( mGenerator );
     }
     return mPrevRandomValue;
 }

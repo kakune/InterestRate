@@ -83,7 +83,8 @@
         "stack": "cpp",
         "*.tpp": "cpp",
         "__locale": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "__functional_03": "cpp"
     },
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/cpp_calculator/src/lib",

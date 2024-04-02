@@ -128,8 +128,8 @@ public:
 class MultiFactorAbstract : public ModelAbstract
 {
 protected:
-    std::unique_ptr<Process::RandomVec::PathAbstract>
-        muRandomPath;  //! random vec
+    std::unique_ptr<Process::RandomVec::StdBrownAbstract>
+        muStdBrown;  //! random vec
     /**
      * @brief The shock due to dW in SDE of r[inIndPath][inIndTerm]
      * @param inIndPath the index of path
@@ -147,9 +147,9 @@ public:
     MultiFactorAbstract(
         std::size_t inNPath, const Process::MarketData::Terms& inTerms,
         const Math::Vec& inInitState,
-        std::unique_ptr<Process::RandomVec::PathAbstract> inuRandomPath ) :
+        std::unique_ptr<Process::RandomVec::StdBrownAbstract> inuStdBrown ) :
         ModelAbstract( inNPath, inTerms, inInitState ),
-        muRandomPath( std::move( inuRandomPath ) )
+        muStdBrown( std::move( inuStdBrown ) )
     {
     }
     virtual Process::ModelData::SpotRates createSpotRates() const override;
@@ -158,13 +158,13 @@ public:
 class MultiFactorAbstractBuilder : public ModelAbstractBuilder
 {
 protected:
-    std::unique_ptr<Process::RandomVec::PathAbstract>
-        muRandomPath;  //! random path
+    std::unique_ptr<Process::RandomVec::StdBrownAbstract>
+        muStdBrown;  //! random path
 public:
     MultiFactorAbstractBuilder& setRandom(
-        std::unique_ptr<Process::RandomVec::PathAbstract> inuRandomPath )
+        std::unique_ptr<Process::RandomVec::StdBrownAbstract> inuStdBrown )
     {
-        muRandomPath = std::move( inuRandomPath );
+        muStdBrown = std::move( inuStdBrown );
         return *this;
     }
 };

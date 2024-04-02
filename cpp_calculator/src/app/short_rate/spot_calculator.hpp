@@ -33,8 +33,7 @@ Process::ModelData::SpotRates createSpotRateFromParam(
 {
     if ( inNameModel == "Vasicek" )
     {
-        auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-            inParams( "NPath" ), inTerms );
+        auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>();
         ShortRate::OneFactor::VasicekBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
@@ -48,8 +47,7 @@ Process::ModelData::SpotRates createSpotRateFromParam(
     }
     if ( inNameModel == "HoLee" )
     {
-        auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-            inParams( "NPath" ), inTerms );
+        auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>();
         ShortRate::OneFactor::HoLeeBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
@@ -61,8 +59,7 @@ Process::ModelData::SpotRates createSpotRateFromParam(
     }
     if ( inNameModel == "ConstantAffine" )
     {
-        auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-            inParams( "NPath" ), inTerms );
+        auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>();
         ShortRate::OneFactor::ConstantAffineBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
@@ -93,8 +90,7 @@ Process::ModelData::SpotRates createSpotRateFromMarket(
 {
     if ( inNameModel == "Vasicek" )
     {
-        auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-            inParams( "NPath" ), inTerms );
+        auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>();
         ShortRate::OneFactor::VasicekWithMarketBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
@@ -106,8 +102,7 @@ Process::ModelData::SpotRates createSpotRateFromMarket(
     }
     if ( inNameModel == "HoLee" )
     {
-        auto luRandom = std::make_unique<Process::Random::PathBrownAntithetic>(
-            inParams( "NPath" ), inTerms );
+        auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>();
         ShortRate::OneFactor::HoLeeWithMarketBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
@@ -120,8 +115,7 @@ Process::ModelData::SpotRates createSpotRateFromMarket(
     if ( inNameModel == "G2pp" )
     {
         auto luRandom =
-            std::make_unique<Process::RandomVec::PathBrownAntithetic>(
-                inParams( "NPath" ), inTerms, 2 );
+            std::make_unique<Process::RandomVec::StdBrownAntithetic>( 2 );
         ShortRate::MultiFactor::G2ppWithMarketBuilder lBuilder;
         lBuilder.setTerms( inTerms );
         lBuilder.setRandom( std::move( luRandom ) );
