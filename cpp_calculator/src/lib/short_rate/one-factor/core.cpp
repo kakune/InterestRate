@@ -16,7 +16,7 @@ namespace ShortRate
 {
 namespace OneFactor
 {
-
+#ifndef USE_CUDA
 Process::ModelData::SpotRates ModelAbstract::createSpotRates() const
 {
     std::vector<std::vector<double>> lSpots(
@@ -58,6 +58,6 @@ Process::ModelData::SpotRates OneFactorAbstract::createSpotRates() const
     }
     return Process::ModelData::SpotRates( mTerms, lSpots );
 }
-
+#endif
 }  // namespace OneFactor
 }  // namespace ShortRate
