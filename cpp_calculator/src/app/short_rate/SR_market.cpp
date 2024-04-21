@@ -5,25 +5,43 @@
 #include <string>
 #include <vector>
 
-#include "spot_calculator.hpp"
+#include "process/market_data.hpp"
+#include "short_rate/model_data.hpp"
+#include "short_rate_creator.hpp"
+#include "terms_creator.hpp"
+#include "utils/csv.hpp"
 #include "utils/parameters.hpp"
 
 int main( int argc, char* argv[] )
 {
-    std::string lPathOutput  = argv[1];
-    std::string lNameModel   = argv[2];
-    std::string lNameSection = argv[3];
-    std::string lPathParam   = argv[4];
+    std::string lPathOutput        = argv[1];
+    std::string lNameSection       = argv[2];
+    std::string lPathParam         = argv[3];
+    std::string lNameSectionMarket = argv[4];
+    std::string lPathParamMarket   = argv[5];
+    std::string lPathCSVMarket     = argv[6];
 
     Utils::Parameters lParams;
     lParams.readParameters( lPathParam );
     lParams.setNameCommonSection( "COMMON" );
     lParams.setNameCurrentSection( lNameSection );
+    Utils::Parameters lParamsMarket;
+    lParamsMarket.readParameters( lPathParamMarket );
+    lParamsMarket.setNameCommonSection( "COMMON" );
+    lParamsMarket.setNameCurrentSection( lNameSectionMarket );
+
+    std::map<std::string, std::vector<double>> lMapMarket =
+        Utils::CSV::readFile( lPathCSVMarket );
+    Utils::CSV::prepareZCBColumn( lMapMarket, lParamsMarket );
+
+    Process::MarketData::ZCB lMarketZCB(
+        Process::MarketData::Terms( lMapMarket[std::string( "Maturity" )] ),
+        lMapMarket[std::string( "ZCB" )] );
 
     Process::MarketData::Terms lTerms = APP::prepareTerms( lParams );
-    Process::ModelData::SpotRates lSpots =
-        APP::createSpotRateFromParam( lNameModel, lParams, lTerms );
-    Process::MarketData::ZCB lZCB = lSpots.createZCB();
+    ShortRate::SpotRates lSpots =
+        APP::createSpotRateFromMarket( lParams, lTerms, lMarketZCB );
+    Process::MarketData::ZCB lZCB = lSpots.getZCB();
 
     std::ofstream lFileOutput( lPathOutput );
     if ( lFileOutput.is_open() )

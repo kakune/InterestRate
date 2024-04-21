@@ -21,6 +21,8 @@ double testDotMatVec( Math::Mat inLhs, Math::Vec inRhs, std::size_t inInd )
 double testDotMatMat( Math::Mat inLhs, Math::Mat inRhs, std::size_t inIndLeft,
                       std::size_t inIndRight )
 {
+    inLhs.print();
+    std::cout << inLhs( 2, 1 ) << std::endl;
     return dot( inLhs, inRhs )( inIndLeft, inIndRight );
 }
 double testCholeskyDecomposition( Math::Mat inMat, std::size_t inIndLeft,
@@ -100,4 +102,12 @@ TEST( MatrixTest, SolveEqTriangular )
                      },
                      { 18.0, 4.0, 22.0 }, 2 ),
                  1e-3 );
+}
+TEST( MatrixTest, Eigen )
+{
+    Math::Mat lMat{ { 1.0, 2.0, 3.0 }, { 2.0, 4.0, 1.0 }, { 3.0, 1.0, -2.0 } };
+    lMat.print();
+    auto [lEigenVec, lEigenMat] = lMat.symLargeEigens( 2 );
+    lEigenVec.print();
+    lEigenMat.print();
 }

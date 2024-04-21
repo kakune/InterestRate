@@ -6,24 +6,22 @@ from lib.cpp.cmake import buildCmakeRelease, runExe
 from lib.plot.graph import scatter3D
 from lib.utils.parameters import Parameters
 
-gNameModel = "ConstantAffine"
-gNameSection = "PARAM1"
+gNameSection = "ConstantAffine"
 
 gPathCppExe = os.path.join(
-    __init__.gPathCppExeDir, "calc_with_param")
+    __init__.gPathCppExeDir, "SR_param")
 gPathOutput = os.path.join(__init__.gPathOutputDir,
-                           gNameModel + "_with_param_output.csv")
-gPathParam = os.path.join(__init__.gPathParamDir, gNameModel + ".ini")
+                           gNameSection + "_SR_output.csv")
 gPathGraphZCB = os.path.join(__init__.gPathOutputDir,
-                             gNameModel + "_with_param_ZCB_graph.png")
+                             gNameSection + "_SR_ZCB_graph.png")
 gPathGraphFR = os.path.join(__init__.gPathOutputDir,
-                            gNameModel + "_with_param_FR_graph.png")
+                            gNameSection + "_SR_FR_graph.png")
 
 if __name__ == '__main__':
     buildCmakeRelease(__init__.gPathCppDir)
     runExe(
         gPathCppExe,
-        (gPathOutput, gNameModel, gNameSection, gPathParam)
+        (gPathOutput, gNameSection, __init__.gPathParam)
     )
 
     lDataFrame = pd.read_csv(gPathOutput)

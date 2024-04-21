@@ -1,37 +1,23 @@
-#ifndef APP_SHORT_RATE_PREPARE_MODEL_HPP
-#define APP_SHORT_RATE_PREPARE_MODEL_HPP
+#ifndef APP_LIB_SHORT_RATE_CREATOR_HPP
+#define APP_LIB_SHORT_RATE_CREATOR_HPP
 
-#include <memory>
 #include <string>
 #include <vector>
 
 #include "process/market_data.hpp"
 #include "short_rate/multi-factor.hpp"
 #include "short_rate/one-factor.hpp"
+#include "terms_creator.hpp"
 #include "utils/parameters.hpp"
 
 namespace APP
 {
 
-Process::MarketData::Terms prepareTerms( const Utils::Parameters& inParams )
-{
-    std::size_t lNTerms = std::size_t( inParams( "NTerms" ) );
-    std::vector<double> lTerms( lNTerms, 0 );
-
-    double lDt = inParams( "TimeMaturity" ) / double( lNTerms - 1 );
-    for ( std::size_t iTerm = 1; iTerm < lNTerms; ++iTerm )
-    {
-        lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
-    }
-
-    return Process::MarketData::Terms( lTerms );
-}
-
-Process::ModelData::SpotRates createSpotRateFromParam(
-    std::string inNameModel, const Utils::Parameters& inParams,
+ShortRate::SpotRates createSpotRateFromParam(
+    const Utils::Parameters& inParams,
     const Process::MarketData::Terms& inTerms )
 {
-    if ( inNameModel == "Vasicek" )
+    if ( inParams.operator()<std::string>( "NameModel" ) == "Vasicek" )
     {
         auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>();
         ShortRate::OneFactor::VasicekBuilder lBuilder;
@@ -42,10 +28,10 @@ Process::ModelData::SpotRates createSpotRateFromParam(
         lBuilder.setVol( inParams( "Vol" ) );
         lBuilder.setKappa( inParams( "Kappa" ) );
         lBuilder.setMean( inParams( "Mean" ) );
-        return Process::ModelData::SpotRates(
+        return ShortRate::SpotRates(
             lBuilder.build().createSpotRates() );
     }
-    if ( inNameModel == "HoLee" )
+    if ( inParams.operator()<std::string>( "NameModel" ) == "HoLee" )
     {
         auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>();
         ShortRate::OneFactor::HoLeeBuilder lBuilder;
@@ -54,10 +40,10 @@ Process::ModelData::SpotRates createSpotRateFromParam(
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setInitSpotRate( inParams( "InitRate" ) );
         lBuilder.setVol( inParams( "Vol" ) );
-        return Process::ModelData::SpotRates(
+        return ShortRate::SpotRates(
             lBuilder.build().createSpotRates() );
     }
-    if ( inNameModel == "ConstantAffine" )
+    if ( inParams.operator()<std::string>( "NameModel" ) == "ConstantAffine" )
     {
         auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>();
         ShortRate::OneFactor::ConstantAffineBuilder lBuilder;
@@ -67,28 +53,26 @@ Process::ModelData::SpotRates createSpotRateFromParam(
         lBuilder.setInitSpotRate( inParams( "InitRate" ) );
         lBuilder.setDrift( inParams( "Lambda" ), inParams( "Eta" ) );
         lBuilder.setVol( inParams( "Gamma" ), inParams( "Delta" ) );
-        return Process::ModelData::SpotRates(
+        return ShortRate::SpotRates(
             lBuilder.build().createSpotRates() );
     }
-    return Process::ModelData::SpotRates(
+    return ShortRate::SpotRates(
         inTerms,
         std::vector<std::vector<double> >(
             inParams( "NPath" ), std::vector<double>( inTerms.size() ) ) );
 }
 
-Process::ModelData::SpotRates createSpotRateFromParam(
-    std::string inNameModel, const Utils::Parameters& inParams )
+ShortRate::SpotRates createSpotRateFromParam(
+    const Utils::Parameters& inParams )
 {
-    return ( createSpotRateFromParam( inNameModel, inParams,
-                                      prepareTerms( inParams ) ) );
+    return ( createSpotRateFromParam( inParams, prepareTerms( inParams ) ) );
 }
 
-Process::ModelData::SpotRates createSpotRateFromMarket(
-    std::string inNameModel, const Utils::Parameters& inParams,
-    const Process::MarketData::Terms inTerms,
+ShortRate::SpotRates createSpotRateFromMarket(
+    const Utils::Parameters& inParams, const Process::MarketData::Terms inTerms,
     const Process::MarketData::ZCB inMarketZCB )
 {
-    if ( inNameModel == "Vasicek" )
+    if ( inParams.operator()<std::string>( "NameModel" ) == "Vasicek" )
     {
         auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>();
         ShortRate::OneFactor::VasicekWithMarketBuilder lBuilder;
@@ -97,10 +81,10 @@ Process::ModelData::SpotRates createSpotRateFromMarket(
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setVol( inParams( "Vol" ) );
         lBuilder.setMarketZCB( inMarketZCB );
-        return Process::ModelData::SpotRates(
+        return ShortRate::SpotRates(
             lBuilder.build().createSpotRates() );
     }
-    if ( inNameModel == "HoLee" )
+    if ( inParams.operator()<std::string>( "NameModel" ) == "HoLee" )
     {
         auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>();
         ShortRate::OneFactor::HoLeeWithMarketBuilder lBuilder;
@@ -109,10 +93,10 @@ Process::ModelData::SpotRates createSpotRateFromMarket(
         lBuilder.setNPath( inParams( "NPath" ) );
         lBuilder.setVol( inParams( "Vol" ) );
         lBuilder.setMarketZCB( inMarketZCB );
-        return Process::ModelData::SpotRates(
+        return ShortRate::SpotRates(
             lBuilder.build().createSpotRates() );
     }
-    if ( inNameModel == "G2pp" )
+    if ( inParams.operator()<std::string>( "NameModel" ) == "G2pp" )
     {
         auto luRandom =
             std::make_unique<Process::RandomVec::StdBrownAntithetic>( 2 );
@@ -128,20 +112,20 @@ Process::ModelData::SpotRates createSpotRateFromMarket(
         lBuilder.setDrift( { -inParams( "A" ), -inParams( "B" ) } );
         lBuilder.setVol( lVol );
         lBuilder.setMarketZCB( inMarketZCB );
-        return Process::ModelData::SpotRates(
+        return ShortRate::SpotRates(
             lBuilder.build().createSpotRates() );
     }
-    return Process::ModelData::SpotRates(
+    return ShortRate::SpotRates(
         inTerms,
         std::vector<std::vector<double> >(
             inParams( "NPath" ), std::vector<double>( inTerms.size() ) ) );
 }
-Process::ModelData::SpotRates createSpotRateFromMarket(
-    std::string inNameModel, const Utils::Parameters& inParams,
+ShortRate::SpotRates createSpotRateFromMarket(
+    const Utils::Parameters& inParams,
     const Process::MarketData::ZCB inMarketZCB )
 {
-    return createSpotRateFromMarket( inNameModel, inParams,
-                                     prepareTerms( inParams ), inMarketZCB );
+    return createSpotRateFromMarket( inParams, prepareTerms( inParams ),
+                                     inMarketZCB );
 }
 
 }  // namespace APP

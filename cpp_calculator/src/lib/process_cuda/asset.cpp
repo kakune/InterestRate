@@ -26,7 +26,7 @@ double ModelForwardAbstract::impliedVolatility( double inStrike )
         auto lFunction = [this, inStrike, lCallPrice]( double inVol ) -> double
         {
             return lCallPrice -
-                   Analytical::BlackScholes::europeanCallOptionPrice(
+                   Analytical::BlackScholes::priceEuropeanCallOption(
                        this->mInitPrice, inStrike, 0.0, inVol,
                        this->mTimeMaturity );
         };
@@ -35,7 +35,7 @@ double ModelForwardAbstract::impliedVolatility( double inStrike )
     double lPutPrice = pricePutOption( inStrike );
     auto lFunction   = [this, inStrike, lPutPrice]( double inVol ) -> double
     {
-        return lPutPrice - Analytical::BlackScholes::europeanPutOptionPrice(
+        return lPutPrice - Analytical::BlackScholes::priceEuropeanPutOption(
                                this->mInitPrice, inStrike, 0.0, inVol,
                                this->mTimeMaturity );
     };

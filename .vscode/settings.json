@@ -84,7 +84,8 @@
         "*.tpp": "cpp",
         "__locale": "cpp",
         "ios": "cpp",
-        "__functional_03": "cpp"
+        "__functional_03": "cpp",
+        "__config": "cpp"
     },
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/cpp_calculator/src/lib",

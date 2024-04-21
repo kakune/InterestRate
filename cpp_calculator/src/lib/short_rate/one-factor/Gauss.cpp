@@ -141,7 +141,7 @@ double GSR::volCoeff( std::size_t inIndPath, std::size_t inIndTerm,
     return mInterpVol( mTerms[inIndTerm - 1] );
 }
 
-Process::ModelData::SpotRates GSRWithMarket::createSpotRates() const
+ShortRate::SpotRates GSRWithMarket::createSpotRates() const
 {
     std::vector<std::vector<double>> lSpots(
         mNPath, std::vector<double>( mTerms.size(), mInitSpotRate ) );
@@ -159,11 +159,11 @@ Process::ModelData::SpotRates GSRWithMarket::createSpotRates() const
             lSpots[iPath][iTerm] =
                 lSpots[iPath][iTerm - 1] +
                 driftCoeff( iPath, iTerm, lSpots, lFactors ) * lTmpDt +
-                (*muStdBrown)() * mTerms.sqrtDifTime(iTerm) * 
+                ( *muStdBrown )() * mTerms.sqrtDifTime( iTerm ) *
                     volCoeff( iPath, iTerm, lSpots, lFactors );
         }
     }
-    return Process::ModelData::SpotRates( mTerms, lSpots );
+    return ShortRate::SpotRates( mTerms, lSpots );
 }
 
 double GSRWithMarket::driftCoeff(

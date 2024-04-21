@@ -26,6 +26,14 @@ namespace Process
 namespace Random
 {
 
+template <class T_>
+concept C_StdBrown = requires( T_ inObj ) {
+    inObj.initialize();
+    {
+        inObj()
+    } -> std::convertible_to<double>;
+};
+
 /**
  * @brief This is the abstract class for standard brownian motion generator
  * classes.
@@ -88,24 +96,37 @@ public:
 namespace RandomVec
 {
 
+template <class T_>
+concept C_StdBrown = requires( T_ inObj ) {
+    inObj.initialize();
+    {
+        inObj()
+    } -> std::convertible_to<Math::Vec>;
+};
+
 /**
  * @brief This is the abstract class for standard brownian motion generator.
  */
 class StdBrownAbstract
 {
 protected:
-    std::size_t mDim;  //! the dimension of Vec
+    std::size_t mDim;       //! the dimension of Vec
+    std::size_t mIndStart;  //! components of random vec whose (i < mStartInd)
+                            //! become zero.
 
 public:
     /**
      * @brief This constructs a new StdBrownAbstract.
      * @param inDim the dimension of generated vectors
      */
-    StdBrownAbstract( std::size_t inDim ) : mDim( inDim ) {}
+    StdBrownAbstract( std::size_t inDim ) : mDim( inDim ), mIndStart( 0 ) {}
     /**
      * @brief This initializes the variance reduction method.
      */
-    virtual void initialize() {}
+    virtual void initialize( std::size_t inIndStart = 0 )
+    {
+        mIndStart = inIndStart;
+    }
     /**
      * @brief This generates the random value.
      * @return double random value
@@ -157,7 +178,7 @@ public:
         mPrevRandomValue( inDim )
     {
     }
-    void initialize() override;
+    void initialize( std::size_t inIndStart = 0 ) override;
     Math::Vec operator()() override;
 };
 

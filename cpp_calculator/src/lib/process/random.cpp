@@ -40,15 +40,19 @@ namespace RandomVec
 
 Math::Vec StdBrownPlain::operator()()
 {
-    Math::Vec lResult( mDim );
-    for ( int i = 0; i < mDim; ++i )
+    Math::Vec lResult( mDim, 0.0 );
+    for ( std::size_t i = mIndStart; i < mDim; ++i )
     {
         lResult( i ) = mDistribution( mGenerator );
     }
     return lResult;
 }
 
-void StdBrownAntithetic::initialize() { mIsNextNew = true; }
+void StdBrownAntithetic::initialize( std::size_t inIndStart )
+{
+    mIndStart  = inIndStart;
+    mIsNextNew = true;
+}
 
 Math::Vec StdBrownAntithetic::operator()()
 {
@@ -58,9 +62,10 @@ Math::Vec StdBrownAntithetic::operator()()
         return -mPrevRandomValue;
     }
     mIsNextNew = false;
-    for ( int i = 0; i < mDim; ++i )
+    for ( std::size_t i = 0; i < mDim; ++i )
     {
-        mPrevRandomValue( i ) = mDistribution( mGenerator );
+        if ( i < mIndStart ) { mPrevRandomValue( i ) = 0.0; }
+        else { mPrevRandomValue( i ) = mDistribution( mGenerator ); }
     }
     return mPrevRandomValue;
 }

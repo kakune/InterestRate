@@ -1,5 +1,5 @@
-add_executable(calc_with_param calc_with_param.cpp)
-target_link_libraries(calc_with_param LibUtils LibShortRate)
+add_executable(SR_param SR_param.cpp)
+target_link_libraries(SR_param LibUtils LibShortRate LibApp)
 
-add_executable(calc_with_market calc_with_market.cpp)
-target_link_libraries(calc_with_market LibUtils LibShortRate)
+add_executable(SR_market SR_market.cpp)
+target_link_libraries(SR_market LibUtils LibShortRate LibApp)

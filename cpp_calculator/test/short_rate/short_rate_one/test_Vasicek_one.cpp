@@ -30,8 +30,7 @@ double testDifAnalytical( std::size_t inNTerms, std::size_t inNPath,
     lBuilder.setMean( inMean );
 
     ShortRate::OneFactor::Vasicek lVasicek = lBuilder.build();
-    Process::MarketData::ZCB lVasicekZCB =
-        lVasicek.createSpotRates().createZCB();
+    Process::MarketData::ZCB lVasicekZCB = lVasicek.createSpotRates().getZCB();
 
     double lResult = 0.0;
     for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
@@ -63,7 +62,7 @@ double testConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
     }
 
     auto lTerms   = makeTerms( inNTerms, inMaturity );
-    auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>( );
+    auto luRandom = std::make_unique<Process::Random::StdBrownAntithetic>();
 
     Process::MarketData::ZCB lMarketZCB( lTerms, lZCB );
 
@@ -76,8 +75,8 @@ double testConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
     lBuilder.setRandom( std::move( luRandom ) );
 
     ShortRate::OneFactor::VasicekWithMarket lVasicek = lBuilder.build();
-    Process::ModelData::SpotRates lSpot  = lVasicek.createSpotRates();
-    Process::MarketData::ZCB lVasicekZCB = lSpot.createZCB();
+    ShortRate::SpotRates lSpot           = lVasicek.createSpotRates();
+    Process::MarketData::ZCB lVasicekZCB = lSpot.getZCB();
 
     double lResult = 0.0;
 

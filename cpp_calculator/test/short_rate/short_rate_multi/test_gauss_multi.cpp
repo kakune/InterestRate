@@ -53,7 +53,7 @@ double testConstantPriceZCB( std::size_t inNTerms, std::size_t inNPath,
 {
     auto lObj = rateBuild( inNTerms, inNPath, inMaturity, inInitState,
                            inDriftCoeff, inVolCoeff );
-    return lObj.createSpotRates().createZCB()( 0.0, inMaturity );
+    return lObj.createSpotRates().getZCB()( 0.0, inMaturity );
 }
 
 double testConstantPriceZCBAnalytical( double inMaturity, Math::Vec inInitState,
@@ -85,7 +85,7 @@ double testG2ppConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
     Process::MarketData::ZCB lMarketZCB( lTerms, lZCB );
     auto lObj = G2ppBuild( inNTerms, inNPath, inMaturity, inDriftCoeff,
                            inVolCoeff, lMarketZCB );
-    Process::MarketData::ZCB lG2pp = lObj.createSpotRates().createZCB();
+    Process::MarketData::ZCB lG2pp = lObj.createSpotRates().getZCB();
 
     double lResult = 0.0;
 

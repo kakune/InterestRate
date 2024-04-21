@@ -26,7 +26,7 @@ ShortRate::MultiFactor::CIR2ppWithMarket G2ppBuild(
     lBuilder.setTerms( lTerms );
     lBuilder.setMarketZCB( inMarketZCB );
     lBuilder.setRandom(
-        std::make_unique<Process::RandomVec::StdBrownAntithetic>(  2 ) );
+        std::make_unique<Process::RandomVec::StdBrownAntithetic>( 2 ) );
     return lBuilder.build();
 }
 
@@ -51,7 +51,7 @@ double testCIR2ppConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
     Process::MarketData::ZCB lMarketZCB( lTerms, lZCB );
     auto lObj = G2ppBuild( inNTerms, inNPath, inMaturity, inConvSH, inMean,
                            inVol, lMarketZCB );
-    Process::MarketData::ZCB lG2pp = lObj.createSpotRates().createZCB();
+    Process::MarketData::ZCB lG2pp = lObj.createSpotRates().getZCB();
 
     double lResult = 0.0;
 

@@ -7,12 +7,31 @@
 #ifndef UTILS_PARAMETERS_HPP
 #define UTILS_PARAMETERS_HPP
 
+#include <fstream>
+#include <iostream>
 #include <map>
+#include <regex>
 #include <string>
+#include <variant>
+#include <vector>
 
 namespace Utils
 {
-
+using DataType =
+    std::variant<std::string, int, double, std::vector<int>,
+                 std::vector<double>, std::vector<std::vector<int>>,
+                 std::vector<std::vector<double>>>;
+template <typename T> T castData( const DataType& inVal )
+{
+    throw std::invalid_argument( "castData() mismatch." );
+}
+template <> std::string castData( const DataType& inVal );
+template <> int castData( const DataType& inVal );
+template <> double castData( const DataType& inVal );
+template <> std::vector<double> castData( const DataType& inVal );
+template <> std::vector<int> castData( const DataType& inVal );
+template <> std::vector<std::vector<int>> castData( const DataType& inVal );
+template <> std::vector<std::vector<double>> castData( const DataType& inVal );
 /**
  * @brief This stores parameters in map.
  * @details Parameters[S][T] is a double variable T in section S.
@@ -24,7 +43,7 @@ class Parameters
 {
 private:
     //! data read from ini file
-    std::map< std::string, std::map< std::string, double > > mData;
+    std::map<std::string, std::map<std::string, DataType>> mData;
     //! name of section that used operator()
     std::string mNameCurrentSection;
     //! name of section that used if current section has no corresponding
@@ -43,7 +62,7 @@ public:
      * @param inSectionName Name of section
      * @return const std::map< std::string, double >&
      */
-    const std::map< std::string, double >& operator[](
+    const std::map<std::string, DataType>& operator[](
         const std::string& inSectionName ) const
     {
         return mData.at( inSectionName );
@@ -54,7 +73,7 @@ public:
      * @param inSectionName Name of section
      * @return std::map< std::string, double >&
      */
-    std::map< std::string, double >& operator[](
+    std::map<std::string, DataType>& operator[](
         const std::string& inSectionName )
     {
         return mData[inSectionName];
@@ -69,14 +88,15 @@ public:
      * @param inParameterName
      * @return double
      */
-    double operator()( const std::string& inParameterName )
+    template <typename T = double>
+    T operator()( const std::string& inParameterName )
     {
         if ( mData[mNameCurrentSection].find( inParameterName ) ==
              mData[mNameCurrentSection].end() )
         {
-            return mData[mNameCommonSection][inParameterName];
+            return castData<T>( mData[mNameCommonSection][inParameterName] );
         }
-        return mData[mNameCurrentSection][inParameterName];
+        return castData<T>( mData[mNameCurrentSection][inParameterName] );
     }
 
     /**
@@ -88,14 +108,17 @@ public:
      * @param inParameterName
      * @return const double
      */
-    const double operator()( const std::string& inParameterName ) const
+    template <typename T = double>
+    const T operator()( const std::string& inParameterName ) const
     {
         if ( mData.at( mNameCurrentSection ).find( inParameterName ) ==
              mData.at( mNameCurrentSection ).end() )
         {
-            return mData.at( mNameCommonSection ).at( inParameterName );
+            return castData<T>(
+                mData.at( mNameCommonSection ).at( inParameterName ) );
         }
-        return mData.at( mNameCurrentSection ).at( inParameterName );
+        return castData<T>(
+            mData.at( mNameCurrentSection ).at( inParameterName ) );
     }
 
     /**
@@ -104,6 +127,13 @@ public:
      */
     void setNameCommonSection( const std::string& inNameCommonSection )
     {
+        if ( mData.find( inNameCommonSection ) == mData.end() )
+        {
+            throw std::invalid_argument(
+                std::string( "Error: setNameCommonSecion()\n" ) +
+                std::string( "There is no section named " ) +
+                inNameCommonSection + std::string( "." ) );
+        }
         mNameCommonSection = inNameCommonSection;
     }
     /**
@@ -112,6 +142,13 @@ public:
      */
     void setNameCurrentSection( const std::string& inNameCurrentSection )
     {
+        if ( mData.find( inNameCurrentSection ) == mData.end() )
+        {
+            throw std::invalid_argument(
+                std::string( "Error: setNameCurrentSecion()\n" ) +
+                std::string( "There is no section named " ) +
+                inNameCurrentSection + std::string( "." ) );
+        }
         mNameCurrentSection = inNameCurrentSection;
     }
 };

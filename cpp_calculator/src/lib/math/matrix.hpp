@@ -23,6 +23,7 @@ class Vec
 private:
     std::valarray<double> mData;
     std::size_t mNSize;
+    friend Mat;
 
 public:
     Vec( std::size_t inNSize, double inVal = 0 );
@@ -63,6 +64,7 @@ public:
 
     std::size_t size() const;
     double sum() const;
+    double sum( std::size_t inIndBegin, std::size_t inIndEnd ) const;
     double min() const;
     double max() const;
     const Vec& print() const;
@@ -73,6 +75,8 @@ public:
     friend Vec sqrt( const Vec& inVec );
     friend Vec exp( const Vec& inVec );
     friend Vec log( const Vec& inVec );
+    friend Vec abs( const Vec& inVec );
+    friend Vec pow( const Vec& inVec, double inExponent );
 
     friend void solveEqPositiveDefinite( Mat& inMat, Vec& inVec );
     friend double dot( const Vec& inLhs, const Vec& inRhs );
@@ -92,6 +96,7 @@ class Mat
 private:
     std::valarray<double> mData;
     std::size_t mNRow, mNCol;
+    friend Vec;
 
 public:
     Mat( std::size_t inNRow, std::size_t inNCol, double inVal = 0 );
@@ -102,6 +107,8 @@ public:
 
     double& operator()( std::size_t i, std::size_t j );
     const double& operator()( std::size_t i, std::size_t j ) const;
+    Vec getRow(std::size_t inIndRow ) const;
+    Vec getCol(std::size_t inIndCol ) const;
 
     const Mat& operator+() const&;
     Mat operator+() &&;
@@ -137,6 +144,8 @@ public:
     const Mat& print() const;
     Mat& print();
 
+    std::pair<Vec, Mat> symLargeEigens( std::size_t inNumEigen );
+
     friend Vec& Vec::solveEqLCholesky( const Mat& inL );
     Mat& choleskyDecompose();
 
@@ -152,6 +161,9 @@ public:
     friend Vec dotUpperMatVec( const Mat& inLhs, Vec inRhs );
     friend Vec dotLowerMatVec( const Mat& inLhs, Vec inRhs );
 };
+
+Mat unitMat( std::size_t inSize, double inVal = 1.0 );
+Mat diagMat( const Vec& inVec );
 
 }  // namespace Math
 

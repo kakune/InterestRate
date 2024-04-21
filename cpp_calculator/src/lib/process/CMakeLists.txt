@@ -1,4 +1,4 @@
-add_library(LibProcess random.cpp market_data.cpp model_data.cpp)
+add_library(LibProcess random.cpp market_data.cpp)
 
 if(CUDA_ENABLED)
     enable_language(CUDA)

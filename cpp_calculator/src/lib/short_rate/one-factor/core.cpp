@@ -17,7 +17,7 @@ namespace ShortRate
 namespace OneFactor
 {
 #ifndef USE_CUDA
-Process::ModelData::SpotRates ModelAbstract::createSpotRates() const
+ShortRate::SpotRates ModelAbstract::createSpotRates() const
 {
     std::vector<std::vector<double>> lSpots(
         mNPath, std::vector<double>( mTerms.size(), mInitSpotRate ) );
@@ -30,7 +30,7 @@ Process::ModelData::SpotRates ModelAbstract::createSpotRates() const
                                    driftCoeff( iPath, iTerm, lSpots ) * lTmpDt;
         }
     }
-    return Process::ModelData::SpotRates( mTerms, lSpots );
+    return ShortRate::SpotRates( mTerms, lSpots );
 }
 
 double ConstantRate::driftCoeff(
@@ -40,7 +40,7 @@ double ConstantRate::driftCoeff(
     return 0.0;
 }
 
-Process::ModelData::SpotRates OneFactorAbstract::createSpotRates() const
+ShortRate::SpotRates OneFactorAbstract::createSpotRates() const
 {
     std::vector<std::vector<double>> lSpots(
         mNPath, std::vector<double>( mTerms.size(), mInitSpotRate ) );
@@ -52,11 +52,12 @@ Process::ModelData::SpotRates OneFactorAbstract::createSpotRates() const
         {
             lSpots[iPath][iTerm] = lSpots[iPath][iTerm - 1] +
                                    driftCoeff( iPath, iTerm, lSpots ) * lTmpDt +
-                                   (*muStdBrown)() * mTerms.sqrtDifTime(iTerm) * 
+                                   ( *muStdBrown )() *
+                                       mTerms.sqrtDifTime( iTerm ) *
                                        volCoeff( iPath, iTerm, lSpots );
         }
     }
-    return Process::ModelData::SpotRates( mTerms, lSpots );
+    return ShortRate::SpotRates( mTerms, lSpots );
 }
 #endif
 }  // namespace OneFactor

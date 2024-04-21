@@ -13,8 +13,8 @@
 
 #include "math/interpolate_1d.hpp"
 #include "process/market_data.hpp"
-#include "process/model_data.hpp"
 #include "process/random.hpp"
+#include "short_rate/model_data.hpp"
 
 namespace ShortRate
 {
@@ -56,7 +56,7 @@ public:
     /**
      * @brief This calcurate spot rates and Disconunt Factors.
      */
-    virtual Process::ModelData::SpotRates createSpotRates() const;
+    virtual ShortRate::SpotRates createSpotRates() const;
 };
 
 /**
@@ -140,7 +140,7 @@ public:
         muStdBrown( std::move( inuStdBrown ) )
     {
     }
-    virtual Process::ModelData::SpotRates createSpotRates() const override;
+    virtual ShortRate::SpotRates createSpotRates() const override;
 };
 
 class OneFactorAbstractBuilder : public ModelAbstractBuilder

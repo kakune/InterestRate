@@ -31,7 +31,7 @@ struct Model;
  * @param inTMat time until maturity
  * @return double price
  */
-double europeanCallOptionPrice( double inInitS, double inStrike, double inRate,
+double priceEuropeanCallOption( double inInitS, double inStrike, double inRate,
                                 double inVol, double inTMat );
 /**
  * @brief This calculates european Put Option Price of BS Model.
@@ -42,7 +42,7 @@ double europeanCallOptionPrice( double inInitS, double inStrike, double inRate,
  * @param inTMat time until maturity
  * @return double price
  */
-double europeanPutOptionPrice( double inInitS, double inStrike, double inRate,
+double priceEuropeanPutOption( double inInitS, double inStrike, double inRate,
                                double inVol, double inTMat );
 
 struct Model
@@ -57,12 +57,12 @@ struct Model
      * @brief This calculates european Call Option Price of BS Model.
      * @return double price
      */
-    double europeanCallOptionPrice();
+    double priceEuropeanCallOption();
     /**
      * @brief This calculates european Put Option Price of BS Model.
      * @return double price
      */
-    double europeanPutOptionPrice();
+    double priceEuropeanPutOption();
 };
 
 }  // namespace BlackScholes

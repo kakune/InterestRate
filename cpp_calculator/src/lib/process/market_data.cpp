@@ -15,7 +15,8 @@ namespace Process
 {
 namespace MarketData
 {
-std::vector<double> Terms::calcDifTime(
+
+static std::vector<double> calcDifTime(
     std::shared_ptr<const std::vector<double>> insTime )
 {
     std::vector<double> lResult( insTime->size(), 0.0 );
@@ -25,7 +26,7 @@ std::vector<double> Terms::calcDifTime(
     }
     return lResult;
 }
-std::vector<double> Terms::calcSqrtDifTime(
+static std::vector<double> calcSqrtDifTime(
     std::shared_ptr<const std::vector<double>> insTime )
 {
     std::vector<double> lResult( insTime->size(), 0.0 );
@@ -37,8 +38,10 @@ std::vector<double> Terms::calcSqrtDifTime(
 }
 Terms::Terms( std::shared_ptr<const std::vector<double>> insData ) :
     msData( insData ),
-    mDifTime( calcDifTime( insData ) ),
-    mSqrtDifTime( calcSqrtDifTime( insData ) )
+    msDifTime(
+        std::make_shared<const std::vector<double>>( calcDifTime( insData ) ) ),
+    msSqrtDifTime( std::make_shared<const std::vector<double>>(
+        calcSqrtDifTime( insData ) ) )
 {
 }
 Terms::Terms( std::vector<double> inData ) :
@@ -50,10 +53,13 @@ double Terms::operator[]( std::size_t inIndex ) const
     return msData->operator[]( inIndex );
 }
 double Terms::at( std::size_t inIndex ) const { return msData->at( inIndex ); }
-double Terms::difTime( std::size_t inIndex ) const { return mDifTime[inIndex]; }
+double Terms::difTime( std::size_t inIndex ) const
+{
+    return ( *msDifTime )[inIndex];
+}
 double Terms::sqrtDifTime( std::size_t inIndex ) const
 {
-    return mSqrtDifTime[inIndex];
+    return ( *msSqrtDifTime )[inIndex];
 }
 std::size_t Terms::size() const { return msData->size(); }
 const std::shared_ptr<const std::vector<double>> Terms::ptr() const
@@ -62,6 +68,66 @@ const std::shared_ptr<const std::vector<double>> Terms::ptr() const
 }
 double Terms::front() const { return msData->front(); }
 double Terms::back() const { return msData->back(); }
+
+static Math::Vec calcTau(
+    const Terms& inTerms,
+    std::shared_ptr<const std::vector<std::size_t>> insData )
+{
+    Math::Vec lResult( insData->size() - 1 );
+    for ( std::size_t i = 0; i < insData->size() - 1; ++i )
+    {
+        lResult( i ) = inTerms[( *insData )[i + 1]] - inTerms[( *insData )[i]];
+    }
+    return lResult;
+}
+static std::vector<std::size_t> calcMinIndAtEachTime(
+    const Terms& inTerms,
+    std::shared_ptr<const std::vector<std::size_t>> insData )
+{
+    std::vector<std::size_t> lResult( inTerms.size() );
+    std::size_t iTmp = 0;
+    for ( std::size_t iTerm = 0; iTerm < inTerms.size(); ++iTerm )
+    {
+        while ( iTmp < insData->size() && ( *insData )[iTmp] < iTerm )
+        {
+            ++iTmp;
+        }
+        lResult[iTerm] = iTmp;
+    }
+    return lResult;
+}
+
+Tenor::Tenor( const Terms& inTerms,
+              const std::shared_ptr<const std::vector<std::size_t>> insData ) :
+    mNSize( insData->size() - 1 ),
+    mTerms( inTerms ),
+    msData( insData ),
+    msTau( std::make_shared<const Math::Vec>( calcTau( inTerms, insData ) ) ),
+    msMinIndAtEachTime( std::make_shared<const std::vector<std::size_t>>(
+        calcMinIndAtEachTime( inTerms, insData ) ) )
+{
+}
+
+Tenor::Tenor( const Terms& inTerms, const std::vector<std::size_t>& inData ) :
+    Tenor( inTerms, std::make_shared<const std::vector<std::size_t>>( inData ) )
+{
+}
+
+std::size_t Tenor::operator[]( std::size_t inIndex ) const
+{
+    return ( *msData )[inIndex];
+}
+double Tenor::term( std::size_t inIndex ) const
+{
+    return mTerms[( *msData )[inIndex]];
+}
+double Tenor::tau( std::size_t inIndex ) const { return ( *msTau )( inIndex ); }
+const Math::Vec& Tenor::getTauVec() const { return *msTau; }
+std::size_t Tenor::minIndex( std::size_t inIndex ) const
+{
+    return ( *msMinIndAtEachTime )[inIndex];
+}
+std::size_t Tenor::size() const { return mNSize; }
 
 ZCB::ZCB( const Terms& inTerms,
           std::shared_ptr<const std::vector<double>> insData,

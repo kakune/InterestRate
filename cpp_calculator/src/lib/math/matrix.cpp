@@ -173,6 +173,11 @@ Vec operator/( double inLhs, const Vec& inRhs )
 }
 std::size_t Vec::size() const { return mNSize; }
 double Vec::sum() const { return mData.sum(); }
+double Vec::sum( std::size_t inIndBegin, std::size_t inIndEnd ) const
+{
+    std::slice lSlice( inIndBegin, inIndEnd - inIndBegin, 1 );
+    return mData[lSlice].sum();
+}
 double Vec::min() const { return mData.min(); }
 double Vec::max() const { return mData.max(); }
 const Vec& Vec::print() const
@@ -190,6 +195,11 @@ Vec& Vec::print()
 Vec sqrt( const Vec& inVec ) { return Vec( sqrt( inVec.mData ) ); }
 Vec exp( const Vec& inVec ) { return Vec( exp( inVec.mData ) ); }
 Vec log( const Vec& inVec ) { return Vec( log( inVec.mData ) ); }
+Vec abs( const Vec& inVec ) { return Vec( abs( inVec.mData ) ); }
+Vec pow( const Vec& inVec, double inExponent )
+{
+    return Vec( pow( inVec.mData, inExponent ) );
+}
 
 Mat::Mat( std::size_t inNRow, std::size_t inNCol, double inVal ) :
     mNRow( inNRow ), mNCol( inNCol ), mData( inVal, inNRow * inNCol )
@@ -237,6 +247,16 @@ double& Mat::operator()( std::size_t i, std::size_t j )
 const double& Mat::operator()( std::size_t i, std::size_t j ) const
 {
     return mData[i + j * mNRow];
+}
+Vec Mat::getRow( std::size_t inIndRow ) const
+{
+    return Vec(
+        std::valarray<double>( mData[std::slice( inIndRow, mNCol, mNRow )] ) );
+}
+Vec Mat::getCol( std::size_t inIndCol ) const
+{
+    return Vec( std::valarray<double>(
+        mData[std::slice( inIndCol * mNRow, mNRow, 1 )] ) );
 }
 const Mat& Mat::operator+() const& { return *this; }
 Mat Mat::operator+() &&
@@ -384,6 +404,7 @@ Mat operator/( double inLhs, const Mat& inRhs )
     lResult.mData = ( inLhs / inRhs.mData );
     return lResult;
 }
+
 std::size_t Mat::sizeRow() const { return mNRow; }
 std::size_t Mat::sizeCol() const { return mNCol; }
 Mat Mat::transpose() const
@@ -435,6 +456,27 @@ Mat& Mat::print()
         std::cout << std::endl;
     }
     return *this;
+}
+
+std::pair<Vec, Mat> Mat::symLargeEigens( std::size_t inNumEigen )
+{
+    Vec lEigenValues( inNumEigen );
+    Mat lEigenVectors( mNRow, inNumEigen );
+    int lNFound;
+    std::vector<int> lIndFailed( inNumEigen );
+
+    int lInfo = LAPACKE_dsyevx(
+        LAPACK_COL_MAJOR, 'V', 'I', 'U', mNRow, &mData[0], mNRow, 0.0, 0.0,
+        mNRow - inNumEigen + 1, mNRow, 0.0, &lNFound, &lEigenValues.mData[0],
+        &lEigenVectors.mData[0], lEigenVectors.mNRow, &lIndFailed[0] );
+    if ( lInfo != 0 )
+    {
+        std::cerr << "Error: Math::Vec::symLargeEigens()" << std::endl
+                  << "Error code : " << lInfo << std::endl;
+        exit( 1 );
+    }
+
+    return std::make_pair( lEigenValues, lEigenVectors );
 }
 
 Vec& Vec::solveEqLCholesky( const Mat& inL )
@@ -530,6 +572,22 @@ Vec dotUpperMatVec( const Mat& inLhs, Vec inRhs )
 Vec dotLowerMatVec( const Mat& inLhs, Vec inRhs )
 {
     return inRhs.multiplyLowerMatFromLeft( inLhs );
+}
+
+Mat unitMat( std::size_t inSize, double inVal )
+{
+    Mat lResult( inSize, inSize, 0.0 );
+    for ( std::size_t i = 0; i < inSize; ++i ) { lResult( i, i ) = inVal; }
+    return lResult;
+}
+Mat diagMat( const Vec& inVec )
+{
+    Mat lResult( inVec.size(), inVec.size(), 0.0 );
+    for ( std::size_t i = 0; i < inVec.size(); ++i )
+    {
+        lResult( i, i ) = inVec( i );
+    }
+    return lResult;
 }
 
 }  // namespace Math

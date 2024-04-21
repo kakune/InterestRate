@@ -17,7 +17,7 @@ namespace Analytical
 namespace BlackScholes
 {
 
-double Model::europeanCallOptionPrice()
+double Model::priceEuropeanCallOption()
 {
     double lD1 = ( std::log( mInitS / mStrike ) +
                    ( mRate + 0.5 * mVol * mVol ) * mTMat ) /
@@ -27,7 +27,7 @@ double Model::europeanCallOptionPrice()
            mStrike * std::exp( -mRate * mTMat ) *
                Math::SpecialFunctions::normalCDF( lD2 );
 }
-double Model::europeanPutOptionPrice()
+double Model::priceEuropeanPutOption()
 {
     double lD1 = ( std::log( mInitS / mStrike ) +
                    ( mRate + 0.5 * mVol * mVol ) * mTMat ) /
@@ -38,17 +38,17 @@ double Model::europeanPutOptionPrice()
                Math::SpecialFunctions::normalCDF( -lD2 );
 }
 
-double europeanCallOptionPrice( double inInitS, double inStrike, double inRate,
+double priceEuropeanCallOption( double inInitS, double inStrike, double inRate,
                                 double inVol, double inTMat )
 {
     Model lObj{ inInitS, inStrike, inRate, inVol, inTMat };
-    return lObj.europeanCallOptionPrice();
+    return lObj.priceEuropeanCallOption();
 }
-double europeanPutOptionPrice( double inInitS, double inStrike, double inRate,
+double priceEuropeanPutOption( double inInitS, double inStrike, double inRate,
                                double inVol, double inTMat )
 {
     Model lObj{ inInitS, inStrike, inRate, inVol, inTMat };
-    return lObj.europeanPutOptionPrice();
+    return lObj.priceEuropeanPutOption();
 }
 
 }  // namespace BlackScholes

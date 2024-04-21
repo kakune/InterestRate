@@ -9,7 +9,10 @@
 #ifndef LIBOR_FORWARD_HPP
 #define LIBOR_FORWARD_HPP
 
-#include "LIBOR/forward/LFM.hpp"
 #include "LIBOR/forward/core.hpp"
+#include "LIBOR/forward/model_data.hpp"
+#include "LIBOR/forward/payoff.hpp"
+#include "LIBOR/forward/step_calculator.hpp"
+#include "LIBOR/forward/vol_generator.hpp"
 
 #endif

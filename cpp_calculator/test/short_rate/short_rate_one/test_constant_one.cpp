@@ -14,7 +14,7 @@ double testConstantPriceZCB( std::size_t inNTerms, std::size_t inNPath,
     auto lTerms = Process::MarketData::Terms( lTermsVec );
 
     ShortRate::OneFactor::ConstantRate lObj( lTerms, inRate );
-    return lObj.createSpotRates().createZCB()( 0.0, inMaturity );
+    return lObj.createSpotRates().getZCB()( 0.0, inMaturity );
 }
 
 double testConstantForwardRate( std::size_t inNTerms, std::size_t inNPath,
@@ -30,8 +30,8 @@ double testConstantForwardRate( std::size_t inNTerms, std::size_t inNPath,
     auto lTerms = Process::MarketData::Terms( lTermsVec );
 
     ShortRate::OneFactor::ConstantRate lObj( lTerms, inRate );
-    return lObj.createSpotRates().createZCB().forwardRate( inStartTime,
-                                                           inTerminalTime );
+    return lObj.createSpotRates().getZCB().forwardRate( inStartTime,
+                                                        inTerminalTime );
 }
 
 double testConstantInstantaneousForwardRate( std::size_t inNTerms,
@@ -48,8 +48,7 @@ double testConstantInstantaneousForwardRate( std::size_t inNTerms,
     auto lTerms = Process::MarketData::Terms( lTermsVec );
 
     ShortRate::OneFactor::ConstantRate lObj( lTerms, inRate );
-    return lObj.createSpotRates().createZCB().instantaneousForwardRate(
-        inFRTime );
+    return lObj.createSpotRates().getZCB().instantaneousForwardRate( inFRTime );
 }
 
 TEST( ShortRateConstantTest, PriceZCB )

@@ -1,5 +1,5 @@
 set(FORWARD_SOURCES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/core.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/LFM.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/payoff.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/model_data.cpp
     PARENT_SCOPE
 )

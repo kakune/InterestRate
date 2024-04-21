@@ -17,7 +17,7 @@ namespace ShortRate
 namespace MultiFactor
 {
 
-Process::ModelData::SpotRates ModelAbstract::createSpotRates() const
+ShortRate::SpotRates ModelAbstract::createSpotRates() const
 {
     std::vector<std::vector<Math::Vec>> lSpots(
         mNPath, std::vector<Math::Vec>( mTerms.size(), mInitState ) );
@@ -40,7 +40,7 @@ Process::ModelData::SpotRates ModelAbstract::createSpotRates() const
                 transfStateToRate( lSpots[iPath][iTerm], iTerm );
         }
     }
-    return Process::ModelData::SpotRates( mTerms, lRates );
+    return ShortRate::SpotRates( mTerms, lRates );
 }
 double ModelAbstract::transfStateToRate( const Math::Vec& inState,
                                          std::size_t inIndTime ) const
@@ -55,7 +55,7 @@ Math::Vec ConstantRate::driftCoeff(
     return Math::Vec( mDim, 0.0 );
 }
 
-Process::ModelData::SpotRates MultiFactorAbstract::createSpotRates() const
+ShortRate::SpotRates MultiFactorAbstract::createSpotRates() const
 {
     std::vector<std::vector<Math::Vec>> lSpots(
         mNPath, std::vector<Math::Vec>( mTerms.size(), mInitState ) );
@@ -65,10 +65,11 @@ Process::ModelData::SpotRates MultiFactorAbstract::createSpotRates() const
         muStdBrown->initialize();
         for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
         {
-            lSpots[iPath][iTerm] = lSpots[iPath][iTerm - 1] +
-                                   driftCoeff( iPath, iTerm, lSpots ) * lTmpDt +
-                                   volTerm( iPath, iTerm, lSpots,
-                                            (*muStdBrown)() * mTerms.sqrtDifTime(iTerm) );
+            lSpots[iPath][iTerm] =
+                lSpots[iPath][iTerm - 1] +
+                driftCoeff( iPath, iTerm, lSpots ) * lTmpDt +
+                volTerm( iPath, iTerm, lSpots,
+                         ( *muStdBrown )() * mTerms.sqrtDifTime( iTerm ) );
         }
     }
     std::vector<std::vector<double>> lRates(
@@ -81,7 +82,7 @@ Process::ModelData::SpotRates MultiFactorAbstract::createSpotRates() const
                 transfStateToRate( lSpots[iPath][iTerm], iTerm );
         }
     }
-    return Process::ModelData::SpotRates( mTerms, lRates );
+    return ShortRate::SpotRates( mTerms, lRates );
 }
 
 }  // namespace MultiFactor

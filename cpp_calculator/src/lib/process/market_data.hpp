@@ -24,17 +24,13 @@ namespace MarketData
 {
 
 /**
- * @brief This stores the tenor.
+ * @brief This stores the term structure {t_0, t_1, ... t_{N-1}}.
  */
 class Terms
 {
 private:
-    const std::shared_ptr<const std::vector<double>> msData;
-    const std::vector<double> mDifTime, mSqrtDifTime;
-    std::vector<double> calcDifTime(
-        std::shared_ptr<const std::vector<double>> insTime );
-    std::vector<double> calcSqrtDifTime(
-        std::shared_ptr<const std::vector<double>> insTime );
+    const std::shared_ptr<const std::vector<double>> msData;  //! term structure
+    const std::shared_ptr<const std::vector<double>> msDifTime, msSqrtDifTime;
 
 public:
     /**
@@ -43,14 +39,69 @@ public:
      */
     Terms( std::shared_ptr<const std::vector<double>> insData );
     Terms( std::vector<double> inData );
+    /**
+     * @brief This returns t_{inIndex}.
+     */
     double operator[]( std::size_t inIndex ) const;
     double at( std::size_t inIndex ) const;
+
+    /**
+     * @brief This returns t_{inIndex} - t_{inIndex-1}.
+     */
     double difTime( std::size_t inIndex ) const;
+    /**
+     * @brief This returns sqrt(t_{inIndex} - t_{inIndex-1}).
+     */
     double sqrtDifTime( std::size_t inIndex ) const;
+    /**
+     * @brief This returns the number of terms N.
+     */
     std::size_t size() const;
     const std::shared_ptr<const std::vector<double>> ptr() const;
     double front() const;
     double back() const;
+};
+
+/**
+ * @brief This stores Tenor structure {T_0, T_1, ... T_N} and {tau_0, tau_1, ...
+ * tau_{N-1}}.
+ *
+ */
+class Tenor
+{
+private:
+    const std::size_t mNSize;  //! the size of tenor N.
+    const Terms mTerms;
+    const std::shared_ptr<const std::vector<std::size_t>> msData;
+    const std::shared_ptr<const Math::Vec> msTau;
+    const std::shared_ptr<const std::vector<std::size_t>> msMinIndAtEachTime;
+
+public:
+    Tenor( const Terms& inTerms,
+           const std::shared_ptr<const std::vector<std::size_t>> insData );
+    Tenor( const Terms& inTerms, const std::vector<std::size_t>& inData );
+    /**
+     * @brief this returns the index of T_{inIndex} in Terms.
+     */
+    std::size_t operator[]( std::size_t inIndex ) const;
+    /**
+     * @brief This returns T_{inIndex}.
+     */
+    double term( std::size_t inIndex ) const;
+    /**
+     * @brief This returns tau_{inIndex} = T_{inIndex+1} - T_{inIndex}.
+     */
+    double tau( std::size_t inIndex ) const;
+    /**
+     * @brief This gets the Tau Vec [tau_0, tau_1, ..., tau_{N-1}].
+     */
+    const Math::Vec& getTauVec() const;
+    /**
+     * @brief This returns the minimum tenor index i which satisfies Tenor[i] >=
+     * Terms[inIndex].
+     */
+    std::size_t minIndex( std::size_t inIndex ) const;
+    std::size_t size() const;
 };
 
 /**
