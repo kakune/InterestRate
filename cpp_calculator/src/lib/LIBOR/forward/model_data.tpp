@@ -80,8 +80,8 @@ public:
     }
 };
 
-template <class DerivedForwardRates>
-ForwardRatesAbstract<DerivedForwardRates>::ForwardRatesAbstract(
+template <class DataDerived>
+DataAbstract<DataDerived>::DataAbstract(
     const Process::MarketData::Terms& inTerms,
     const Process::MarketData::Tenor& inTenor,
     std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
@@ -96,41 +96,41 @@ ForwardRatesAbstract<DerivedForwardRates>::ForwardRatesAbstract(
 {
 }
 
-template <class DerivedForwardRates>
-ForwardRatesAbstract<DerivedForwardRates>::ForwardRatesAbstract(
+template <class DataDerived>
+DataAbstract<DataDerived>::DataAbstract(
     const Process::MarketData::Terms& inTerms,
     const Process::MarketData::Tenor& inTenor,
     const std::vector<std::vector<Math::Vec>>& inDataForwardRate,
     std::size_t inDegZCB ) :
-    ForwardRatesAbstract(
-        inTerms, inTenor,
-        std::make_shared<const std::vector<std::vector<Math::Vec>>>(
-            inDataForwardRate ),
-        inDegZCB )
+    DataAbstract( inTerms, inTenor,
+                  std::make_shared<const std::vector<std::vector<Math::Vec>>>(
+                      inDataForwardRate ),
+                  inDegZCB )
 {
 }
 
-template <class DerivedForwardRates>
-double ForwardRatesAbstract<DerivedForwardRates>::calcCaplet(
-    double inStrike, std::size_t inIndTenor ) const
+template <class DataDerived>
+double DataAbstract<DataDerived>::calcCaplet( double inStrike,
+                                              std::size_t inIndTenor ) const
 {
     CapletFloorletPayoff lCaplet( mTenor, msDataForwardRates, inStrike,
                                   inIndTenor, inIndTenor + 1, true );
-    return static_cast<const DerivedForwardRates*>( this )
-        ->template calcExpectation( lCaplet );
+    return static_cast<const DataDerived*>( this )->template calcExpectation(
+        lCaplet );
 }
-template <class DerivedForwardRates>
-double ForwardRatesAbstract<DerivedForwardRates>::calcFloorlet(
-    double inStrike, std::size_t inIndTenor ) const
+template <class DataDerived>
+double DataAbstract<DataDerived>::calcFloorlet( double inStrike,
+                                                std::size_t inIndTenor ) const
 {
     CapletFloorletPayoff lCaplet( mTenor, msDataForwardRates, inStrike,
                                   inIndTenor, inIndTenor + 1, false );
-    return static_cast<const DerivedForwardRates*>( this )
-        ->template calcExpectation( lCaplet );
+    return static_cast<const DataDerived*>( this )->template calcExpectation(
+        lCaplet );
 }
-template <class DerivedForwardRates>
-double ForwardRatesAbstract<DerivedForwardRates>::calcBlackImpVol(
-    double inStrike, std::size_t inIndTenor, bool inIsUseCaplet ) const
+template <class DataDerived>
+double DataAbstract<DataDerived>::calcBlackImpVol( double inStrike,
+                                                   std::size_t inIndTenor,
+                                                   bool inIsUseCaplet ) const
 {
     double lInitFR    = ( *msDataForwardRates )[0][0]( inIndTenor );
     double lTimeStart = mTenor.term( inIndTenor );
@@ -150,28 +150,40 @@ double ForwardRatesAbstract<DerivedForwardRates>::calcBlackImpVol(
 }
 
 template <class PayoffObject_>
-double ForwardRatesTerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
+double DataTerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
 {
     double lResult           = 0.0;
     std::size_t lIndTenorPay = inPayoff.getIndexTenorPay();
     std::size_t lIndTermsPay = mTerms[lIndTenorPay];
     bool lIsTerminal         = ( lIndTenorPay == mTenor.size() );
+    if ( lIsTerminal )
+    {
+        for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
+        {
+            lResult += inPayoff( iPath );
+        }
+        // discount by initial ZCB
+        lResult *= ( *msZCB )( mTenor.term( mTenor.size() ) ) / mNPath;
+        return lResult;
+    }
+
     for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
     {
         double lValuePayoff = inPayoff( iPath );
-        if ( !lIsTerminal && lValuePayoff != 0.0 )
+
+        if ( lValuePayoff == 0.0 ) { continue; }
+
+        // calculate using E_t[Payoff / P_{PayTime}(TerminalTime)]
+        Math::Vec lZCB =
+            mTenor.getTauVec() * ( *msDataForwardRates )[iPath][lIndTermsPay] +
+            1.0;
+        for ( std::size_t iZCB = lIndTenorPay; iZCB < mTenor.size(); ++iZCB )
         {
-            Math::Vec lZCB = mTenor.getTauVec() *
-                                 ( *msDataForwardRates )[iPath][lIndTermsPay] +
-                             1.0;
-            for ( std::size_t iZCB = lIndTenorPay; iZCB < mTenor.size();
-                  ++iZCB )
-            {
-                lValuePayoff *= lZCB( iZCB );
-            }
+            lValuePayoff *= lZCB( iZCB );
         }
         lResult += lValuePayoff;
     }
+    // discount by initial ZCB
     lResult *= ( *msZCB )( mTenor.term( mTenor.size() ) ) / mNPath;
     return lResult;
 }

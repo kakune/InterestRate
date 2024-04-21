@@ -28,7 +28,7 @@ Process::MarketData::ZCB createZCBFromForwardRates(
 /**
  * @brief This stores forward rate data at each path and each term.
  */
-template <class DerivedForwardRates> class ForwardRatesAbstract
+template <class DataDerived> class DataAbstract
 {
 protected:
     const std::size_t mNPath;                 //! the number of path
@@ -46,17 +46,15 @@ public:
      * @param insDataForwardRates forward rate
      * @param inDegZCB the degree for the spline of ZCB
      */
-    ForwardRatesAbstract(
-        const Process::MarketData::Terms& inTerms,
-        const Process::MarketData::Tenor& inTenor,
-        std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
-            insDataForwardRates,
-        std::size_t inDegZCB = 3 );
-    ForwardRatesAbstract(
-        const Process::MarketData::Terms& inTerms,
-        const Process::MarketData::Tenor& inTenor,
-        const std::vector<std::vector<Math::Vec>>& inDataForwardRate,
-        std::size_t inDegZCB = 3 );
+    DataAbstract( const Process::MarketData::Terms& inTerms,
+                  const Process::MarketData::Tenor& inTenor,
+                  std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
+                      insDataForwardRates,
+                  std::size_t inDegZCB = 3 );
+    DataAbstract( const Process::MarketData::Terms& inTerms,
+                  const Process::MarketData::Tenor& inTenor,
+                  const std::vector<std::vector<Math::Vec>>& inDataForwardRate,
+                  std::size_t inDegZCB = 3 );
     const std::vector<Math::Vec>& operator[]( std::size_t inIndex ) const
     {
         return ( *msDataForwardRates )[inIndex];
@@ -68,25 +66,23 @@ public:
                             bool inIsUseCaplet = true ) const;
 };
 
-class ForwardRatesTerminalMeas
-    : public ForwardRatesAbstract<ForwardRatesTerminalMeas>
+class DataTerminalMeas : public DataAbstract<DataTerminalMeas>
 {
 public:
-    ForwardRatesTerminalMeas(
-        const Process::MarketData::Terms& inTerms,
-        const Process::MarketData::Tenor& inTenor,
-        std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
-            insDataForwardRates,
-        std::size_t inDegZCB = 3 ) :
-        ForwardRatesAbstract( inTerms, inTenor, insDataForwardRates, inDegZCB )
+    DataTerminalMeas( const Process::MarketData::Terms& inTerms,
+                      const Process::MarketData::Tenor& inTenor,
+                      std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
+                          insDataForwardRates,
+                      std::size_t inDegZCB = 3 ) :
+        DataAbstract( inTerms, inTenor, insDataForwardRates, inDegZCB )
     {
     }
-    ForwardRatesTerminalMeas(
+    DataTerminalMeas(
         const Process::MarketData::Terms& inTerms,
         const Process::MarketData::Tenor& inTenor,
         const std::vector<std::vector<Math::Vec>>& inDataForwardRate,
         std::size_t inDegZCB = 3 ) :
-        ForwardRatesAbstract( inTerms, inTenor, inDataForwardRate, inDegZCB )
+        DataAbstract( inTerms, inTenor, inDataForwardRate, inDegZCB )
     {
     }
     template <class PayoffObject_>

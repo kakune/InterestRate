@@ -25,7 +25,7 @@ static Math::Mat getMatFromParam( const std::string& inName,
         inParams.operator()<std::vector<std::vector<double>>>( inName ) );
 }
 
-LIBOR::Forward::ForwardRatesTerminalMeas createForwardTerminalFromParam(
+LIBOR::Forward::DataTerminalMeas createForwardTerminalFromParam(
     const Utils::Parameters& inParams,
     const Process::MarketData::Terms& inTerms,
     const Process::MarketData::Tenor& inTenor )
@@ -62,7 +62,7 @@ LIBOR::Forward::ForwardRatesTerminalMeas createForwardTerminalFromParam(
         std::string( "No Corresponding name of model." ) );
 }
 
-LIBOR::Forward::ForwardRatesTerminalMeas createForwardTerminalFromParam(
+LIBOR::Forward::DataTerminalMeas createForwardTerminalFromParam(
     const Utils::Parameters& inParams )
 {
     auto lTerms = prepareTerms( inParams );

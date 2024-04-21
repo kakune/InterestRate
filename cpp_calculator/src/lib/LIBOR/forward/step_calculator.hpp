@@ -30,7 +30,7 @@ private:
     const VolatilityGenerator_ mVolGen;
 
 public:
-    using ForwardRatesType = LIBOR::Forward::ForwardRatesTerminalMeas;
+    using ForwardRatesType = LIBOR::Forward::DataTerminalMeas;
     using StatesType       = LIBOR::Forward::StatesPlain<Math::Vec>;
     LogNormalTerminalMeas( const Process::MarketData::Terms& inTerms,
                            const Process::MarketData::Tenor& inTenor,
@@ -52,7 +52,7 @@ private:
     const VolatilityGenerator_ mVolGen;
 
 public:
-    using ForwardRatesType = LIBOR::Forward::ForwardRatesTerminalMeas;
+    using ForwardRatesType = LIBOR::Forward::DataTerminalMeas;
     using StatesType       = LIBOR::Forward::StatesLog<Math::Vec>;
     LogNormalTerminalMeasWithLog( const Process::MarketData::Terms& inTerms,
                                   const Process::MarketData::Tenor& inTenor,
@@ -74,7 +74,7 @@ private:
     const VolatilityGenerator_ mVolGen;
 
 public:
-    using ForwardRatesType = LIBOR::Forward::ForwardRatesTerminalMeas;
+    using ForwardRatesType = LIBOR::Forward::DataTerminalMeas;
     using StatesType       = LIBOR::Forward::StatesPlain<Math::Vec>;
     NormalTerminalMeas( const Process::MarketData::Terms& inTerms,
                         const Process::MarketData::Tenor& inTenor,
