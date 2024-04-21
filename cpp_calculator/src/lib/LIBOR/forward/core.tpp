@@ -25,6 +25,15 @@ Factory<StepCalculator_>::createForwardRates() const
                                                   mInitFR );
     for ( std::size_t iTerm = 1; iTerm < mTerms.size(); ++iTerm )
     {
+        if ( iTerm > mTenor[mTenor.size() - 1] )
+        {
+            for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
+            {
+                lStates.setStateElement(
+                    iPath, iTerm, lStates.getStates()[iPath][iTerm - 1] );
+            }
+            continue;
+        }
         lStdBrownGen.initialize();
         for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
         {
@@ -35,7 +44,7 @@ Factory<StepCalculator_>::createForwardRates() const
         }
     }
     return typename StepCalculator_::ForwardRatesType( mTerms, mTenor,
-                                                       lStates.getValues() );
+                                                       lStates.getForwards() );
 }
 
 }  // namespace LIBOR::Forward

@@ -66,4 +66,9 @@ TEST( ShortRateConstantTest, PriceZCB )
                      LIBOR::Forward::StepCalc::LogNormalTerminalMeasWithLog>(
                      lNPath, lMaturity, lIndTenor, lInitFR, lVol, lCorr, lVol ),
                  0.001 );
+    EXPECT_NEAR(
+        0.0,
+        testImpVolConstantVol<LIBOR::Forward::StepCalc::LogNormalSpotMeas>(
+            lNPath, lMaturity, lIndTenor, lInitFR, lVol, lCorr, lVol ),
+        0.001 );
 }

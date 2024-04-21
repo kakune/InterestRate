@@ -27,12 +27,12 @@ template <typename T_, typename ElementState_>
 concept C_States = requires( T_ inObj, std::size_t inIndPath,
                              std::size_t inIndTerms, ElementState_ inVal ) {
     inObj.setStateElement( inIndPath, inIndTerms, inVal );
-    inObj.setValueElement( inIndPath, inIndTerms, inVal );
+    inObj.setForwardElement( inIndPath, inIndTerms, inVal );
     {
         inObj.getStates()
     } -> std::same_as<const std::vector<std::vector<ElementState_>>&>;
     {
-        inObj.getValues()
+        inObj.getForwards()
     } -> std::same_as<const std::vector<std::vector<ElementState_>>&>;
 };
 template <typename T_>
@@ -109,6 +109,28 @@ public:
                   const Process::MarketData::Tenor& inTenor,
                   const std::vector<std::vector<Math::Vec>>& inDataForwardRates,
                   std::size_t inDegZCB = 3 ) :
+        Abstract( inTerms, inTenor, inDataForwardRates, inDegZCB )
+    {
+    }
+    template <class PayoffObject_>
+    double calcExpectation( PayoffObject_ inPayoff ) const;
+};
+
+class SpotMeas : public Abstract<SpotMeas>
+{
+public:
+    SpotMeas( const Process::MarketData::Terms& inTerms,
+              const Process::MarketData::Tenor& inTenor,
+              std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
+                  insDataForwardRates,
+              std::size_t inDegZCB = 3 ) :
+        Abstract( inTerms, inTenor, insDataForwardRates, inDegZCB )
+    {
+    }
+    SpotMeas( const Process::MarketData::Terms& inTerms,
+              const Process::MarketData::Tenor& inTenor,
+              const std::vector<std::vector<Math::Vec>>& inDataForwardRates,
+              std::size_t inDegZCB = 3 ) :
         Abstract( inTerms, inTenor, inDataForwardRates, inDegZCB )
     {
     }

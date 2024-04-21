@@ -31,8 +31,8 @@ public:
     {
         mValues[inIndPath][inIndTerms] = inState;
     }
-    void setValueElement( std::size_t inIndPath, std::size_t inIndTerms,
-                          ElementState_ inValue )
+    void setForwardElement( std::size_t inIndPath, std::size_t inIndTerms,
+                            ElementState_ inValue )
     {
         mValues[inIndPath][inIndTerms] = inValue;
     }
@@ -40,7 +40,7 @@ public:
     {
         return mValues;
     }
-    const std::vector<std::vector<ElementState_>>& getValues() const
+    const std::vector<std::vector<ElementState_>>& getForwards() const
     {
         return mValues;
     }
@@ -66,8 +66,8 @@ public:
         mLogValues[inIndPath][inIndTerms] = inState;
         mValues[inIndPath][inIndTerms]    = exp( inState );
     }
-    void setValueElement( std::size_t inIndPath, std::size_t inIndTerms,
-                          ElementState_ inValue )
+    void setForwardElement( std::size_t inIndPath, std::size_t inIndTerms,
+                            ElementState_ inValue )
     {
         mValues[inIndPath][inIndTerms]    = inValue;
         mLogValues[inIndPath][inIndTerms] = log( inValue );
@@ -76,7 +76,7 @@ public:
     {
         return mLogValues;
     }
-    const std::vector<std::vector<ElementState_>>& getValues() const
+    const std::vector<std::vector<ElementState_>>& getForwards() const
     {
         return mValues;
     }
@@ -191,6 +191,33 @@ double TerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
     // discount by initial ZCB
     lResult *= ( *msZCB )( mTenor.term( mTenor.size() ) ) / mNPath;
     return lResult;
+}
+
+template <class PayoffObject_>
+double SpotMeas::calcExpectation( PayoffObject_ inPayoff ) const
+{
+    double lResult           = 0.0;
+    std::size_t lIndTenorPay = inPayoff.getIndexTenorPay();
+    std::size_t lIndTermsPay = mTerms[lIndTenorPay];
+
+    for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
+    {
+        double lValuePayoff = inPayoff( iPath );
+        if ( lValuePayoff == 0.0 ) { continue; }
+        double lFactor = 1.0;
+
+        // calculate using E_t[Payoff / \Prod_{n=0}^{IndTenorPay-1} (1 + \tau_n
+        // L_{T_n}(T_{n+1})]
+        Math::Vec lRate =
+            mTenor.getTauVec() * ( *msDataForwardRates )[iPath][lIndTermsPay] +
+            1.0;
+        for ( std::size_t iRate = 0; iRate < lIndTenorPay; ++iRate )
+        {
+            lFactor *= lRate( iRate );
+        }
+        lResult += lValuePayoff / lFactor;
+    }
+    return lResult / mNPath;
 }
 
 }  // namespace Data

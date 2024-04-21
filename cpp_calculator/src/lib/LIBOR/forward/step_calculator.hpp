@@ -13,8 +13,6 @@
 namespace LIBOR::Forward::StepCalc
 {
 
-Math::Mat calcUpperTriangularRhoWithOutDiag( const Math::Mat& inCorr );
-
 template <C_VolGen VolatilityGenerator_> class LogNormalTerminalMeas;
 template <C_VolGen VolatilityGenerator_> class LogNormalTerminalMeasWithLog;
 template <C_VolGen VolatilityGenerator_> class NormalTerminalMeas;
@@ -80,6 +78,28 @@ public:
                         const Process::MarketData::Tenor& inTenor,
                         const Math::Mat& inCorr,
                         const VolatilityGenerator_& inVol );
+    Math::Vec operator()( std::size_t inIndPath, std::size_t inIndTerm,
+                          const StatesType& inStates,
+                          const Math::Vec& inStdBrownianVec ) const;
+};
+
+template <C_VolGen VolatilityGenerator_> class LogNormalSpotMeas
+{
+private:
+    const Process::MarketData::Terms mTerms;
+    const Process::MarketData::Tenor mTenor;
+    const Math::Mat mCorr;
+    const Math::Mat mRho;
+    const std::vector<Math::Mat> mStepRhos;
+    const VolatilityGenerator_ mVolGen;
+
+public:
+    using ForwardRatesType = LIBOR::Forward::Data::SpotMeas;
+    using StatesType       = LIBOR::Forward::States::Plain<Math::Vec>;
+    LogNormalSpotMeas( const Process::MarketData::Terms& inTerms,
+                       const Process::MarketData::Tenor& inTenor,
+                       const Math::Mat& inCorr,
+                       const VolatilityGenerator_& inVol );
     Math::Vec operator()( std::size_t inIndPath, std::size_t inIndTerm,
                           const StatesType& inStates,
                           const Math::Vec& inStdBrownianVec ) const;
