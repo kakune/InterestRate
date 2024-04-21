@@ -20,6 +20,34 @@
 
 namespace LIBOR::Forward
 {
+namespace States
+{
+
+template <typename T_, typename ElementState_>
+concept C_States = requires( T_ inObj, std::size_t inIndPath,
+                             std::size_t inIndTerms, ElementState_ inVal ) {
+    inObj.setStateElement( inIndPath, inIndTerms, inVal );
+    inObj.setValueElement( inIndPath, inIndTerms, inVal );
+    {
+        inObj.getStates()
+    } -> std::same_as<const std::vector<std::vector<ElementState_>>&>;
+    {
+        inObj.getValues()
+    } -> std::same_as<const std::vector<std::vector<ElementState_>>&>;
+};
+template <typename T_>
+concept C_LogExpElement = requires( T_ inObj ) {
+    log( inObj );
+    exp( inObj );
+};
+
+template <typename ElementState_> class Plain;
+template <C_LogExpElement ElementState_> class Log;
+
+}  // namespace States
+
+namespace Data
+{
 
 Process::MarketData::ZCB createZCBFromForwardRates(
     const Process::MarketData::Tenor& inTenor,
@@ -28,7 +56,7 @@ Process::MarketData::ZCB createZCBFromForwardRates(
 /**
  * @brief This stores forward rate data at each path and each term.
  */
-template <class DataDerived> class DataAbstract
+template <class Derived> class Abstract
 {
 protected:
     const std::size_t mNPath;                 //! the number of path
@@ -46,15 +74,15 @@ public:
      * @param insDataForwardRates forward rate
      * @param inDegZCB the degree for the spline of ZCB
      */
-    DataAbstract( const Process::MarketData::Terms& inTerms,
-                  const Process::MarketData::Tenor& inTenor,
-                  std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
-                      insDataForwardRates,
-                  std::size_t inDegZCB = 3 );
-    DataAbstract( const Process::MarketData::Terms& inTerms,
-                  const Process::MarketData::Tenor& inTenor,
-                  const std::vector<std::vector<Math::Vec>>& inDataForwardRate,
-                  std::size_t inDegZCB = 3 );
+    Abstract( const Process::MarketData::Terms& inTerms,
+              const Process::MarketData::Tenor& inTenor,
+              std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
+                  insDataForwardRates,
+              std::size_t inDegZCB = 3 );
+    Abstract( const Process::MarketData::Terms& inTerms,
+              const Process::MarketData::Tenor& inTenor,
+              const std::vector<std::vector<Math::Vec>>& inDataForwardRate,
+              std::size_t inDegZCB = 3 );
     const std::vector<Math::Vec>& operator[]( std::size_t inIndex ) const
     {
         return ( *msDataForwardRates )[inIndex];
@@ -66,49 +94,29 @@ public:
                             bool inIsUseCaplet = true ) const;
 };
 
-class DataTerminalMeas : public DataAbstract<DataTerminalMeas>
+class TerminalMeas : public Abstract<TerminalMeas>
 {
 public:
-    DataTerminalMeas( const Process::MarketData::Terms& inTerms,
-                      const Process::MarketData::Tenor& inTenor,
-                      std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
-                          insDataForwardRates,
-                      std::size_t inDegZCB = 3 ) :
-        DataAbstract( inTerms, inTenor, insDataForwardRates, inDegZCB )
+    TerminalMeas( const Process::MarketData::Terms& inTerms,
+                  const Process::MarketData::Tenor& inTenor,
+                  std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
+                      insDataForwardRates,
+                  std::size_t inDegZCB = 3 ) :
+        Abstract( inTerms, inTenor, insDataForwardRates, inDegZCB )
     {
     }
-    DataTerminalMeas(
-        const Process::MarketData::Terms& inTerms,
-        const Process::MarketData::Tenor& inTenor,
-        const std::vector<std::vector<Math::Vec>>& inDataForwardRate,
-        std::size_t inDegZCB = 3 ) :
-        DataAbstract( inTerms, inTenor, inDataForwardRate, inDegZCB )
+    TerminalMeas( const Process::MarketData::Terms& inTerms,
+                  const Process::MarketData::Tenor& inTenor,
+                  const std::vector<std::vector<Math::Vec>>& inDataForwardRates,
+                  std::size_t inDegZCB = 3 ) :
+        Abstract( inTerms, inTenor, inDataForwardRates, inDegZCB )
     {
     }
     template <class PayoffObject_>
     double calcExpectation( PayoffObject_ inPayoff ) const;
 };
 
-template <typename T_, typename ElementState_>
-concept C_State = requires( T_ inObj, std::size_t inIndPath,
-                            std::size_t inIndTerms, ElementState_ inVal ) {
-    inObj.setStateElement( inIndPath, inIndTerms, inVal );
-    inObj.setValueElement( inIndPath, inIndTerms, inVal );
-    {
-        inObj.getStates()
-    } -> std::same_as<const std::vector<std::vector<ElementState_>>&>;
-    {
-        inObj.getValues()
-    } -> std::same_as<const std::vector<std::vector<ElementState_>>&>;
-};
-template <typename T_>
-concept C_LogExpElement = requires( T_ inObj ) {
-    log( inObj );
-    exp( inObj );
-};
-
-template <typename ElementState_> class StatesPlain;
-template <C_LogExpElement ElementState_> class StatesLog;
+}  // namespace Data
 
 }  // namespace LIBOR::Forward
 

@@ -74,7 +74,7 @@ MarketData::ZCB createZCBFromForwardRates(
 /**
  * @brief This stores forward rate data at each path and each term.
  */
-template <class DataDerived> class ForwardRatesAbstract
+template <class Derived> class ForwardRatesAbstract
 {
 protected:
     const std::size_t mNPath;        //! the number of path
@@ -130,15 +130,15 @@ public:
     {
         CapletFloorletPayoff lCaplet( mTenor, msDataForwardRates, inStrike,
                                       inIndTenor, inIndTenor + 1, true );
-        return static_cast<const DataDerived*>( this )
-            ->template calcExpectation( lCaplet );
+        return static_cast<const Derived*>( this )->template calcExpectation(
+            lCaplet );
     }
     double calcFloorlet( double inStrike, std::size_t inIndTenor ) const
     {
         CapletFloorletPayoff lCaplet( mTenor, msDataForwardRates, inStrike,
                                       inIndTenor, inIndTenor + 1, false );
-        return static_cast<const DataDerived*>( this )
-            ->template calcExpectation( lCaplet );
+        return static_cast<const Derived*>( this )->template calcExpectation(
+            lCaplet );
     }
     double calcBlackImpVol( double inStrike, std::size_t inIndTenor,
                             bool inIsUseCaplet = true )

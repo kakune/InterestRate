@@ -9,6 +9,8 @@
 
 namespace LIBOR::Forward
 {
+namespace Data
+{
 
 Process::MarketData::ZCB createZCBFromForwardRates(
     const Process::MarketData::Tenor& inTenor,
@@ -27,6 +29,5 @@ Process::MarketData::ZCB createZCBFromForwardRates(
                                      std::min( inDeg, inTenor.size() ) );
 }
 
-
-
+}  // namespace Data
 }  // namespace LIBOR::Forward

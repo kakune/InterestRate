@@ -13,14 +13,16 @@
 namespace LIBOR::Forward
 {
 
-template <typename ElementState_> class StatesPlain
+namespace States
+{
+template <typename ElementState_> class Plain
 {
 private:
     std::vector<std::vector<ElementState_>> mValues;
 
 public:
-    StatesPlain( std::size_t inNPath, std::size_t inNTerms,
-                 ElementState_ inInitValue ) :
+    Plain( std::size_t inNPath, std::size_t inNTerms,
+           ElementState_ inInitValue ) :
         mValues( inNPath, std::vector<ElementState_>( inNTerms, inInitValue ) )
     {
     }
@@ -44,15 +46,15 @@ public:
     }
 };
 
-template <C_LogExpElement ElementState_> class StatesLog
+template <C_LogExpElement ElementState_> class Log
 {
 private:
     std::vector<std::vector<ElementState_>> mValues;
     std::vector<std::vector<ElementState_>> mLogValues;
 
 public:
-    StatesLog( std::size_t inNPath, std::size_t inNTerms,
-               ElementState_ inInitValue ) :
+    Log( std::size_t inNPath, std::size_t inNTerms,
+         ElementState_ inInitValue ) :
         mValues( inNPath, std::vector<ElementState_>( inNTerms, inInitValue ) ),
         mLogValues( inNPath,
                     std::vector<ElementState_>( inNTerms, log( inInitValue ) ) )
@@ -79,9 +81,12 @@ public:
         return mValues;
     }
 };
+}  // namespace States
 
-template <class DataDerived>
-DataAbstract<DataDerived>::DataAbstract(
+namespace Data
+{
+template <class Derived>
+Abstract<Derived>::Abstract(
     const Process::MarketData::Terms& inTerms,
     const Process::MarketData::Tenor& inTenor,
     std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
@@ -96,41 +101,41 @@ DataAbstract<DataDerived>::DataAbstract(
 {
 }
 
-template <class DataDerived>
-DataAbstract<DataDerived>::DataAbstract(
+template <class Derived>
+Abstract<Derived>::Abstract(
     const Process::MarketData::Terms& inTerms,
     const Process::MarketData::Tenor& inTenor,
     const std::vector<std::vector<Math::Vec>>& inDataForwardRate,
     std::size_t inDegZCB ) :
-    DataAbstract( inTerms, inTenor,
-                  std::make_shared<const std::vector<std::vector<Math::Vec>>>(
-                      inDataForwardRate ),
-                  inDegZCB )
+    Abstract( inTerms, inTenor,
+              std::make_shared<const std::vector<std::vector<Math::Vec>>>(
+                  inDataForwardRate ),
+              inDegZCB )
 {
 }
 
-template <class DataDerived>
-double DataAbstract<DataDerived>::calcCaplet( double inStrike,
-                                              std::size_t inIndTenor ) const
+template <class Derived>
+double Abstract<Derived>::calcCaplet( double inStrike,
+                                      std::size_t inIndTenor ) const
 {
     CapletFloorletPayoff lCaplet( mTenor, msDataForwardRates, inStrike,
                                   inIndTenor, inIndTenor + 1, true );
-    return static_cast<const DataDerived*>( this )->template calcExpectation(
+    return static_cast<const Derived*>( this )->template calcExpectation(
         lCaplet );
 }
-template <class DataDerived>
-double DataAbstract<DataDerived>::calcFloorlet( double inStrike,
-                                                std::size_t inIndTenor ) const
+template <class Derived>
+double Abstract<Derived>::calcFloorlet( double inStrike,
+                                        std::size_t inIndTenor ) const
 {
     CapletFloorletPayoff lCaplet( mTenor, msDataForwardRates, inStrike,
                                   inIndTenor, inIndTenor + 1, false );
-    return static_cast<const DataDerived*>( this )->template calcExpectation(
+    return static_cast<const Derived*>( this )->template calcExpectation(
         lCaplet );
 }
-template <class DataDerived>
-double DataAbstract<DataDerived>::calcBlackImpVol( double inStrike,
-                                                   std::size_t inIndTenor,
-                                                   bool inIsUseCaplet ) const
+template <class Derived>
+double Abstract<Derived>::calcBlackImpVol( double inStrike,
+                                           std::size_t inIndTenor,
+                                           bool inIsUseCaplet ) const
 {
     double lInitFR    = ( *msDataForwardRates )[0][0]( inIndTenor );
     double lTimeStart = mTenor.term( inIndTenor );
@@ -150,7 +155,7 @@ double DataAbstract<DataDerived>::calcBlackImpVol( double inStrike,
 }
 
 template <class PayoffObject_>
-double DataTerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
+double TerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
 {
     double lResult           = 0.0;
     std::size_t lIndTenorPay = inPayoff.getIndexTenorPay();
@@ -187,6 +192,8 @@ double DataTerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
     lResult *= ( *msZCB )( mTenor.term( mTenor.size() ) ) / mNPath;
     return lResult;
 }
+
+}  // namespace Data
 
 }  // namespace LIBOR::Forward
 
