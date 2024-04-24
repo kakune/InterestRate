@@ -39,11 +39,12 @@ double testImpVolSABR( std::size_t inNPath, double inMaturity,
         lImpVolByFloorlet( inIndTenor.size() - 1 );
     for ( std::size_t i = 1; i < inIndTenor.size() - 1; ++i )
     {
-        lImpVolByCaplet( i )   = lFR.calcBlackImpVol( inInitFR( i ), i, true );
-        lImpVolByFloorlet( i ) = lFR.calcBlackImpVol( inInitFR( i ), i, false );
+        lImpVolByCaplet( i ) = lFR.calcBlackImpVolByCaplet( inInitFR( i ), i );
+        lImpVolByFloorlet( i ) =
+            lFR.calcBlackImpVolByFloorlet( inInitFR( i ), i );
         for ( double strike = 0.095; strike < 0.110; strike += 0.001 )
         {
-            std::cout << lFR.calcBlackImpVol( strike, i ) << std::endl;
+            std::cout << lFR.calcBlackImpVolByCaplet( strike, i ) << std::endl;
         }
         std::cout << std::endl;
     }

@@ -11,6 +11,7 @@
 #ifndef LIBOR_FORWARD_MODEL_DATA_HPP
 #define LIBOR_FORWARD_MODEL_DATA_HPP
 
+#include <concepts>
 #include <type_traits>
 
 #include "LIBOR/forward/payoff.hpp"
@@ -49,6 +50,15 @@ template <C_LogExpElement ElementState_> class Log;
 namespace Data
 {
 
+template <auto Func_>
+concept C_Black76OneTermFunction =
+    requires( const Analytical::Black76::Model& inObj, double inStrike,
+              std::size_t inIndex ) {
+        {
+            ( inObj.*Func_ )( inStrike, inIndex )
+        } -> std::same_as<double>;
+    };
+
 Process::MarketData::ZCB createZCBFromForwardRates(
     const Process::MarketData::Tenor& inTenor,
     const std::vector<std::vector<Math::Vec>>& inFRs, std::size_t inDeg );
@@ -65,6 +75,11 @@ protected:
     const std::shared_ptr<const std::vector<std::vector<Math::Vec>>>
         msDataForwardRates;  //! forward rates
     const std::shared_ptr<const Process::MarketData::ZCB> msZCB;
+
+    template <auto BlackPriceFunc_>
+        requires C_Black76OneTermFunction<BlackPriceFunc_>
+    double calcBlackImpVolByOneTerm( double inStrike, std::size_t inIndTenor,
+                                     double inModelPrice ) const;
 
 public:
     /**
@@ -90,8 +105,10 @@ public:
 
     double calcCaplet( double inStrike, std::size_t inIndTenor ) const;
     double calcFloorlet( double inStrike, std::size_t inIndTenor ) const;
-    double calcBlackImpVol( double inStrike, std::size_t inIndTenor,
-                            bool inIsUseCaplet = true ) const;
+    double calcBlackImpVolByCaplet( double inStrike,
+                                    std::size_t inIndTenor ) const;
+    double calcBlackImpVolByFloorlet( double inStrike,
+                                      std::size_t inIndTenor ) const;
 };
 
 class TerminalMeas : public Abstract<TerminalMeas>

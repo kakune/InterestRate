@@ -38,8 +38,9 @@ double testImpVolConstantVol( std::size_t inNPath, double inMaturity,
         lImpVolByFloorlet( inCorrectImpVol );
     for ( std::size_t i = 1; i < inIndTenor.size() - 1; ++i )
     {
-        lImpVolByCaplet( i )   = lFR.calcBlackImpVol( inInitFR( i ), i, true );
-        lImpVolByFloorlet( i ) = lFR.calcBlackImpVol( inInitFR( i ), i, false );
+        lImpVolByCaplet( i ) = lFR.calcBlackImpVolByCaplet( inInitFR( i ), i );
+        lImpVolByFloorlet( i ) =
+            lFR.calcBlackImpVolByFloorlet( inInitFR( i ), i );
     }
     std::cout << "implied volatility by caplet   : ", lImpVolByCaplet.print();
     std::cout << "implied volatility by floorlet : ", lImpVolByFloorlet.print();
@@ -53,7 +54,7 @@ TEST( ShortRateConstantTest, PriceZCB )
     Math::Vec lInitFR{ 0.2, 0.2, 0.2 };
     Math::Vec lVol{ 0.01, 0.02, 0.05 };
     Math::Mat lCorr    = Math::unitMat( 3, 1.0 );
-    std::size_t lNPath = 400000;
+    std::size_t lNPath = 800000;
     double lMaturity   = 1.0;
 
     EXPECT_NEAR(

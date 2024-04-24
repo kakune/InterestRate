@@ -40,7 +40,7 @@ int main( int argc, char* argv[] )
                 lFileOutput << "," << lTenor.term( i );
                 lFileOutput << "," << lTenor.term( i + 1 );
                 lFileOutput << "," << lStrike;
-                lFileOutput << "," << lFR.calcBlackImpVol( lStrike, i, true );
+                lFileOutput << "," << lFR.calcBlackImpVolByCaplet( lStrike, i );
                 lFileOutput << std::endl;
             }
         }

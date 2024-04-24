@@ -115,6 +115,26 @@ Abstract<Derived>::Abstract(
 }
 
 template <class Derived>
+template <auto BlackPriceFunc_>
+    requires C_Black76OneTermFunction<BlackPriceFunc_>
+double Abstract<Derived>::calcBlackImpVolByOneTerm( double inStrike,
+                                                    std::size_t inIndTenor,
+                                                    double inModelPrice ) const
+{
+    Analytical::Black76::Model lBlackModel(
+        { 0.0, mTenor.term( inIndTenor ), mTenor.term( inIndTenor + 1 ) } );
+    lBlackModel.setInitZCB( { ( *msZCB )( mTenor.term( inIndTenor ) ),
+                              ( *msZCB )( mTenor.term( inIndTenor + 1 ) ) } );
+    auto lFuncDif = [&lBlackModel, inModelPrice,
+                     inStrike]( double inVol ) -> double
+    {
+        lBlackModel.setVol( inVol );
+        return inModelPrice - ( lBlackModel.*BlackPriceFunc_ )( inStrike, 1 );
+    };
+    return Math::FindRoot1D::Brent( lFuncDif, 1e-10, 1e2 );
+}
+
+template <class Derived>
 double Abstract<Derived>::calcCaplet( double inStrike,
                                       std::size_t inIndTenor ) const
 {
@@ -133,27 +153,21 @@ double Abstract<Derived>::calcFloorlet( double inStrike,
         lCaplet );
 }
 template <class Derived>
-double Abstract<Derived>::calcBlackImpVol( double inStrike,
-                                           std::size_t inIndTenor,
-                                           bool inIsUseCaplet ) const
+double Abstract<Derived>::calcBlackImpVolByCaplet(
+    double inStrike, std::size_t inIndTenor ) const
 {
-    double lInitFR    = ( *msDataForwardRates )[0][0]( inIndTenor );
-    double lTimeStart = mTenor.term( inIndTenor );
-    double lTau       = mTenor.tau( inIndTenor );
-    double lZCB       = ( *msZCB )( mTenor.term( inIndTenor + 1 ) );
-    double lPrice     = ( inIsUseCaplet ) ? calcCaplet( inStrike, inIndTenor )
-                                          : calcFloorlet( inStrike, inIndTenor );
-    Analytical::Black76::Model lBlackModel{ lInitFR, inStrike, lTimeStart,
-                                            lTau,    0.0,      lZCB };
-    auto lFuncDif = [this, &lBlackModel, lPrice,
-                     inIsUseCaplet]( double inVol ) -> double
-    {
-        lBlackModel.mVol = inVol;
-        return lPrice - lBlackModel( inIsUseCaplet );
-    };
-    return Math::FindRoot1D::Brent( lFuncDif, 1e-10, 1e2 );
+    return this
+        ->calcBlackImpVolByOneTerm<&Analytical::Black76::Model::priceCaplet>(
+            inStrike, inIndTenor, calcCaplet( inStrike, inIndTenor ) );
 }
-
+template <class Derived>
+double Abstract<Derived>::calcBlackImpVolByFloorlet(
+    double inStrike, std::size_t inIndTenor ) const
+{
+    return this
+        ->calcBlackImpVolByOneTerm<&Analytical::Black76::Model::priceFloorlet>(
+            inStrike, inIndTenor, calcFloorlet( inStrike, inIndTenor ) );
+}
 template <class PayoffObject_>
 double TerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
 {
@@ -206,8 +220,8 @@ double SpotMeas::calcExpectation( PayoffObject_ inPayoff ) const
         if ( lValuePayoff == 0.0 ) { continue; }
         double lFactor = 1.0;
 
-        // calculate using E_t[Payoff / \Prod_{n=0}^{IndTenorPay-1} (1 + \tau_n
-        // L_{T_n}(T_{n+1})]
+        // calculate using E_t[Payoff / \Prod_{n=0}^{IndTenorPay-1} (1 +
+        // \tau_n L_{T_n}(T_{n+1})]
         Math::Vec lRate =
             mTenor.getTauVec() * ( *msDataForwardRates )[iPath][lIndTermsPay] +
             1.0;

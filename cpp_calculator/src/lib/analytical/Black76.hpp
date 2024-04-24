@@ -9,7 +9,9 @@
 #define ANALYTICAL_BLACK76_HPP
 
 #include <cmath>
+#include <vector>
 
+#include "math/matrix.hpp"
 #include "math/special_functions.hpp"
 
 namespace Analytical
@@ -17,56 +19,38 @@ namespace Analytical
 namespace Black76
 {
 
-/**
- * @brief This stores Black parameters and has calculators.
- */
-struct Model;
-
-/**
- * @brief This calculates caplet Price of Black Model.
- * @param inCurrentFR current forward rate
- * @param inStrike strike price of caplet
- * @param inTimeStart  start time of forward rate
- * @param inTau the length of forward rate
- * @param inVol volatility
- * @param inZCB price of ZCB whose maturity is inTimeStart + inTau
- * @return double price
- */
-double priceCaplet( double inCurrentFR, double inStrike, double inTimeStart,
-                    double inTau, double inVol, double inZCB );
-/**
- * @brief This calculates floorlet Price of Black Model.
- * @param inCurrentFR current forward rate
- * @param inStrike strike price of caplet
- * @param inTimeStart  start time of forward rate
- * @param inTau the length of forward rate
- * @param inVol volatility
- * @param inZCB price of ZCB whose maturity is inTimeStart + inTau
- * @return double price
- */
-double priceFloorlet( double inCurrentFR, double inStrike, double inTimeStart,
-                      double inTau, double inVol, double inZCB );
-
-struct Model
+class Model
 {
-    double mCurrentFR;  //! initial spot price
-    double mStrike;     //! strike price of options
-    double mTimeStart;  //! risk-free interest rate
-    double mTau;        //! volatility
-    double mVol;        //! time until maturity
-    double mZCB;        //! price of ZCB whose maturity is mTimeStart+mTau
+private:
+    const std::vector<double> mTerms;  //! term structure
+    std::vector<double> mForwardRate;  //! forward rate at time 0
+    std::vector<double> mZCB;          //! ZCB at time 0
+    std::vector<double> mSumTauZCB;
+    double mVol;  //! volatility
 
-    double operator()( bool inIsCaplet );
-    /**
-     * @brief This calculates caplet Price of Black Model.
-     * @return double price
-     */
-    double priceCaplet();
-    /**
-     * @brief This calculates floorlet Price of Black Model.
-     * @return double price
-     */
-    double priceFloorlet();
+    std::vector<double> calcZCBFromForwardRate(
+        const std::vector<double>& inForwardRate ) const;
+    std::vector<double> calcForwardRateFromZCB(
+        const std::vector<double>& inZCB ) const;
+    std::vector<double> calcSumTauZCBFromZCB(
+        const std::vector<double>& inZCB ) const;
+
+public:
+    Model( const std::vector<double>& inTerms );
+    void setInitForwardRate( const std::vector<double>& inForwardRate );
+    void setInitZCB( const std::vector<double>& inZCB );
+    void setVol( double inVol );
+    double priceCaplet( double inStrike, std::size_t inIndex ) const;
+    double priceFloorlet( double inStrike, std::size_t inIndex ) const;
+    double priceCap( double inStrike, std::size_t inIndStart,
+                     std::size_t inIndLast ) const;
+    double priceFloor( double inStrike, std::size_t inIndStart,
+                       std::size_t inIndLast ) const;
+    double priceSwapRate( std::size_t inIndStart, std::size_t inIndLast ) const;
+    double pricePayerSwaption( double inStrike, std::size_t inIndStart,
+                               std::size_t inIndLast ) const;
+    double priceReceiverSwaption( double inStrike, std::size_t inIndStart,
+                                  std::size_t inIndLast ) const;
 };
 
 }  // namespace Black76
