@@ -7,9 +7,7 @@
 
 #include "random.hpp"
 
-#include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <random>
 
 namespace Process

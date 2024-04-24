@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include "LIBOR/forward.hpp"
-#include "analytical/Black76.hpp"
 
 Process::MarketData::Terms makeTerms( std::size_t inNTerms, double inMaturity )
 {

@@ -8,12 +8,10 @@
 #ifndef SHORT_RATE_PDE_ONE_FACTOR_AFFINE_HPP
 #define SHORT_RATE_PDE_ONE_FACTOR_AFFINE_HPP
 
-#include <algorithm>
 #include <memory>
 #include <vector>
 
 #include "math/interpolate_multi.hpp"
-#include "process/market_data.hpp"
 #include "short_rate/PDE/core.hpp"
 
 namespace ShortRate

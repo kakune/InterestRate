@@ -8,6 +8,7 @@
 
 #include "analytical/Black76.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 

@@ -144,4 +144,8 @@
         "*.snm",
     ],
     "C_Cpp.errorSquiggles": "disabled",
+    "clangd.arguments": [
+        "--compile-commands-dir=${workspaceFolder}/cpp_calculator/build_clang",
+        // "--log=verbose"
+    ],
 }

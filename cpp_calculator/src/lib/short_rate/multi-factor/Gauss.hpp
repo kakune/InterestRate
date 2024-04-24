@@ -9,7 +9,6 @@
 #ifndef SHORT_RATE_MULTI_FACTOR_GAUSS_HPP
 #define SHORT_RATE_MULTI_FACTOR_GAUSS_HPP
 
-#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <vector>

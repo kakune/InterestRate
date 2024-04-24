@@ -9,7 +9,6 @@
 #include "short_rate/multi-factor/Gauss.hpp"
 
 #include <iostream>
-#include <memory>
 
 namespace ShortRate
 {

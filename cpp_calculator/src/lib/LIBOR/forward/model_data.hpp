@@ -12,11 +12,8 @@
 #define LIBOR_FORWARD_MODEL_DATA_HPP
 
 #include <concepts>
-#include <type_traits>
 
-#include "LIBOR/forward/payoff.hpp"
 #include "analytical/Black76.hpp"
-#include "math/findroot_1d.hpp"
 #include "process/market_data.hpp"
 
 namespace LIBOR::Forward
@@ -54,9 +51,7 @@ template <auto Func_>
 concept C_Black76OneTermFunction =
     requires( const Analytical::Black76::Model& inObj, double inStrike,
               std::size_t inIndex ) {
-        {
-            ( inObj.*Func_ )( inStrike, inIndex )
-        } -> std::same_as<double>;
+        { ( inObj.*Func_ )( inStrike, inIndex ) } -> std::same_as<double>;
     };
 
 Process::MarketData::ZCB createZCBFromForwardRates(
@@ -159,6 +154,8 @@ public:
 
 }  // namespace LIBOR::Forward
 
+#ifndef NINCLUDE_TPP
 #include "LIBOR/forward/model_data.tpp"
+#endif
 
 #endif

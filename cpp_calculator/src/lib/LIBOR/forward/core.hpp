@@ -8,10 +8,8 @@
 #ifndef LIBOR_FORWARD_CORE_HPP
 #define LIBOR_FORWARD_CORE_HPP
 
-#include <memory>
 #include <vector>
 
-#include "LIBOR/forward/model_data.hpp"
 #include "math/matrix.hpp"
 #include "process/market_data.hpp"
 #include "process/random.hpp"
@@ -83,5 +81,9 @@ public:
 };
 
 }  // namespace LIBOR::Forward
+
+#ifndef NINCLUDE_TPP
 #include "LIBOR/forward/core.tpp"
+#endif
+
 #endif

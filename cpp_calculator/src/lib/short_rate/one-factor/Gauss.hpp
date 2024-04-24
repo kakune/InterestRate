@@ -9,7 +9,6 @@
 #ifndef SHORT_RATE_ONE_FACTOR_GAUSS_HPP
 #define SHORT_RATE_ONE_FACTOR_GAUSS_HPP
 
-#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -148,8 +147,8 @@ public:
         OneFactorAbstract( inNPath, inTerms, inInitSpotRate,
                            std::move( inuRandomPath ) ),
         mVol( inVol ),
-        mMean( inMean ),
-        mKappa( inKappa )
+        mKappa( inKappa ),
+        mMean( inMean )
     {
     }
     double analyticalPriceZCB( double inMaturityTime ) const;

@@ -5,10 +5,10 @@
  * @date 4/15/2024
  */
 
-#ifndef LIBOR_FORWARD_STEP_CALCULATOR_TPP
-#define LIBOR_FORWARD_STEP_CALCULATOR_TPP
-
+#ifdef NINCLUDE_TPP
+#include "LIBOR/forward/model_data.tpp"
 #include "LIBOR/forward/step_calculator.hpp"
+#endif
 
 namespace LIBOR::Forward::StepCalc
 {
@@ -186,5 +186,3 @@ Math::Vec LogNormalSpotMeas<VolatilityGenerator_>::operator()(
 }
 
 }  // namespace LIBOR::Forward::StepCalc
-
-#endif

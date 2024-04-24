@@ -8,9 +8,7 @@
 #ifndef PROCESS_RANDOM_HPP
 #define PROCESS_RANDOM_HPP
 
-#include <memory>
 #include <random>
-#include <vector>
 
 #ifdef USE_CUDA
 #include <cuda.h>
@@ -18,7 +16,6 @@
 #include <curand_kernel.h>
 #endif
 
-#include "market_data.hpp"
 #include "math/matrix.hpp"
 
 namespace Process
@@ -29,9 +26,7 @@ namespace Random
 template <class T_>
 concept C_StdBrown = requires( T_ inObj ) {
     inObj.initialize();
-    {
-        inObj()
-    } -> std::convertible_to<double>;
+    { inObj() } -> std::convertible_to<double>;
 };
 
 /**
@@ -99,9 +94,7 @@ namespace RandomVec
 template <class T_>
 concept C_StdBrown = requires( T_ inObj ) {
     inObj.initialize();
-    {
-        inObj()
-    } -> std::convertible_to<Math::Vec>;
+    { inObj() } -> std::convertible_to<Math::Vec>;
 };
 
 /**
@@ -173,9 +166,9 @@ public:
     StdBrownAntithetic( std::size_t inDim ) :
         StdBrownAbstract( inDim ),
         mIsNextNew( true ),
+        mPrevRandomValue( inDim ),
         mGenerator( mDevice() ),
-        mDistribution( 0.0, 1.0 ),
-        mPrevRandomValue( inDim )
+        mDistribution( 0.0, 1.0 )
     {
     }
     void initialize( std::size_t inIndStart = 0 ) override;

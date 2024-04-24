@@ -10,8 +10,6 @@
 
 #include <cmath>
 
-#include "math/special_functions.hpp"
-
 namespace Analytical
 {
 namespace BlackScholes

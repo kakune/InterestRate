@@ -11,9 +11,6 @@
 #include <cmath>
 #include <vector>
 
-#include "math/matrix.hpp"
-#include "math/special_functions.hpp"
-
 namespace Analytical
 {
 namespace Black76

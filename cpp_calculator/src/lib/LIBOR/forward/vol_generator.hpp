@@ -5,14 +5,15 @@
  * @date 4/15/2024
  */
 
-#ifndef LIBOR_FORWARD_VOLATILITY_GENERATOR_HPP
-#define LIBOR_FORWARD_VOLATILITY_GENERATOR_HPP
+#ifndef LIBOR_FORWARD_VOL_GENERATOR_HPP
+#define LIBOR_FORWARD_VOL_GENERATOR_HPP
 
-#include <concepts>
 #include <cstddef>
+#include <memory>
 #include <vector>
 
 #include "math/matrix.hpp"
+#include "process/market_data.hpp"
 #include "process/random.hpp"
 
 namespace LIBOR::Forward::VolGen
@@ -58,6 +59,8 @@ public:
 
 }  // namespace LIBOR::Forward::VolGen
 
+#ifndef NINCLUDE_TPP
 #include "LIBOR/forward/vol_generator.tpp"
+#endif
 
 #endif

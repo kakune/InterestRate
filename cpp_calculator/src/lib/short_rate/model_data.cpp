@@ -53,8 +53,8 @@ SpotRates::SpotRates(
     const Process::MarketData::Terms& inTerms,
     std::shared_ptr<const std::vector<std::vector<double>>> insDataSpotRate,
     std::size_t inDegZCB ) :
-    mTerms( inTerms ),
     mNPath( insDataSpotRate->size() ),
+    mTerms( inTerms ),
     msDataSpotRate( insDataSpotRate ),
     msDataDF( std::make_shared<const std::vector<std::vector<double>>>(
         calcDFFromSpotRates( inTerms, insDataSpotRate ) ) ),

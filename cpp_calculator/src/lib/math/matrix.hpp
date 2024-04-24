@@ -8,9 +8,8 @@
 #ifndef MATH_MATRIX_HPP
 #define MATH_MATRIX_HPP
 
-#include <iostream>
-#include <numeric>
 #include <valarray>
+#include <vector>
 
 namespace Math
 {
@@ -21,8 +20,8 @@ class Mat;
 class Vec
 {
 private:
-    std::valarray<double> mData;
     std::size_t mNSize;
+    std::valarray<double> mData;
     friend Mat;
 
 public:
@@ -94,8 +93,8 @@ public:
 class Mat
 {
 private:
-    std::valarray<double> mData;
     std::size_t mNRow, mNCol;
+    std::valarray<double> mData;
     friend Vec;
 
 public:
@@ -107,8 +106,8 @@ public:
 
     double& operator()( std::size_t i, std::size_t j );
     const double& operator()( std::size_t i, std::size_t j ) const;
-    Vec getRow(std::size_t inIndRow ) const;
-    Vec getCol(std::size_t inIndCol ) const;
+    Vec getRow( std::size_t inIndRow ) const;
+    Vec getCol( std::size_t inIndCol ) const;
 
     const Mat& operator+() const&;
     Mat operator+() &&;

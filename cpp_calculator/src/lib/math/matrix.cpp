@@ -13,9 +13,9 @@
 #include <cblas.h>
 #include <lapacke.h>
 #endif
-
 #include <cassert>
 #include <iostream>
+#include <numeric>
 namespace Math
 {
 Vec::Vec( std::size_t inNSize, double inVal ) :

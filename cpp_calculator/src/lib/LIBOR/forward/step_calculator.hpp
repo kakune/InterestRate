@@ -8,7 +8,9 @@
 #ifndef LIBOR_FORWARD_STEP_CALCULATOR_HPP
 #define LIBOR_FORWARD_STEP_CALCULATOR_HPP
 
-#include "LIBOR/forward/vol_generator.hpp"
+#include "LIBOR/forward/core.hpp"
+#include "LIBOR/forward/model_data.hpp"
+#include "math/matrix.hpp"
 
 namespace LIBOR::Forward::StepCalc
 {
@@ -107,6 +109,8 @@ public:
 
 }  // namespace LIBOR::Forward::StepCalc
 
+#ifndef NINCLUDE_TPP
 #include "LIBOR/forward/step_calculator.tpp"
+#endif
 
 #endif

@@ -8,6 +8,9 @@
 #ifndef MATH_ODE_HPP
 #define MATH_ODE_HPP
 
+#include <tuple>
+#include <vector>
+
 namespace Math
 {
 namespace ODE
@@ -95,6 +98,8 @@ std::vector<std::vector<double>> solveSIMLSecondOrderRungeKutta45(
 }  // namespace ODE
 }  // namespace Math
 
+#ifndef NINCLUDE_TPP
 #include "math/ODE.tpp"
+#endif
 
 #endif

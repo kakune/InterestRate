@@ -5,12 +5,9 @@
  * @date 3/29/2024
  */
 
-#ifndef LIBOR_FORWARD_CORE_TPP
-#define LIBOR_FORWARD_CORE_TPP
-
-#include <type_traits>
-
+#ifdef NINCLUDE_TPP
 #include "LIBOR/forward/core.hpp"
+#endif
 
 namespace LIBOR::Forward
 {
@@ -48,5 +45,3 @@ Factory<StepCalculator_>::createForwardRates() const
 }
 
 }  // namespace LIBOR::Forward
-
-#endif

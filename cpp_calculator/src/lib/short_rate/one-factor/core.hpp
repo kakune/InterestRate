@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-#include "math/interpolate_1d.hpp"
 #include "process/market_data.hpp"
 #include "process/random.hpp"
 #include "short_rate/model_data.hpp"

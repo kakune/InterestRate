@@ -71,8 +71,8 @@ public:
                   std::shared_ptr<const std::vector<double> > insRefYs,
                   std::size_t inNDeg = 1 ) :
         mNDeg( inNDeg ),
-        mCoeff( std::vector<std::vector<double> >( inNDeg + 1 ) ),
-        msRefXs( insRefXs )
+        msRefXs( insRefXs ),
+        mCoeff( std::vector<std::vector<double> >( inNDeg + 1 ) )
     {
         build( insRefXs, insRefYs );
         buildIntegral();

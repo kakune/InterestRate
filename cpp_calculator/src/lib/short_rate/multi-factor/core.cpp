@@ -7,9 +7,7 @@
 
 #include "short_rate/multi-factor/core.hpp"
 
-#include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <vector>
 
 namespace ShortRate

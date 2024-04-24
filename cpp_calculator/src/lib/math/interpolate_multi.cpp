@@ -7,6 +7,7 @@
 
 #include "math/interpolate_multi.hpp"
 
+#include <iostream>
 namespace Math
 {
 namespace InterpolateMulti

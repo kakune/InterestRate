@@ -9,7 +9,6 @@
 #ifndef SHORT_RATE_MULTI_FACTOR_AFFINE_HPP
 #define SHORT_RATE_MULTI_FACTOR_AFFINE_HPP
 
-#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <vector>

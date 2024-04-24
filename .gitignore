@@ -33,6 +33,7 @@
 
 # Build Files
 build
+build_clang
 
 # Python
 .venv
@@ -47,3 +48,4 @@ output/*
 *.snm
 *.nav
 *.synctex.gz
+.cache

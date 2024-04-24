@@ -5,14 +5,16 @@
  * @date 4/15/2024
  */
 
+#ifdef NINCLUDE_TPP
 #include "LIBOR/forward/vol_generator.hpp"
+#endif
 
 namespace LIBOR::Forward::VolGen
 {
 
-Constant::Constant( const Math::Vec& inVol ) : mVol( inVol ) {}
+inline Constant::Constant( const Math::Vec& inVol ) : mVol( inVol ) {}
 
-Math::Vec Constant::operator()(
+inline Math::Vec Constant::operator()(
     std::size_t inIndPath, std::size_t inIndTerm,
     const std::vector<std::vector<Math::Vec>>& inForwardRates,
     const Math::Vec& inStdBrownForFR ) const

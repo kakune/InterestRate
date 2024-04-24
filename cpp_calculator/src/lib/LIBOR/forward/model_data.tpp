@@ -5,10 +5,12 @@
  * @date 4/21/2024
  */
 
-#ifndef LIBOR_FORWARD_MODEL_DATA_TPP
-#define LIBOR_FORWARD_MODEL_DATA_TPP
-
+#ifdef NINCLUDE_TPP
 #include "LIBOR/forward/model_data.hpp"
+#endif
+
+#include "LIBOR/forward/payoff.hpp"
+#include "math/findroot_1d.hpp"
 
 namespace LIBOR::Forward
 {
@@ -237,5 +239,3 @@ double SpotMeas::calcExpectation( PayoffObject_ inPayoff ) const
 }  // namespace Data
 
 }  // namespace LIBOR::Forward
-
-#endif

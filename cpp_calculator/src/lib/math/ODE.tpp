@@ -5,15 +5,13 @@
  * @date 3/11/2024
  */
 
-#ifndef MATH_ODE_1D_TPP
-#define MATH_ODE_1D_TPP
-
-#include <cmath>
-#include <functional>
-#include <iostream>
-#include <vector>
-
+#ifdef NINCLUDE_TPP
 #include "math/ODE.hpp"
+#endif
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
 
 namespace Math
 {
@@ -259,5 +257,3 @@ std::vector<std::vector<double>> solveSIMLSecondOrderRungeKutta45(
 
 }  // namespace ODE
 }  // namespace Math
-
-#endif

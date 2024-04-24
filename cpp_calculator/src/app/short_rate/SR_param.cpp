@@ -1,9 +1,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <memory>
 #include <string>
-#include <vector>
 
 #include "short_rate_creator.hpp"
 #include "terms_creator.hpp"
