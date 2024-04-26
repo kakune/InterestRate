@@ -137,11 +137,48 @@ double Abstract<Derived>::calcBlackImpVolByOneTerm( double inStrike,
 }
 
 template <class Derived>
+template <auto BlackPriceFunc_>
+    requires C_Black76MultiTermFunction<BlackPriceFunc_>
+double Abstract<Derived>::calcBlackImpVolByMultiTerm(
+    double inStrike, std::size_t inIndTenorStart, std::size_t inIndTenorLast,
+    double inModelPrice ) const
+{
+    std::size_t lIndBlackStart = 0;
+    std::vector<double> lBlackTerms;
+    if ( inIndTenorStart != 0 )
+    {
+        lBlackTerms.emplace_back( 0.0 );
+        lIndBlackStart = 1;
+    }
+    for ( std::size_t index = inIndTenorStart; index <= inIndTenorLast;
+          ++index )
+    {
+        lBlackTerms.emplace_back( mTenor.term( index ) );
+    }
+    std::size_t lIndBlackLast = lBlackTerms.size() - 1;
+    std::vector<double> lZCBs( lBlackTerms.size() - 1 );
+    for ( std::size_t i = 0; i < lZCBs.size(); ++i )
+    {
+        lZCBs[i] = ( *msZCB )( lBlackTerms[i + 1] );
+    }
+    Analytical::Black76::Model lBlackModel( lBlackTerms );
+    lBlackModel.setInitZCB( lZCBs );
+    auto lFuncDif = [&lBlackModel, inModelPrice, inStrike, lIndBlackStart,
+                     lIndBlackLast]( double inVol ) -> double
+    {
+        lBlackModel.setVol( inVol );
+        return inModelPrice - ( lBlackModel.*BlackPriceFunc_ )(
+                                  inStrike, lIndBlackStart, lIndBlackLast );
+    };
+    return Math::FindRoot1D::Brent( lFuncDif, 1e-10, 1e2 );
+}
+
+template <class Derived>
 double Abstract<Derived>::calcCaplet( double inStrike,
                                       std::size_t inIndTenor ) const
 {
-    CapletFloorletPayoff lCaplet( mTenor, msDataForwardRates, inStrike,
-                                  inIndTenor, inIndTenor + 1, true );
+    Payoff::CapletFloorlet lCaplet( mTenor, msDataForwardRates, inIndTenor + 1,
+                                    inIndTenor, inStrike, true );
     return static_cast<const Derived*>( this )->template calcExpectation(
         lCaplet );
 }
@@ -149,11 +186,32 @@ template <class Derived>
 double Abstract<Derived>::calcFloorlet( double inStrike,
                                         std::size_t inIndTenor ) const
 {
-    CapletFloorletPayoff lCaplet( mTenor, msDataForwardRates, inStrike,
-                                  inIndTenor, inIndTenor + 1, false );
+    Payoff::CapletFloorlet lCaplet( mTenor, msDataForwardRates, inIndTenor + 1,
+                                    inIndTenor, inStrike, false );
     return static_cast<const Derived*>( this )->template calcExpectation(
         lCaplet );
 }
+template <class Derived>
+double Abstract<Derived>::calcPayerSwaption( double inStrike,
+                                             std::size_t inIndTenorStart,
+                                             std::size_t inIndTenorLast ) const
+{
+    Payoff::Swaption lSwaption( mTenor, msDataForwardRates, inIndTenorStart,
+                                inIndTenorLast, inStrike, true );
+    return static_cast<const Derived*>( this )->template calcExpectation(
+        lSwaption );
+}
+template <class Derived>
+double Abstract<Derived>::calcReceiverSwaption(
+    double inStrike, std::size_t inIndTenorStart,
+    std::size_t inIndTenorLast ) const
+{
+    Payoff::Swaption lSwaption( mTenor, msDataForwardRates, inIndTenorStart,
+                                inIndTenorLast, inStrike, false );
+    return static_cast<const Derived*>( this )->template calcExpectation(
+        lSwaption );
+}
+
 template <class Derived>
 double Abstract<Derived>::calcBlackImpVolByCaplet(
     double inStrike, std::size_t inIndTenor ) const
@@ -170,12 +228,33 @@ double Abstract<Derived>::calcBlackImpVolByFloorlet(
         ->calcBlackImpVolByOneTerm<&Analytical::Black76::Model::priceFloorlet>(
             inStrike, inIndTenor, calcFloorlet( inStrike, inIndTenor ) );
 }
-template <class PayoffObject_>
+template <class Derived>
+double Abstract<Derived>::calcBlackImpVolByPayerSwaption(
+    double inStrike, std::size_t inIndTenorStart,
+    std::size_t inIndTenorLast ) const
+{
+    return this->calcBlackImpVolByMultiTerm<
+        &Analytical::Black76::Model::pricePayerSwaption>(
+        inStrike, inIndTenorStart, inIndTenorLast,
+        calcPayerSwaption( inStrike, inIndTenorStart, inIndTenorLast ) );
+}
+template <class Derived>
+double Abstract<Derived>::calcBlackImpVolByReceiverSwaption(
+    double inStrike, std::size_t inIndTenorStart,
+    std::size_t inIndTenorLast ) const
+{
+    return this->calcBlackImpVolByMultiTerm<
+        &Analytical::Black76::Model::priceReceiverSwaption>(
+        inStrike, inIndTenorStart, inIndTenorLast,
+        calcReceiverSwaption( inStrike, inIndTenorStart, inIndTenorLast ) );
+}
+
+template <LIBOR::Forward::Payoff::C_OneTerm PayoffObject_>
 double TerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
 {
     double lResult           = 0.0;
     std::size_t lIndTenorPay = inPayoff.getIndexTenorPay();
-    std::size_t lIndTermsPay = mTerms[lIndTenorPay];
+    std::size_t lIndTermsPay = mTenor[lIndTenorPay];
     bool lIsTerminal         = ( lIndTenorPay == mTenor.size() );
     if ( lIsTerminal )
     {
@@ -191,16 +270,14 @@ double TerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
     for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
     {
         double lValuePayoff = inPayoff( iPath );
-
         if ( lValuePayoff == 0.0 ) { continue; }
-
         // calculate using E_t[Payoff / P_{PayTime}(TerminalTime)]
-        Math::Vec lZCB =
+        Math::Vec lMMA =
             mTenor.getTauVec() * ( *msDataForwardRates )[iPath][lIndTermsPay] +
             1.0;
         for ( std::size_t iZCB = lIndTenorPay; iZCB < mTenor.size(); ++iZCB )
         {
-            lValuePayoff *= lZCB( iZCB );
+            lValuePayoff *= lMMA( iZCB );
         }
         lResult += lValuePayoff;
     }
@@ -209,12 +286,44 @@ double TerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
     return lResult;
 }
 
-template <class PayoffObject_>
+template <LIBOR::Forward::Payoff::C_MultiTerm PayoffObject_>
+double TerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
+{
+    double lResult                = 0.0;
+    std::size_t lIndTenorFirstPay = inPayoff.getIndexTenorFirstPay();
+    std::size_t lIndTenorLastPay  = inPayoff.getIndexTenorLastPay();
+
+    for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
+    {
+        Math::Vec lValuesPayoff = inPayoff( iPath );
+        // calculate using E_t[Payoff / P_{PayTime}(TerminalTime)]
+        for ( std::size_t i = 0; i < lValuesPayoff.size(); ++i )
+        {
+            if ( lValuesPayoff( i ) == 0.0 ) { continue; }
+            Math::Vec lMMA =
+                mTenor.getTauVec() *
+                    ( *msDataForwardRates )[iPath]
+                                           [mTenor[lIndTenorFirstPay + i]] +
+                1.0;
+            for ( std::size_t iZCB = lIndTenorFirstPay + i;
+                  iZCB < mTenor.size(); ++iZCB )
+            {
+                lValuesPayoff( i ) *= lMMA( iZCB );
+            }
+        }
+        lResult += lValuesPayoff.sum();
+    }
+    // discount by initial ZCB
+    lResult *= ( *msZCB )( mTenor.term( mTenor.size() ) ) / mNPath;
+    return lResult;
+}
+
+template <LIBOR::Forward::Payoff::C_OneTerm PayoffObject_>
 double SpotMeas::calcExpectation( PayoffObject_ inPayoff ) const
 {
     double lResult           = 0.0;
     std::size_t lIndTenorPay = inPayoff.getIndexTenorPay();
-    std::size_t lIndTermsPay = mTerms[lIndTenorPay];
+    std::size_t lIndTermsPay = mTenor[lIndTenorPay];
 
     for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
     {
@@ -232,6 +341,38 @@ double SpotMeas::calcExpectation( PayoffObject_ inPayoff ) const
             lFactor *= lRate( iRate );
         }
         lResult += lValuePayoff / lFactor;
+    }
+    return lResult / mNPath;
+}
+
+template <LIBOR::Forward::Payoff::C_MultiTerm PayoffObject_>
+double SpotMeas::calcExpectation( PayoffObject_ inPayoff ) const
+{
+    double lResult                = 0.0;
+    std::size_t lIndTenorFirstPay = inPayoff.getIndexTenorFirstPay();
+    std::size_t lIndTenorLastPay  = inPayoff.getIndexTenorLastPay();
+
+    for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
+    {
+        // calculate using E_t[Payoff / \Prod_{n=0}^{IndTenorPay-1} (1 +
+        // \tau_n L_{T_n}(T_{n+1})]
+        Math::Vec lValuesPayoff = inPayoff( iPath );
+        for ( std::size_t i = 0; i < lValuesPayoff.size(); ++i )
+        {
+            if ( lValuesPayoff( i ) == 0.0 ) { continue; }
+            double lFactor = 1.0;
+            Math::Vec lRate =
+                mTenor.getTauVec() *
+                    ( *msDataForwardRates )[iPath]
+                                           [mTenor[lIndTenorFirstPay + i]] +
+                1.0;
+            for ( std::size_t iRate = 0; iRate < lIndTenorFirstPay + i;
+                  ++iRate )
+            {
+                lFactor *= lRate( iRate );
+            }
+            lResult += lValuesPayoff( i ) / lFactor;
+        }
     }
     return lResult / mNPath;
 }

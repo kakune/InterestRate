@@ -32,19 +32,34 @@ double testImpVolConstantVol( std::size_t inNPath, double inMaturity,
         LIBOR::Forward::Factory( inNPath, lTerms, lTenor, inInitFR, lStep )
             .template createForwardRates<
                 Process::RandomVec::StdBrownAntithetic>();
-    for ( auto& fr : lFR[0] ) { fr.print(); }
+    // for ( auto& fr : lFR[0] ) { fr.print(); }
     Math::Vec lImpVolByCaplet( inCorrectImpVol ),
-        lImpVolByFloorlet( inCorrectImpVol );
+        lImpVolByFloorlet( inCorrectImpVol ),
+        lImpVolByPayerSwaption( inCorrectImpVol ),
+        lImpVolByReceiverSwaption( inCorrectImpVol );
     for ( std::size_t i = 1; i < inIndTenor.size() - 1; ++i )
     {
         lImpVolByCaplet( i ) = lFR.calcBlackImpVolByCaplet( inInitFR( i ), i );
         lImpVolByFloorlet( i ) =
             lFR.calcBlackImpVolByFloorlet( inInitFR( i ), i );
+        lImpVolByPayerSwaption( i ) =
+            lFR.calcBlackImpVolByPayerSwaption( inInitFR( i ), i, i + 1 );
+        lImpVolByReceiverSwaption( i ) =
+            lFR.calcBlackImpVolByReceiverSwaption( inInitFR( i ), i, i + 1 );
     }
-    std::cout << "implied volatility by caplet   : ", lImpVolByCaplet.print();
-    std::cout << "implied volatility by floorlet : ", lImpVolByFloorlet.print();
-    return std::max( abs( lImpVolByCaplet - inCorrectImpVol ).max(),
-                     abs( lImpVolByFloorlet - inCorrectImpVol ).max() );
+    std::cout << "implied volatility by caplet           : ",
+        lImpVolByCaplet.print();
+    std::cout << "implied volatility by floorlet         : ",
+        lImpVolByFloorlet.print();
+    std::cout << "implied volatility by PayerSwaption    : ",
+        lImpVolByPayerSwaption.print();
+    std::cout << "implied volatility by ReceiverSwaption : ",
+        lImpVolByReceiverSwaption.print();
+    return std::max(
+        { abs( lImpVolByCaplet - inCorrectImpVol ).max(),
+          abs( lImpVolByFloorlet - inCorrectImpVol ).max(),
+          abs( lImpVolByPayerSwaption - inCorrectImpVol ).max(),
+          abs( lImpVolByReceiverSwaption - inCorrectImpVol ).max() } );
 }
 
 TEST( ShortRateConstantTest, PriceZCB )

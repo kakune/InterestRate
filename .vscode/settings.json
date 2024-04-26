@@ -148,4 +148,5 @@
         "--compile-commands-dir=${workspaceFolder}/cpp_calculator/build_clang",
         // "--log=verbose"
     ],
+    "C_Cpp.intelliSenseEngine": "disabled",
 }
