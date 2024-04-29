@@ -18,6 +18,7 @@ namespace LIBOR::Forward::StepCalc
 template <C_VolGen VolatilityGenerator_> class LogNormalTerminalMeas;
 template <C_VolGen VolatilityGenerator_> class LogNormalTerminalMeasWithLog;
 template <C_VolGen VolatilityGenerator_> class NormalTerminalMeas;
+template <C_VolGen VolatilityGenerator_> class LogNormalSpotMeas;
 
 template <C_VolGen VolatilityGenerator_> class LogNormalTerminalMeas
 {

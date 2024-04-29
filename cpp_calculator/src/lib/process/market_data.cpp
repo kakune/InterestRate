@@ -11,6 +11,8 @@
 #include <memory>
 #include <vector>
 
+#include "math/findroot_1d.hpp"
+
 namespace Process
 {
 namespace MarketData
@@ -182,6 +184,59 @@ double ZCB::derivInstantaneousForwardRate( double inTime ) const
 double ZCB::initialSpotRate() const
 {
     return instantaneousForwardRate( 0.95 * mTerms[0] + 0.05 * mTerms[1] );
+}
+
+static std::vector<double> calcZCBVec( const Terms& inTerms, const ZCB& inZCB )
+{
+    std::vector<double> lResults( inTerms.size() - 1 );
+    for ( std::size_t i = 0; i < lResults.size(); ++i )
+    {
+        lResults[i] = inZCB( inTerms[i + 1] );
+    }
+    return lResults;
+}
+Caplets::Caplets(
+    const Terms& inTerms, std::shared_ptr<const std::vector<double>> insStrikes,
+    std::shared_ptr<const std::vector<std::vector<double>>> insCaplets,
+    const ZCB& inZCB ) :
+    mTerms( inTerms ),
+    msStrikes( insStrikes ),
+    msCaplets( insCaplets ),
+    msBlack( std::make_shared<Analytical::Black76::Model>( *inTerms.ptr() ) )
+{
+    ( *msBlack ).setInitZCB( calcZCBVec( inTerms, inZCB ) );
+}
+
+Caplets::Caplets( const Terms& inTerms, const std::vector<double>& inStrikes,
+                  const std::vector<std::vector<double>>& inCaplets,
+                  const ZCB& inZCB ) :
+    Caplets(
+        inTerms, std::make_shared<const std::vector<double>>( inStrikes ),
+        std::make_shared<const std::vector<std::vector<double>>>( inCaplets ),
+        inZCB )
+{
+}
+double Caplets::strike( std::size_t inIndex ) const
+{
+    return ( *msStrikes )[inIndex];
+}
+const std::vector<double>& Caplets::operator[]( std::size_t inIndex ) const
+{
+    return ( *msCaplets )[inIndex];
+}
+
+double Caplets::impliedBlackVol( std::size_t inIndexStrike,
+                                 std::size_t inIndexTerm ) const
+{
+    double lStrike      = ( *msStrikes )[inIndexStrike];
+    double lPriceCaplet = ( *msCaplets )[inIndexStrike][inIndexTerm];
+    auto lFuncDif       = [this, inIndexTerm, lStrike,
+                     lPriceCaplet]( double inVol ) -> double
+    {
+        ( *msBlack ).setVol( inVol );
+        return lPriceCaplet - ( msBlack->priceCaplet )( lStrike, inIndexTerm );
+    };
+    return Math::FindRoot1D::Brent( lFuncDif, 1e-10, 1e2 );
 }
 
 }  // namespace MarketData

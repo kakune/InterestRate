@@ -1,55 +1,109 @@
 #include <gtest/gtest.h>
 
-#include <iostream>
-#include <random>
 #include <vector>
 
+#include "analytical/Black76.hpp"
 #include "process/market_data.hpp"
 
-double testConsistencyZCB( std::size_t inNTerms, double inMaturity,
-                           double inMean, double inVol, std::size_t inSeed = 0 )
+static Process::MarketData::Terms makeTerms( std::size_t inNTerms,
+                                             double inMaturity )
 {
-    double lDt = inMaturity / double( inNTerms );
+    double lDt = inMaturity * 1.0 / double( inNTerms - 1 );
     std::vector<double> lTerms( inNTerms, 0 );
-    std::vector<double> lZCB( inNTerms, 1.0 );
-
-    std::mt19937_64 lEngine( inSeed );
-    std::uniform_real_distribution<double> lRandomGen(
-        ( inMean - inVol ) / double( inNTerms ),
-        ( inMean + inVol ) / double( inNTerms ) );
-
     for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
     {
         lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
-        lZCB[iTerm]   = lZCB[iTerm - 1] - lRandomGen( lEngine );
     }
-    auto lsTerms = std::make_shared<std::vector<double> >( lTerms );
+    return Process::MarketData::Terms( lTerms );
+}
 
-    Process::MarketData::ZCB lObj( lsTerms );
-    Process::MarketData::ZCB lObj2( lsTerms );
-
-    lObj.setZCB( lZCB );
-    std::vector<double> lFR( inNTerms );
-    for ( std::size_t iTerm = 0; iTerm < inNTerms; ++iTerm )
+static Process::MarketData::ZCB makeBlackZCB(
+    const Process::MarketData::Terms& inTerms, double inRate )
+{
+    std::vector<double> lZCBVec( inTerms.size(), 1.0 );
+    for ( std::size_t iTerm = 1; iTerm < inTerms.size(); ++iTerm )
     {
-        lFR.at( iTerm ) = lObj.mInterpInstantaneousForwardRate( lTerms[iTerm] );
+        lZCBVec[iTerm] =
+            lZCBVec[iTerm - 1] *
+            std::exp( -inRate * ( inTerms[iTerm] - inTerms[iTerm - 1] ) );
     }
-    lObj2.setInstantaneousForwardRate( lFR );
+    return Process::MarketData::ZCB( inTerms, lZCBVec );
+}
+
+static Process::MarketData::Caplets makeBlackCaplets(
+    const Process::MarketData::Terms& inTerms,
+    const Process::MarketData::ZCB& inZCB, double inVol,
+    const std::vector<double>& inStrikes )
+{
+    std::vector<double> lZCBVec( inTerms.size() - 1 );
+    for ( std::size_t iTerm = 0; iTerm < lZCBVec.size(); ++iTerm )
+    {
+        lZCBVec[iTerm] = inZCB( inTerms[iTerm + 1] );
+    }
+    Analytical::Black76::Model lBlack( *( inTerms.ptr() ) );
+    lBlack.setInitZCB( lZCBVec );
+    lBlack.setVol( inVol );
+
+    std::vector<std::vector<double>> lCapletVec(
+        inStrikes.size(), std::vector<double>( inTerms.size() - 1 ) );
+    for ( std::size_t iStrike = 0; iStrike < inStrikes.size(); ++iStrike )
+    {
+        for ( std::size_t iTerm = 0; iTerm < inTerms.size() - 1; ++iTerm )
+        {
+            lCapletVec[iStrike][iTerm] =
+                lBlack.priceCaplet( inStrikes[iStrike], iTerm );
+        }
+    }
+    return Process::MarketData::Caplets( inTerms, inStrikes, lCapletVec,
+                                         inZCB );
+}
+
+double testInstantaneousForwardRateOfBlackZCB( std::size_t inNTerms,
+                                               double inMaturity,
+                                               double inRate )
+{
+    auto lTerms = makeTerms( inNTerms, inMaturity );
+    auto lZCB   = makeBlackZCB( lTerms, inRate );
 
     double lResult = 0.0;
-    for ( std::size_t iTerm = 0; iTerm < inNTerms; ++iTerm )
+    for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
     {
-        // std::cout << lZCB[iTerm] << "," << lObj2.mInterpZCB( lTerms[iTerm] )
-        //           << std::endl;
-        lResult =
-            std::max( 0.0, std::abs( ( lZCB[iTerm] - lObj2( lTerms[iTerm] ) ) /
-                                     lZCB[iTerm] ) );
+        lResult = std::max(
+            lResult, std::abs( lZCB.instantaneousForwardRate( lTerms[iTerm] ) -
+                               inRate ) );
     }
     return lResult;
 }
 
-TEST( MarketTest, ConsistencyZCB )
+double testImpVolOfBlackCaplet( std::size_t inNTerms, double inMaturity,
+                                double inRate, double inVol,
+                                std::vector<double> inStrikes )
 {
-    EXPECT_NEAR( 0.0, testConsistencyZCB( 100, 1.0, 0.1, 0.05, 0 ), 0.001 );
-    EXPECT_NEAR( 0.0, testConsistencyZCB( 100, 1.0, 0.1, 0.02, 0 ), 0.001 );
+    auto lTerms   = makeTerms( inNTerms, inMaturity );
+    auto lZCB     = makeBlackZCB( lTerms, inRate );
+    auto lCaplets = makeBlackCaplets( lTerms, lZCB, inVol, inStrikes );
+
+    double lResult = 0.0;
+    for ( std::size_t iStrike = 0; iStrike < inStrikes.size(); ++iStrike )
+    {
+        for ( std::size_t iTerm = 1; iTerm < lTerms.size() - 1; ++iTerm )
+        {
+            lResult = std::max( { lResult, std::abs( lCaplets.impliedBlackVol(
+                                                         iStrike, iTerm ) -
+                                                     inVol ) } );
+        }
+    }
+    return lResult;
+}
+
+TEST( MarketTest, BlackZCB )
+{
+    EXPECT_NEAR( 0.0, testInstantaneousForwardRateOfBlackZCB( 100, 1.0, 0.1 ),
+                 0.001 );
+}
+
+TEST( MarketTest, BlackCaplets )
+{
+    EXPECT_NEAR( 0.0, testImpVolOfBlackCaplet( 100, 1.0, 0.1, 0.25, { 0.1 } ),
+                 0.001 );
 }

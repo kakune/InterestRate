@@ -1,8 +1,8 @@
 # add_executable(test_random test_random.cpp)
 # target_link_libraries(test_random LibProcess)
 
-# add_executable(test_market test_market.cpp)
-# target_link_libraries(test_market LibProcess gtest_main)
+add_executable(test_market test_market.cpp)
+target_link_libraries(test_market LibProcess gtest_main)
 
 
 if(CUDA_ENABLED)

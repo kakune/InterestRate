@@ -15,6 +15,7 @@
 #include <memory>
 #include <vector>
 
+#include "analytical/Black76.hpp"
 #include "math/interpolate_1d.hpp"
 #include "math/matrix.hpp"
 
@@ -166,6 +167,40 @@ public:
      * @return double r(Term[0])
      */
     double initialSpotRate() const;
+};
+
+/**
+ * @brief This stores prices of Caplet at each term.
+ */
+class Caplets
+{
+private:
+    const Terms mTerms;
+    const std::shared_ptr<const std::vector<double>> msStrikes;
+    const std::shared_ptr<const std::vector<std::vector<double>>> msCaplets;
+    const std::shared_ptr<const std::vector<double>> msZCBs;
+    const std::shared_ptr<Analytical::Black76::Model> msBlack;
+
+public:
+    /**
+     * @brief This constructs a new Caplets.
+     * @param inTerms
+     * @param insStrikes
+     * @param insCaplets Caplet[i][j] must be the price of caplet at strike[i]
+     * in Term[j]~Term[j+1].
+     * @param inZCB zero coupon bond to calc DF.
+     */
+    Caplets( const Terms& inTerms,
+             std::shared_ptr<const std::vector<double>> insStrikes,
+             std::shared_ptr<const std::vector<std::vector<double>>> insCaplets,
+             const ZCB& inZCB );
+    Caplets( const Terms& inTerms, const std::vector<double>& inStrikes,
+             const std::vector<std::vector<double>>& inCaplets,
+             const ZCB& inZCB );
+    double strike( std::size_t inIndex ) const;
+    const std::vector<double>& operator[]( std::size_t inIndex ) const;
+    double impliedBlackVol( std::size_t inIndexStrike,
+                            std::size_t inIndexTerm ) const;
 };
 
 }  // namespace MarketData
