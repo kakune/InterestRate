@@ -11,6 +11,3 @@ else()
 endif()
 
 target_include_directories(LibMath PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-
-add_executable(optimize optimize.cpp)
-target_link_libraries(optimize LibMath)

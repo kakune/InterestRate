@@ -12,3 +12,6 @@ target_link_libraries(test_matrix LibMath gtest_main)
 
 add_executable(test_ODE test_ODE.cpp)
 target_link_libraries(test_ODE LibMath gtest_main)
+
+add_executable(test_optimize test_optimize.cpp)
+target_link_libraries(test_optimize LibMath gtest_main)
