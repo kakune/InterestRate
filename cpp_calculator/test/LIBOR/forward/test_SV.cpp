@@ -34,21 +34,22 @@ double testImpVolSABR( std::size_t inNPath, double inMaturity,
             .template createForwardRates<
                 Process::RandomVec::StdBrownAntithetic>();
 
-    Math::Vec lImpVolByCaplet( inIndTenor.size() - 1 ),
-        lImpVolByFloorlet( inIndTenor.size() - 1 );
+    Math::Vec lImpVolByCaplet   = Math::makeVec( inIndTenor.size() - 1 );
+    Math::Vec lImpVolByFloorlet = Math::makeVec( inIndTenor.size() - 1 );
     for ( std::size_t i = 1; i < inIndTenor.size() - 1; ++i )
     {
-        lImpVolByCaplet( i ) = lFR.calcBlackImpVolByCaplet( inInitFR( i ), i );
-        lImpVolByFloorlet( i ) =
-            lFR.calcBlackImpVolByFloorlet( inInitFR( i ), i );
+        lImpVolByCaplet[i]   = lFR.calcBlackImpVolByCaplet( inInitFR[i], i );
+        lImpVolByFloorlet[i] = lFR.calcBlackImpVolByFloorlet( inInitFR[i], i );
         for ( double strike = 0.095; strike < 0.110; strike += 0.001 )
         {
             std::cout << lFR.calcBlackImpVolByCaplet( strike, i ) << std::endl;
         }
         std::cout << std::endl;
     }
-    std::cout << "implied volatility by caplet   : ", lImpVolByCaplet.print();
-    std::cout << "implied volatility by floorlet : ", lImpVolByFloorlet.print();
+    std::cout << "implied volatility by caplet   : ",
+        Math::print( lImpVolByCaplet );
+    std::cout << "implied volatility by floorlet : ",
+        Math::print( lImpVolByFloorlet );
     return 0.0;
 }
 

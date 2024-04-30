@@ -54,7 +54,7 @@ public:
         std::unique_ptr<Process::RandomVec::StdBrownAbstract> inuRandomPath,
         const Math::Vec& inConvSH, const Math::Vec& inMean,
         const Math::Vec& inVol, const Process::MarketData::ZCB& inMarketZCB ) :
-        MultiFactorAbstract( inNPath, inTerms, Math::Vec( 2, 0.0 ),
+        MultiFactorAbstract( inNPath, inTerms, Math::makeVec( 2, 0.0 ),
                              std::move( inuRandomPath ) ),
         mConvSH( inConvSH ),
         mMean( inMean ),
@@ -82,9 +82,9 @@ public:
 class CIR2ppWithMarketBuilder : public MultiFactorAbstractBuilder
 {
 private:
-    Math::Vec mConvSH = Math::Vec( 0 );
-    Math::Vec mMean   = Math::Vec( 0 );
-    Math::Vec mVol    = Math::Vec( 0 );
+    Math::Vec mConvSH = Math::makeVec( 0 );
+    Math::Vec mMean   = Math::makeVec( 0 );
+    Math::Vec mVol    = Math::makeVec( 0 );
     std::unique_ptr<Process::MarketData::ZCB> muMarketZCB;
 
 public:

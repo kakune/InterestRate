@@ -43,14 +43,14 @@ ShortRate::SpotRates ModelAbstract::createSpotRates() const
 double ModelAbstract::transfStateToRate( const Math::Vec& inState,
                                          std::size_t inIndTime ) const
 {
-    return inState( 0 );
+    return inState[0];
 }
 
 Math::Vec ConstantRate::driftCoeff(
     std::size_t inIndPath, std::size_t inIndTerm,
     const std::vector<std::vector<Math::Vec>>& inSpots ) const
 {
-    return Math::Vec( mDim, 0.0 );
+    return Math::makeVec( mDim, 0.0 );
 }
 
 ShortRate::SpotRates MultiFactorAbstract::createSpotRates() const

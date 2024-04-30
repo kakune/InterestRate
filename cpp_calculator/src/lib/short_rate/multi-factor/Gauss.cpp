@@ -46,9 +46,9 @@ double ConstantGauss::analyticalPriceZCB( double inTerminalTime ) const
         return std::numeric_limits<double>::quiet_NaN();
     }
     double lTime     = inTerminalTime - mTerms[0];
-    double lA        = -mDriftCoeff( 0 );
+    double lA        = -mDriftCoeff[0];
     double lExpA     = std::exp( -lA * lTime );
-    double lB        = -mDriftCoeff( 1 );
+    double lB        = -mDriftCoeff[1];
     double lExpB     = std::exp( -lB * lTime );
     double lSumAB    = lA + lB;
     double lAB       = lA * lB;
@@ -65,7 +65,7 @@ double ConstantGauss::analyticalPriceZCB( double inTerminalTime ) const
           ( lTime + ( 2.0 * lExpA - 0.5 * lExpA * lExpA - 1.5 ) / lA );
     lV += ( lEta * lEta / ( lB * lB ) ) *
           ( lTime + ( 2.0 * lExpB - 0.5 * lExpB * lExpB - 1.5 ) / lB );
-    return std::exp( -lFactorA * mInitState( 0 ) - lFactorB * mInitState( 1 ) +
+    return std::exp( -lFactorA * mInitState[0] - lFactorB * mInitState[1] +
                      0.5 * lV );
 }
 
@@ -98,8 +98,8 @@ double G2ppWithMarket::transfStateToRate( const Math::Vec& inState,
 }
 void G2ppWithMarket::prepareFactors()
 {
-    mA            = -mDriftCoeff( 0 );
-    mB            = -mDriftCoeff( 1 );
+    mA            = -mDriftCoeff[0];
+    mB            = -mDriftCoeff[1];
     double lSigma = mVolCoeff( 0, 0 );
     double lEta   = std::sqrt( mVolCoeff( 1, 0 ) * mVolCoeff( 1, 0 ) +
                                mVolCoeff( 1, 1 ) * mVolCoeff( 1, 1 ) );

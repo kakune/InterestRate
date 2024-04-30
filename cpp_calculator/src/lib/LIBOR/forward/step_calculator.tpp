@@ -56,7 +56,7 @@ Math::Vec LogNormalTerminalMeas<VolatilityGenerator_>::operator()(
                      dot( mCorr, inStdBrownianVec );
     for ( std::size_t i = 0; i < mTenor.minIndex( inIndTerm ); ++i )
     {
-        lResult( i ) = 0.0;
+        lResult[i] = 0.0;
     }
     return lResult;
 }
@@ -92,7 +92,7 @@ Math::Vec LogNormalTerminalMeasWithLog<VolatilityGenerator_>::operator()(
                                      dot( mCorr, inStdBrownianVec );
     for ( std::size_t i = 0; i < mTenor.minIndex( inIndTerm ); ++i )
     {
-        lResult( i ) = 0.0;
+        lResult[i] = 0.0;
     }
     return lResult;
 }
@@ -129,7 +129,7 @@ Math::Vec NormalTerminalMeas<VolatilityGenerator_>::operator()(
                                      dot( mCorr, inStdBrownianVec );
     for ( std::size_t i = 0; i < mTenor.minIndex( inIndTerm ); ++i )
     {
-        lResult( i ) = 0.0;
+        lResult[i] = 0.0;
     }
     return lResult;
 }
@@ -181,7 +181,7 @@ Math::Vec LogNormalSpotMeas<VolatilityGenerator_>::operator()(
                        mTerms.difTime( inIndTerm );
     Math::Vec lResult = lDrift + lVol * lFR * mTerms.sqrtDifTime( inIndTerm ) *
                                      dot( mCorr, inStdBrownianVec );
-    for ( std::size_t i = 0; i < lMinIndex; ++i ) { lResult( i ) = 0.0; }
+    for ( std::size_t i = 0; i < lMinIndex; ++i ) { lResult[i] = 0.0; }
     return lResult;
 }
 

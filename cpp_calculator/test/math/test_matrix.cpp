@@ -2,28 +2,27 @@
 
 #include <cmath>
 #include <iostream>
-#include <memory>
 
 #include "math/matrix.hpp"
 
 double testDotVecVec( Math::Vec inLhs, Math::Vec inRhs )
 {
-    return dot( inLhs, inRhs );
+    return Math::dot( inLhs, inRhs );
 }
 double testDotVecMat( Math::Vec inLhs, Math::Mat inRhs, std::size_t inInd )
 {
-    return dot( inLhs, inRhs )( inInd );
+    return Math::dot( inLhs, inRhs )[inInd];
 }
 double testDotMatVec( Math::Mat inLhs, Math::Vec inRhs, std::size_t inInd )
 {
-    return dot( inLhs, inRhs )( inInd );
+    return Math::dot( inLhs, inRhs )[inInd];
 }
 double testDotMatMat( Math::Mat inLhs, Math::Mat inRhs, std::size_t inIndLeft,
                       std::size_t inIndRight )
 {
-    inLhs.print();
+    Math::print( inLhs );
     std::cout << inLhs( 2, 1 ) << std::endl;
-    return dot( inLhs, inRhs )( inIndLeft, inIndRight );
+    return Math::dot( inLhs, inRhs )( inIndLeft, inIndRight );
 }
 double testCholeskyDecomposition( Math::Mat inMat, std::size_t inIndLeft,
                                   std::size_t inIndRight )
@@ -36,7 +35,7 @@ double testSolveEqPositiveDefinite( Math::Mat inMat, Math::Vec inVec,
                                     std::size_t inInd )
 {
     solveEqPositiveDefinite( inMat, inVec );
-    return inVec( inInd );
+    return inVec[inInd];
 }
 
 TEST( MatrixTest, Dot )
@@ -106,8 +105,8 @@ TEST( MatrixTest, SolveEqTriangular )
 TEST( MatrixTest, Eigen )
 {
     Math::Mat lMat{ { 1.0, 2.0, 3.0 }, { 2.0, 4.0, 1.0 }, { 3.0, 1.0, -2.0 } };
-    lMat.print();
+    Math::print( lMat );
     auto [lEigenVec, lEigenMat] = lMat.symLargeEigens( 2 );
-    lEigenVec.print();
-    lEigenMat.print();
+    Math::print( lEigenVec );
+    Math::print( lEigenMat );
 }

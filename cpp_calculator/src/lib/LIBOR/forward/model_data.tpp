@@ -277,7 +277,7 @@ double TerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
             1.0;
         for ( std::size_t iZCB = lIndTenorPay; iZCB < mTenor.size(); ++iZCB )
         {
-            lValuePayoff *= lMMA( iZCB );
+            lValuePayoff *= lMMA[iZCB];
         }
         lResult += lValuePayoff;
     }
@@ -299,7 +299,7 @@ double TerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
         // calculate using E_t[Payoff / P_{PayTime}(TerminalTime)]
         for ( std::size_t i = 0; i < lValuesPayoff.size(); ++i )
         {
-            if ( lValuesPayoff( i ) == 0.0 ) { continue; }
+            if ( lValuesPayoff[i] == 0.0 ) { continue; }
             Math::Vec lMMA =
                 mTenor.getTauVec() *
                     ( *msDataForwardRates )[iPath]
@@ -308,7 +308,7 @@ double TerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
             for ( std::size_t iZCB = lIndTenorFirstPay + i;
                   iZCB < mTenor.size(); ++iZCB )
             {
-                lValuesPayoff( i ) *= lMMA( iZCB );
+                lValuesPayoff[i] *= lMMA[iZCB];
             }
         }
         lResult += lValuesPayoff.sum();
@@ -338,7 +338,7 @@ double SpotMeas::calcExpectation( PayoffObject_ inPayoff ) const
             1.0;
         for ( std::size_t iRate = 0; iRate < lIndTenorPay; ++iRate )
         {
-            lFactor *= lRate( iRate );
+            lFactor *= lRate[iRate];
         }
         lResult += lValuePayoff / lFactor;
     }
@@ -359,7 +359,7 @@ double SpotMeas::calcExpectation( PayoffObject_ inPayoff ) const
         Math::Vec lValuesPayoff = inPayoff( iPath );
         for ( std::size_t i = 0; i < lValuesPayoff.size(); ++i )
         {
-            if ( lValuesPayoff( i ) == 0.0 ) { continue; }
+            if ( lValuesPayoff[i] == 0.0 ) { continue; }
             double lFactor = 1.0;
             Math::Vec lRate =
                 mTenor.getTauVec() *
@@ -369,9 +369,9 @@ double SpotMeas::calcExpectation( PayoffObject_ inPayoff ) const
             for ( std::size_t iRate = 0; iRate < lIndTenorFirstPay + i;
                   ++iRate )
             {
-                lFactor *= lRate( iRate );
+                lFactor *= lRate[iRate];
             }
-            lResult += lValuesPayoff( i ) / lFactor;
+            lResult += lValuesPayoff[i] / lFactor;
         }
     }
     return lResult / mNPath;

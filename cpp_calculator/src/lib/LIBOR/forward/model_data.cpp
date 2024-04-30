@@ -22,7 +22,7 @@ Process::MarketData::ZCB createZCBFromForwardRates(
     {
         lTmpTerms[i] = inTenor.term( i );
         lTmpZCBs[i]  = lTmpZCBs[i - 1] /
-                      ( inTenor.tau( i - 1 ) * inFRs[0][0]( i - 1 ) + 1.0 );
+                      ( inTenor.tau( i - 1 ) * inFRs[0][0][i - 1] + 1.0 );
     }
     return Process::MarketData::ZCB( Process::MarketData::Terms( lTmpTerms ),
                                      lTmpZCBs,

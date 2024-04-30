@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
-#include <iostream>
 #include <memory>
 
 #include "math/interpolate_multi.hpp"

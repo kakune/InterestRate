@@ -32,13 +32,16 @@ double CapletFloorlet::operator()( std::size_t inIndPath ) const
     if ( mIsCaplet )
     {
         return std::max(
-            0.0, mTau * ( ( *msDataForwardRates )[inIndPath][mIndTermsFR](
-                              mIndTenorFR ) -
-                          mStrike ) );
+            0.0,
+            mTau *
+                ( ( *msDataForwardRates )[inIndPath][mIndTermsFR][mIndTenorFR] -
+                  mStrike ) );
     }
     return std::max(
-        0.0, mTau * ( mStrike - ( *msDataForwardRates )[inIndPath][mIndTermsFR](
-                                    mIndTenorFR ) ) );
+        0.0,
+        mTau *
+            ( mStrike -
+              ( *msDataForwardRates )[inIndPath][mIndTermsFR][mIndTenorFR] ) );
 }
 
 static std::vector<std::size_t> transformIndsFromTenorToTerms(
@@ -57,10 +60,10 @@ static Math::Vec calcTaus( const Process::MarketData::Tenor& inTenor,
                            std::size_t inIndTenorStart,
                            std::size_t inIndTenorLast )
 {
-    Math::Vec lResult( inIndTenorLast - inIndTenorStart );
+    Math::Vec lResult = Math::makeVec( inIndTenorLast - inIndTenorStart );
     for ( std::size_t i = 0; i < lResult.size(); ++i )
     {
-        lResult( i ) = inTenor.tau( inIndTenorStart + i );
+        lResult[i] = inTenor.tau( inIndTenorStart + i );
     }
     return lResult;
 }
@@ -91,12 +94,12 @@ static Math::Vec calcZCBFromForwardRate(
     const Math::Vec& inForwardRate, const Process::MarketData::Tenor& inTenor,
     std::size_t inIndTenorStart, std::size_t inIndTenorLast )
 {
-    Math::Vec lZCB( inIndTenorLast - inIndTenorStart );
+    Math::Vec lZCB = Math::makeVec( inIndTenorLast - inIndTenorStart );
     for ( std::size_t i = 0; i < lZCB.size(); ++i )
     {
-        lZCB( i ) = ( i == 0 ) ? 1.0 : lZCB( i - 1 );
-        lZCB( i ) /= 1.0 + inTenor.tau( inIndTenorStart + i ) *
-                               inForwardRate( inIndTenorStart + i );
+        lZCB[i] = ( i == 0 ) ? 1.0 : lZCB[i - 1];
+        lZCB[i] /= 1.0 + inTenor.tau( inIndTenorStart + i ) *
+                             inForwardRate[inIndTenorStart + i];
     }
     return lZCB;
 }
@@ -106,13 +109,12 @@ static Math::Vec calcRealizedTauForwardRate(
     const Process::MarketData::Tenor& inTenor, std::size_t inIndTenorStart,
     std::size_t inIndTenorLast )
 {
-    Math::Vec lForwardRate( inIndTenorLast - inIndTenorStart );
+    Math::Vec lForwardRate = Math::makeVec( inIndTenorLast - inIndTenorStart );
     for ( std::size_t i = 0; i < lForwardRate.size(); ++i )
     {
-        lForwardRate( i ) =
-            1.0 + inTenor.tau( inIndTenorStart + i ) *
-                      inForwardRates[inTenor[inIndTenorStart + i]](
-                          inIndTenorStart + i );
+        lForwardRate[i] = 1.0 + inTenor.tau( inIndTenorStart + i ) *
+                                    inForwardRates[inTenor[inIndTenorStart + i]]
+                                                  [inIndTenorStart + i];
     }
     return lForwardRate - 1.0;
 }
@@ -122,8 +124,9 @@ Math::Vec Swaption::operator()( std::size_t inIndPath ) const
     Math::Vec lZCB = calcZCBFromForwardRate(
         ( *msDataForwardRates )[inIndPath][mIndTermsStart], mTenor,
         mIndTenorStart, mIndTenorLast );
-    double lSwapRate = ( 1.0 - lZCB( lZCB.size() - 1 ) ) / dot( lZCB, mTaus );
-    Math::Vec lResult( lZCB.size(), 0.0 );
+    double lSwapRate =
+        ( 1.0 - lZCB[lZCB.size() - 1] ) / Math::dot( lZCB, mTaus );
+    Math::Vec lResult = Math::makeVec( lZCB.size(), 0.0 );
     if ( mIsPayer )
     {
         if ( lSwapRate <= mStrike ) { return lResult; }

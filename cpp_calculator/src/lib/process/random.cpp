@@ -38,10 +38,10 @@ namespace RandomVec
 
 Math::Vec StdBrownPlain::operator()()
 {
-    Math::Vec lResult( mDim, 0.0 );
+    Math::Vec lResult = Math::makeVec( mDim, 0.0 );
     for ( std::size_t i = mIndStart; i < mDim; ++i )
     {
-        lResult( i ) = mDistribution( mGenerator );
+        lResult[i] = mDistribution( mGenerator );
     }
     return lResult;
 }
@@ -62,8 +62,8 @@ Math::Vec StdBrownAntithetic::operator()()
     mIsNextNew = false;
     for ( std::size_t i = 0; i < mDim; ++i )
     {
-        if ( i < mIndStart ) { mPrevRandomValue( i ) = 0.0; }
-        else { mPrevRandomValue( i ) = mDistribution( mGenerator ); }
+        if ( i < mIndStart ) { mPrevRandomValue[i] = 0.0; }
+        else { mPrevRandomValue[i] = mDistribution( mGenerator ); }
     }
     return mPrevRandomValue;
 }

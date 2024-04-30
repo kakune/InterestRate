@@ -166,7 +166,7 @@ public:
     StdBrownAntithetic( std::size_t inDim ) :
         StdBrownAbstract( inDim ),
         mIsNextNew( true ),
-        mPrevRandomValue( inDim ),
+        mPrevRandomValue( Math::makeVec( inDim ) ),
         mGenerator( mDevice() ),
         mDistribution( 0.0, 1.0 )
     {

@@ -64,7 +64,7 @@ public:
 class ConstantGaussBuilder : public MultiFactorAbstractBuilder
 {
 private:
-    Math::Vec mDriftCoeff = Math::Vec( 0 );
+    Math::Vec mDriftCoeff = Math::makeVec( 0 );
     Math::Mat mVolCoeff   = Math::Mat( 0, 0 );
 
 public:
@@ -120,7 +120,7 @@ public:
         std::unique_ptr<Process::RandomVec::StdBrownAbstract> inuStdBrown,
         const Math::Vec& inDriftCoeff, const Math::Mat& inVolCoeff,
         const Process::MarketData::ZCB& inMarketZCB ) :
-        MultiFactorAbstract( inNPath, inTerms, Math::Vec( 2, 0.0 ),
+        MultiFactorAbstract( inNPath, inTerms, Math::makeVec( 2, 0.0 ),
                              std::move( inuStdBrown ) ),
         mDriftCoeff( inDriftCoeff ),
         mVolCoeff( inVolCoeff ),
@@ -142,7 +142,7 @@ public:
 class G2ppWithMarketBuilder : public MultiFactorAbstractBuilder
 {
 private:
-    Math::Vec mDriftCoeff = Math::Vec( 0 );
+    Math::Vec mDriftCoeff = Math::makeVec( 0 );
     Math::Mat mVolCoeff   = Math::Mat( 0, 0 );
     std::unique_ptr<Process::MarketData::ZCB> muMarketZCB;
 

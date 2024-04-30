@@ -43,8 +43,8 @@ protected:
 
 public:
     RBFAbstract( double inMinDistance = 0.2, double inFactorDecay = 0.001 ) :
-        mPoints( 0, Math::Vec( 0 ) ),
-        mCoeffs( 0 ),
+        mPoints( 0, Math::makeVec( 0 ) ),
+        mCoeffs( Math::makeVec( 0 ) ),
         mFactorDistance( 1.0 ),
         mMinDistance( inMinDistance ),
         mFactorDecay( inFactorDecay )

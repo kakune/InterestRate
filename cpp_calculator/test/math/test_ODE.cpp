@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <iostream>
+#include <cmath>
 #include <vector>
 
 #include "math/ODE.hpp"

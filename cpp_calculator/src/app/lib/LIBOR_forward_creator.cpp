@@ -15,7 +15,7 @@ namespace APP
 static Math::Vec getVecFromParam( const std::string& inName,
                                   const Utils::Parameters& inParams )
 {
-    return Math::Vec( inParams.operator()<std::vector<double>>( inName ) );
+    return Math::makeVec( inParams.operator()<std::vector<double>>( inName ) );
 }
 static Math::Mat getMatFromParam( const std::string& inName,
                                   const Utils::Parameters& inParams )

@@ -39,22 +39,21 @@ double testImpVolConstantVol( std::size_t inNPath, double inMaturity,
         lImpVolByReceiverSwaption( inCorrectImpVol );
     for ( std::size_t i = 1; i < inIndTenor.size() - 1; ++i )
     {
-        lImpVolByCaplet( i ) = lFR.calcBlackImpVolByCaplet( inInitFR( i ), i );
-        lImpVolByFloorlet( i ) =
-            lFR.calcBlackImpVolByFloorlet( inInitFR( i ), i );
-        lImpVolByPayerSwaption( i ) =
-            lFR.calcBlackImpVolByPayerSwaption( inInitFR( i ), i, i + 1 );
-        lImpVolByReceiverSwaption( i ) =
-            lFR.calcBlackImpVolByReceiverSwaption( inInitFR( i ), i, i + 1 );
+        lImpVolByCaplet[i]   = lFR.calcBlackImpVolByCaplet( inInitFR[i], i );
+        lImpVolByFloorlet[i] = lFR.calcBlackImpVolByFloorlet( inInitFR[i], i );
+        lImpVolByPayerSwaption[i] =
+            lFR.calcBlackImpVolByPayerSwaption( inInitFR[i], i, i + 1 );
+        lImpVolByReceiverSwaption[i] =
+            lFR.calcBlackImpVolByReceiverSwaption( inInitFR[i], i, i + 1 );
     }
     std::cout << "implied volatility by caplet           : ",
-        lImpVolByCaplet.print();
+        Math::print( lImpVolByCaplet );
     std::cout << "implied volatility by floorlet         : ",
-        lImpVolByFloorlet.print();
+        Math::print( lImpVolByFloorlet );
     std::cout << "implied volatility by PayerSwaption    : ",
-        lImpVolByPayerSwaption.print();
+        Math::print( lImpVolByPayerSwaption );
     std::cout << "implied volatility by ReceiverSwaption : ",
-        lImpVolByReceiverSwaption.print();
+        Math::print( lImpVolByReceiverSwaption );
     return std::max(
         { abs( lImpVolByCaplet - inCorrectImpVol ).max(),
           abs( lImpVolByFloorlet - inCorrectImpVol ).max(),

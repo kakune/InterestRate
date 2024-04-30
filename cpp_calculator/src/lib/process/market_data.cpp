@@ -75,10 +75,10 @@ static Math::Vec calcTau(
     const Terms& inTerms,
     std::shared_ptr<const std::vector<std::size_t>> insData )
 {
-    Math::Vec lResult( insData->size() - 1 );
+    Math::Vec lResult = Math::makeVec( insData->size() - 1 );
     for ( std::size_t i = 0; i < insData->size() - 1; ++i )
     {
-        lResult( i ) = inTerms[( *insData )[i + 1]] - inTerms[( *insData )[i]];
+        lResult[i] = inTerms[( *insData )[i + 1]] - inTerms[( *insData )[i]];
     }
     return lResult;
 }
@@ -123,7 +123,7 @@ double Tenor::term( std::size_t inIndex ) const
 {
     return mTerms[( *msData )[inIndex]];
 }
-double Tenor::tau( std::size_t inIndex ) const { return ( *msTau )( inIndex ); }
+double Tenor::tau( std::size_t inIndex ) const { return ( *msTau )[inIndex]; }
 const Math::Vec& Tenor::getTauVec() const { return *msTau; }
 std::size_t Tenor::minIndex( std::size_t inIndex ) const
 {

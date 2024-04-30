@@ -74,7 +74,7 @@ public:
 class ModelAbstractBuilder
 {
 protected:
-    Math::Vec mInitState = Math::Vec( 0 );                //! initial state
+    Math::Vec mInitState = Math::makeVec( 0 );            //! initial state
     std::size_t mNPath;                                   //! the number of Path
     std::unique_ptr<Process::MarketData::Terms> muTerms;  //! term structure
 

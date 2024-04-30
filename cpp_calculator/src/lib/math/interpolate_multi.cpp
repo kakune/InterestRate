@@ -17,20 +17,20 @@ void RBFAbstract::build(
     std::vector<std::shared_ptr<const std::vector<double>>> insRefVars,
     std::shared_ptr<const std::vector<double>> insRefVals )
 {
-    mNCoeff = insRefVals->size();
-    mNDim   = insRefVars.size();
-    Math::Vec lValues( mNCoeff );
+    mNCoeff           = insRefVals->size();
+    mNDim             = insRefVars.size();
+    Math::Vec lValues = Math::makeVec( mNCoeff );
     for ( std::size_t iPos = 0; iPos < mNCoeff; ++iPos )
     {
-        lValues( iPos ) = insRefVals->operator[]( iPos );
+        lValues[iPos] = insRefVals->operator[]( iPos );
     }
     Math::Mat lDistances( mNCoeff, mNCoeff );
-    mPoints = std::vector<Math::Vec>( mNCoeff, Math::Vec( mNDim ) );
+    mPoints = std::vector<Math::Vec>( mNCoeff, Math::makeVec( mNDim ) );
     for ( std::size_t iPos = 0; iPos < mNCoeff; ++iPos )
     {
         for ( std::size_t iDim = 0; iDim < mNDim; ++iDim )
         {
-            mPoints[iPos]( iDim ) = insRefVars[iDim]->operator[]( iPos );
+            mPoints[iPos][iDim] = insRefVars[iDim]->operator[]( iPos );
         }
     }
     double lTmpMinDistance = 1.0e10;
@@ -66,11 +66,11 @@ void RBFAbstract::build(
 }
 double RBFAbstract::operator()( const std::vector<double>& inVar ) const
 {
-    Math::Vec lVar( inVar );
-    Math::Vec lRadials( mNCoeff );
+    Math::Vec lVar     = Math::makeVec( inVar );
+    Math::Vec lRadials = Math::makeVec( mNCoeff );
     for ( std::size_t iPos = 0; iPos < mNCoeff; ++iPos )
     {
-        lRadials( iPos ) = radial( distance( lVar, mPoints[iPos] ) );
+        lRadials[iPos] = radial( distance( lVar, mPoints[iPos] ) );
     }
     return dot( mCoeffs, lRadials );
 }
@@ -85,23 +85,22 @@ double RBFAbstract::deriv( const std::vector<double>& inVar, std::size_t inDim,
                   << std::endl;
         return std::numeric_limits<double>::quiet_NaN();
     }
-    Math::Vec lVar( inVar );
-    Math::Vec lRadials( mNCoeff );
+    Math::Vec lVar     = Math::makeVec( inVar );
+    Math::Vec lRadials = Math::makeVec( mNCoeff );
     for ( std::size_t iPos = 0; iPos < mNCoeff; ++iPos )
     {
         if ( inOrder == 1 )
         {
-            lRadials( iPos ) =
-                derivRadial( distance( lVar, mPoints[iPos] ), 1 ) *
-                derivDistance( lVar, mPoints[iPos], inDim, 1 );
+            lRadials[iPos] = derivRadial( distance( lVar, mPoints[iPos] ), 1 ) *
+                             derivDistance( lVar, mPoints[iPos], inDim, 1 );
         }
         if ( inOrder == 2 )
         {
-            double lDist     = distance( lVar, mPoints[iPos] );
-            double lDDist    = derivDistance( lVar, mPoints[iPos], inDim, 1 );
-            lRadials( iPos ) = lDDist * lDDist * derivRadial( lDist, 2 ) +
-                               derivDistance( lVar, mPoints[iPos], inDim, 2 ) *
-                                   derivRadial( lDist, 1 );
+            double lDist   = distance( lVar, mPoints[iPos] );
+            double lDDist  = derivDistance( lVar, mPoints[iPos], inDim, 1 );
+            lRadials[iPos] = lDDist * lDDist * derivRadial( lDist, 2 ) +
+                             derivDistance( lVar, mPoints[iPos], inDim, 2 ) *
+                                 derivRadial( lDist, 1 );
         }
     }
     return dot( mCoeffs, lRadials );
@@ -112,7 +111,7 @@ double RBFAbstract::distance( const Math::Vec& inX1,
     double lResult = 0.0;
     for ( std::size_t i = 0; i < mNDim; ++i )
     {
-        double lTmp = inX1( i ) - inX2( i );
+        double lTmp = inX1[i] - inX2[i];
         lResult += lTmp * lTmp;
     }
     return mFactorDistance * lResult;
@@ -124,7 +123,7 @@ double RBFAbstract::derivDistance( const Math::Vec& inX1, const Math::Vec& inX2,
     if ( inOrder == 0 ) { return distance( inX1, inX2 ); }
     if ( inOrder == 1 )
     {
-        return 2.0 * mFactorDistance * ( inX1( inDim ) - inX2( inDim ) );
+        return 2.0 * mFactorDistance * ( inX1[inDim] - inX2[inDim] );
     }
     if ( inOrder == 2 ) { return 2.0 * mFactorDistance; }
     return 0.0;
