@@ -44,18 +44,6 @@ double CapletFloorlet::operator()( std::size_t inIndPath ) const
               ( *msDataForwardRates )[inIndPath][mIndTermsFR][mIndTenorFR] ) );
 }
 
-static std::vector<std::size_t> transformIndsFromTenorToTerms(
-    const Process::MarketData::Tenor& inTenor,
-    const std::vector<std::size_t>& inIndsTenorPay )
-{
-    std::vector<std::size_t> lResult( inIndsTenorPay.size() );
-    for ( std::size_t i = 0; i < lResult.size(); ++i )
-    {
-        lResult[i] = inTenor[inIndsTenorPay[i]];
-    }
-    return lResult;
-}
-
 static Math::Vec calcTaus( const Process::MarketData::Tenor& inTenor,
                            std::size_t inIndTenorStart,
                            std::size_t inIndTenorLast )

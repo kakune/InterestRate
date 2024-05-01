@@ -223,7 +223,7 @@ public:
 class VasicekWithMarketBuilder : public OneFactorAbstractBuilder
 {
 private:
-    double mVol, mKappa, mMean;
+    double mVol, mKappa;
     std::unique_ptr<Process::MarketData::ZCB> muMarketZCB;
 
 public:
@@ -283,16 +283,11 @@ public:
 class GSRBuilder : public OneFactorAbstractBuilder
 {
 private:
-    std::size_t mNDegVol, mNDegKappa, mNDegMean;
     std::unique_ptr<Math::Interpolate1D::NewtonSpline> muInterpVol,
         muInterpKappa, muInterpMean;
 
 public:
-    GSRBuilder( std::size_t inNDegVol = 3, std::size_t inNDegKappa = 3,
-                std::size_t inNDegMean = 3 ) :
-        mNDegVol( inNDegVol ),
-        mNDegKappa( inNDegKappa ),
-        mNDegMean( inNDegMean ),
+    GSRBuilder() :
         muInterpVol( nullptr ),
         muInterpKappa( nullptr ),
         muInterpMean( nullptr )
@@ -419,20 +414,12 @@ public:
 class GSRWithMarketBuilder : public OneFactorAbstractBuilder
 {
 private:
-    std::size_t mNDegVol, mNDegKappa;
     std::unique_ptr<Math::Interpolate1D::NewtonSpline> muInterpVol,
         muInterpKappa;
     std::unique_ptr<Process::MarketData::ZCB> muMarketZCB;
 
 public:
-    GSRWithMarketBuilder( std::size_t inNDegVol   = 3,
-                          std::size_t inNDegKappa = 3 ) :
-        mNDegVol( inNDegVol ),
-        mNDegKappa( inNDegKappa ),
-        muInterpVol( nullptr ),
-        muInterpKappa( nullptr )
-    {
-    }
+    GSRWithMarketBuilder() : muInterpVol( nullptr ), muInterpKappa( nullptr ) {}
     GSRWithMarketBuilder& setInterpVol(
         Math::Interpolate1D::NewtonSpline inInterpVol )
     {

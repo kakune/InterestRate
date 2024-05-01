@@ -47,7 +47,6 @@ double testConsistencyZCB( std::size_t inNTerms, std::size_t inNPath,
                            double inMeanDriftZCB, double inVolDriftZCB,
                            std::size_t inSeed = 0 )
 {
-    double lDt = inMaturity / double( inNTerms - 1 );
     std::vector<double> lZCB( inNTerms + 2, 1.0 );
     std::mt19937_64 lEngine( inSeed );
     std::uniform_real_distribution<double> lRandomGen(

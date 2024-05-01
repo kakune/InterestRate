@@ -69,7 +69,7 @@ TEST( ShortRateConstantTest, PriceZCB )
     Math::Vec lCorrSV{ 0.1, 0.1, 0.1 };
     double lExponent   = 0.8;
     double lVolVol     = 0.15;
-    std::size_t lNPath = 1000000;
+    std::size_t lNPath = 3000000;
     double lMaturity   = 3.0;
 
     EXPECT_NEAR( 0.0,

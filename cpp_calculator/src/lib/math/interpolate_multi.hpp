@@ -50,6 +50,7 @@ public:
         mFactorDecay( inFactorDecay )
     {
     }
+    virtual ~RBFAbstract() = default;
 
     double operator()( const std::vector<double>& inVar ) const;
     double deriv( const std::vector<double>& inVar, std::size_t inDim,

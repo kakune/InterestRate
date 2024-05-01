@@ -292,7 +292,6 @@ double TerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
 {
     double lResult                = 0.0;
     std::size_t lIndTenorFirstPay = inPayoff.getIndexTenorFirstPay();
-    std::size_t lIndTenorLastPay  = inPayoff.getIndexTenorLastPay();
 
     for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
     {
@@ -353,7 +352,6 @@ double SpotMeas::calcExpectation( PayoffObject_ inPayoff ) const
 {
     double lResult                = 0.0;
     std::size_t lIndTenorFirstPay = inPayoff.getIndexTenorFirstPay();
-    std::size_t lIndTenorLastPay  = inPayoff.getIndexTenorLastPay();
 
     for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
     {

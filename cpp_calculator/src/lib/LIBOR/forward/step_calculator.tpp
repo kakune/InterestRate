@@ -13,7 +13,8 @@
 namespace LIBOR::Forward::StepCalc
 {
 
-static Math::Mat calcUpperTriangularRhoWithOutDiag( const Math::Mat& inCorr )
+static inline Math::Mat calcUpperTriangularRhoWithOutDiag(
+    const Math::Mat& inCorr )
 {
     Math::Mat lResult = dot( inCorr, inCorr.transpose() );
     for ( std::size_t i = 0; i < lResult.sizeRow(); ++i )
@@ -134,7 +135,7 @@ Math::Vec NormalTerminalMeas<VolatilityGenerator_>::operator()(
     return lResult;
 }
 
-static std::vector<Math::Mat> calcSpotRhos(
+static inline std::vector<Math::Mat> calcSpotRhos(
     const Math::Mat& inCorr, const Process::MarketData::Tenor& inTenor )
 {
     Math::Mat lRho = dot( inCorr.transpose(), inCorr );
