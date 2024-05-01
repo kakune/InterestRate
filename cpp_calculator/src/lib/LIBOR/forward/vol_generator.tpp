@@ -9,6 +9,8 @@
 #include "LIBOR/forward/vol_generator.hpp"
 #endif
 
+#include <limits>
+
 namespace LIBOR::Forward::VolGen
 {
 
@@ -27,14 +29,17 @@ SABR<StdBrownVecGenerator_>::SABR( const Math::Vec& inInitVol,
                                    double inExponent, double inVolVol,
                                    const Math::Vec& inCorrSV,
                                    std::size_t inNPath,
-                                   const Process::MarketData::Terms& inTerms ) :
+                                   const Process::MarketData::Terms& inTerms,
+                                   const Process::MarketData::Tenor& inTenor ) :
     msVols( std::make_shared<std::vector<Math::Vec>>( inNPath, inInitVol ) ),
     mExponent( inExponent ),
     mVolVol( inVolVol ),
     mCorrSV( inCorrSV ),
     mCorrSVInv( sqrt( 1.0 - inCorrSV * inCorrSV ) ),
-    mTmpIndTerm( 0 ),
+    mTmpIndTerm( std::numeric_limits<std::size_t>::quiet_NaN() ),
+    mVolVolSqrtDt( std::numeric_limits<double>::quiet_NaN() ),
     mTerms( inTerms ),
+    mTenor( inTenor ),
     msStdBrownGen( std::make_shared<StdBrownVecGenerator_>( inInitVol.size() ) )
 {
 }
@@ -47,15 +52,17 @@ Math::Vec SABR<StdBrownVecGenerator_>::operator()(
 {
     if ( mTmpIndTerm != inIndTerm )
     {
-        msStdBrownGen->initialize();
+        msStdBrownGen->initialize( mTenor.minIndex( inIndTerm ) );
         mTmpIndTerm   = inIndTerm;
         mVolVolSqrtDt = mVolVol * mTerms.sqrtDifTime( inIndTerm );
     }
+    Math::Vec lResult =
+        ( *msVols )[inIndPath] *
+        pow( inForwardRates[inIndPath][inIndTerm - 1], mExponent );
     Math::Vec lBrownVol =
         mCorrSV * inStdBrownForFR + mCorrSVInv * ( *msStdBrownGen )();
     ( *msVols )[inIndPath] *= ( 1.0 + mVolVolSqrtDt * lBrownVol );
-    return ( *msVols )[inIndPath] *
-           pow( inForwardRates[inIndPath][inIndTerm - 1], mExponent );
+    return lResult;
 }
 
 }  // namespace LIBOR::Forward::VolGen

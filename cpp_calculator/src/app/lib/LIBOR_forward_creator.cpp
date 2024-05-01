@@ -47,7 +47,8 @@ LIBOR::Forward::Data::TerminalMeas createForwardTerminalFromParam(
         LIBOR::Forward::VolGen::SABR<Process::RandomVec::StdBrownAntithetic>
             lVolGen( getVecFromParam( "InitVol", inParams ),
                      inParams( "Exponent" ), inParams( "VolVol" ),
-                     getVecFromParam( "CorrSV", inParams ), lNPath, inTerms );
+                     getVecFromParam( "CorrSV", inParams ), lNPath, inTerms,
+                     inTenor );
         LIBOR::Forward::StepCalc::NormalTerminalMeas lStep(
             inTerms, inTenor, getMatFromParam( "Corr", inParams ), lVolGen );
         return LIBOR::Forward::Factory( lNPath, inTerms, inTenor,

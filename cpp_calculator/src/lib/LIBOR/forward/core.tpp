@@ -22,7 +22,7 @@ Factory<StepCalculator_>::createForwardRates() const
         mNPath, mTenor[mTenor.size() - 1] + 1, mInitFR );
     for ( std::size_t iTerm = 1; iTerm <= mTenor[mTenor.size() - 1]; ++iTerm )
     {
-        lStdBrownGen.initialize();
+        lStdBrownGen.initialize( mTenor.minIndex( iTerm ) );
         for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
         {
             lStates.setStateElement(

@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "LIBOR/forward.hpp"
+#include "process/random.hpp"
 
 Process::MarketData::Terms makeTerms( std::size_t inNTerms, double inMaturity )
 {
@@ -9,6 +10,7 @@ Process::MarketData::Terms makeTerms( std::size_t inNTerms, double inMaturity )
     for ( std::size_t iTerm = 1; iTerm < inNTerms; ++iTerm )
     {
         lTerms[iTerm] = lTerms[iTerm - 1] + lDt;
+        // std::cout << iTerm << ":" << lTerms[iTerm] << std::endl;
     }
     return Process::MarketData::Terms( lTerms );
 }
@@ -27,7 +29,8 @@ double testImpVolSABR( std::size_t inNPath, double inMaturity,
     auto lTenor = Process::MarketData::Tenor( lTerms, inIndTenor );
 
     LIBOR::Forward::VolGen::SABR<Process::RandomVec::StdBrownAntithetic>
-        lVolGen( inInitVol, inExponent, inVolVol, inCorrSV, inNPath, lTerms );
+        lVolGen( inInitVol, inExponent, inVolVol, inCorrSV, inNPath, lTerms,
+                 lTenor );
     StepCalculator_ lStep( lTerms, lTenor, inCorr, lVolGen );
     auto lFR =
         LIBOR::Forward::Factory( inNPath, lTerms, lTenor, inInitFR, lStep )
@@ -36,11 +39,15 @@ double testImpVolSABR( std::size_t inNPath, double inMaturity,
 
     Math::Vec lImpVolByCaplet   = Math::makeVec( inIndTenor.size() - 1 );
     Math::Vec lImpVolByFloorlet = Math::makeVec( inIndTenor.size() - 1 );
+    std::cout << "Price of Caplet   : " << lFR.calcCaplet( 0.0, 1 )
+              << std::endl;
+    std::cout << "Price of Floorlet : " << lFR.calcFloorlet( 0.05, 1 )
+              << std::endl;
     for ( std::size_t i = 1; i < inIndTenor.size() - 1; ++i )
     {
         lImpVolByCaplet[i]   = lFR.calcBlackImpVolByCaplet( inInitFR[i], i );
         lImpVolByFloorlet[i] = lFR.calcBlackImpVolByFloorlet( inInitFR[i], i );
-        for ( double strike = 0.045; strike < 0.055; strike += 0.001 )
+        for ( double strike = 0.045; strike < 0.065; strike += 0.001 )
         {
             std::cout << lFR.calcBlackImpVolByCaplet( strike, i ) << std::endl;
         }
@@ -55,15 +62,15 @@ double testImpVolSABR( std::size_t inNPath, double inMaturity,
 
 TEST( ShortRateConstantTest, PriceZCB )
 {
-    std::vector<std::size_t> lIndTenor{ 0, 200, 400 };
-    Math::Vec lInitFR{ 0.0, 0.05 };
-    Math::Vec lInitVol{ 0.05, 0.05 };
-    Math::Mat lCorr = Math::unitMat( 2, 1.0 );
-    Math::Vec lCorrSV{ 0.0, 0.1 };
+    std::vector<std::size_t> lIndTenor{ 0, 20, 40, 60 };
+    Math::Vec lInitFR{ 0.05, 0.05, 0.05 };
+    Math::Vec lInitVol{ 0.05, 0.05, 0.05 };
+    Math::Mat lCorr = Math::unitMat( 3, 1.0 );
+    Math::Vec lCorrSV{ 0.1, 0.1, 0.1 };
     double lExponent   = 0.8;
     double lVolVol     = 0.15;
-    std::size_t lNPath = 400000;
-    double lMaturity   = 2.0;
+    std::size_t lNPath = 1000000;
+    double lMaturity   = 3.0;
 
     EXPECT_NEAR( 0.0,
                  testImpVolSABR<LIBOR::Forward::StepCalc::NormalTerminalMeas>(

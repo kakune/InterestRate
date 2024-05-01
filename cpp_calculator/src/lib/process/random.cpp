@@ -48,7 +48,8 @@ Math::Vec StdBrownPlain::operator()()
 
 void StdBrownAntithetic::initialize( std::size_t inIndStart )
 {
-    mIndStart  = inIndStart;
+    mIndStart = inIndStart;
+    for ( std::size_t i = 0; i < mIndStart; ++i ) { mPrevRandomValue[i] = 0.0; }
     mIsNextNew = true;
 }
 
@@ -60,10 +61,9 @@ Math::Vec StdBrownAntithetic::operator()()
         return -mPrevRandomValue;
     }
     mIsNextNew = false;
-    for ( std::size_t i = 0; i < mDim; ++i )
+    for ( std::size_t i = mIndStart; i < mDim; ++i )
     {
-        if ( i < mIndStart ) { mPrevRandomValue[i] = 0.0; }
-        else { mPrevRandomValue[i] = mDistribution( mGenerator ); }
+        mPrevRandomValue[i] = mDistribution( mGenerator );
     }
     return mPrevRandomValue;
 }

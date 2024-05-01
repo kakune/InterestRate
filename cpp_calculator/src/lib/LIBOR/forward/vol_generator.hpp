@@ -45,12 +45,14 @@ private:
     mutable std::size_t mTmpIndTerm;
     mutable double mVolVolSqrtDt;
     const Process::MarketData::Terms mTerms;
+    const Process::MarketData::Tenor mTenor;
     const std::shared_ptr<StdBrownVecGenerator_> msStdBrownGen;
 
 public:
     SABR( const Math::Vec& inInitVol, double inExponent, double inVolVol,
           const Math::Vec& inCorrSV, std::size_t inNPath,
-          const Process::MarketData::Terms& inTerms );
+          const Process::MarketData::Terms& inTerms,
+          const Process::MarketData::Tenor& inTenor );
     Math::Vec operator()(
         std::size_t inIndPath, std::size_t inIndTerm,
         const std::vector<std::vector<Math::Vec>>& inForwardRates,
