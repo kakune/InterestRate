@@ -47,4 +47,5 @@ clean:
 
 .PHONY: debug
 debug:
-	@$(MAKE) all DEBUG=yes
+	@$(MAKE) build DEBUG=yes
+	cp $(EXECUTABLE_PATH) $(BUILD_DIR)/debug

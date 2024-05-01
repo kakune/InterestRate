@@ -14,6 +14,20 @@
                 "isDefault": true
             },
             "problemMatcher": []
+        },
+        {
+            "label": "make_debug",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-ic",
+                "source ~/.bashrc && make -C ${workspaceFolder}/cpp_calculator debug SOURCE_FILE=${file}"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
         }
     ]
 }

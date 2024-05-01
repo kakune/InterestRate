@@ -273,7 +273,8 @@ std::pair<Vec, Mat> Mat::symLargeEigens( std::size_t inNumEigen )
 
 Vec solveEqLCholesky( const Mat& inLowerMat, Vec inVec )
 {
-    assert( inL.mNCol == inL.mNRow && inL.mNRow == inVec.size() );
+    assert( inLowerMat.mNCol == inLowerMat.mNRow &&
+            inLowerMat.mNRow == inVec.size() );
     int info = LAPACKE_dpotrs( LAPACK_COL_MAJOR, 'L', inLowerMat.mNRow, 1,
                                &inLowerMat[0], inLowerMat.mNRow, &inVec[0],
                                inVec.size() );
