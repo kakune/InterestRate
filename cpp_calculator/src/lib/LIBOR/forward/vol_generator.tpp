@@ -28,8 +28,7 @@ SABR<StdBrownVecGenerator_>::SABR( const Math::Vec& inInitVol,
                                    const Math::Vec& inCorrSV,
                                    std::size_t inNPath,
                                    const Process::MarketData::Terms& inTerms ) :
-    msVols( std::make_shared<std::vector<std::vector<Math::Vec>>>(
-        inNPath, std::vector<Math::Vec>( inTerms.size(), inInitVol ) ) ),
+    msVols( std::make_shared<std::vector<Math::Vec>>( inNPath, inInitVol ) ),
     mExponent( inExponent ),
     mVolVol( inVolVol ),
     mCorrSV( inCorrSV ),
@@ -49,14 +48,13 @@ Math::Vec SABR<StdBrownVecGenerator_>::operator()(
     if ( mTmpIndTerm != inIndTerm )
     {
         msStdBrownGen->initialize();
-        mTmpIndTerm = inIndTerm;
-        mVolVolDt   = mVolVol * mTerms.difTime( inIndTerm );
+        mTmpIndTerm   = inIndTerm;
+        mVolVolSqrtDt = mVolVol * mTerms.sqrtDifTime( inIndTerm );
     }
     Math::Vec lBrownVol =
         mCorrSV * inStdBrownForFR + mCorrSVInv * ( *msStdBrownGen )();
-    ( *msVols )[inIndPath][inIndTerm] =
-        ( *msVols )[inIndPath][inIndTerm - 1] * ( 1.0 + mVolVolDt * lBrownVol );
-    return ( *msVols )[inIndPath][inIndTerm] *
+    ( *msVols )[inIndPath] *= ( 1.0 + mVolVolSqrtDt * lBrownVol );
+    return ( *msVols )[inIndPath] *
            pow( inForwardRates[inIndPath][inIndTerm - 1], mExponent );
 }
 

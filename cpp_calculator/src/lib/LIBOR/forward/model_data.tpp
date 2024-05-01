@@ -254,8 +254,9 @@ double TerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
 {
     double lResult           = 0.0;
     std::size_t lIndTenorPay = inPayoff.getIndexTenorPay();
-    std::size_t lIndTermsPay = mTenor[lIndTenorPay];
-    bool lIsTerminal         = ( lIndTenorPay == mTenor.size() );
+    std::size_t lIndTermsPay = std::min(
+        { mTenor[lIndTenorPay], ( *msDataForwardRates )[0].size() - 1 } );
+    bool lIsTerminal = ( lIndTenorPay == mTenor.size() );
     if ( lIsTerminal )
     {
         for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
@@ -300,11 +301,12 @@ double TerminalMeas::calcExpectation( PayoffObject_ inPayoff ) const
         for ( std::size_t i = 0; i < lValuesPayoff.size(); ++i )
         {
             if ( lValuesPayoff[i] == 0.0 ) { continue; }
-            Math::Vec lMMA =
-                mTenor.getTauVec() *
-                    ( *msDataForwardRates )[iPath]
-                                           [mTenor[lIndTenorFirstPay + i]] +
-                1.0;
+            std::size_t lIndexTerm =
+                std::min( { mTenor[lIndTenorFirstPay + i],
+                            ( *msDataForwardRates )[iPath].size() - 1 } );
+            Math::Vec lMMA = mTenor.getTauVec() *
+                                 ( *msDataForwardRates )[iPath][lIndexTerm] +
+                             1.0;
             for ( std::size_t iZCB = lIndTenorFirstPay + i;
                   iZCB < mTenor.size(); ++iZCB )
             {
@@ -323,7 +325,8 @@ double SpotMeas::calcExpectation( PayoffObject_ inPayoff ) const
 {
     double lResult           = 0.0;
     std::size_t lIndTenorPay = inPayoff.getIndexTenorPay();
-    std::size_t lIndTermsPay = mTenor[lIndTenorPay];
+    std::size_t lIndTermsPay = std::min(
+        { mTenor[lIndTenorPay], ( *msDataForwardRates )[0].size() - 1 } );
 
     for ( std::size_t iPath = 0; iPath < mNPath; ++iPath )
     {
@@ -360,12 +363,13 @@ double SpotMeas::calcExpectation( PayoffObject_ inPayoff ) const
         for ( std::size_t i = 0; i < lValuesPayoff.size(); ++i )
         {
             if ( lValuesPayoff[i] == 0.0 ) { continue; }
-            double lFactor = 1.0;
-            Math::Vec lRate =
-                mTenor.getTauVec() *
-                    ( *msDataForwardRates )[iPath]
-                                           [mTenor[lIndTenorFirstPay + i]] +
-                1.0;
+            std::size_t lIndexTerm =
+                std::min( { mTenor[lIndTenorFirstPay + i],
+                            ( *msDataForwardRates )[iPath].size() - 1 } );
+            double lFactor  = 1.0;
+            Math::Vec lRate = mTenor.getTauVec() *
+                                  ( *msDataForwardRates )[iPath][lIndexTerm] +
+                              1.0;
             for ( std::size_t iRate = 0; iRate < lIndTenorFirstPay + i;
                   ++iRate )
             {

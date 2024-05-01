@@ -40,7 +40,7 @@ double testImpVolSABR( std::size_t inNPath, double inMaturity,
     {
         lImpVolByCaplet[i]   = lFR.calcBlackImpVolByCaplet( inInitFR[i], i );
         lImpVolByFloorlet[i] = lFR.calcBlackImpVolByFloorlet( inInitFR[i], i );
-        for ( double strike = 0.095; strike < 0.110; strike += 0.001 )
+        for ( double strike = 0.045; strike < 0.055; strike += 0.001 )
         {
             std::cout << lFR.calcBlackImpVolByCaplet( strike, i ) << std::endl;
         }
@@ -55,15 +55,15 @@ double testImpVolSABR( std::size_t inNPath, double inMaturity,
 
 TEST( ShortRateConstantTest, PriceZCB )
 {
-    std::vector<std::size_t> lIndTenor{ 0, 10, 20, 30, 40 };
-    Math::Vec lInitFR{ 0.1, 0.1, 0.1, 0.1 };
-    Math::Vec lInitVol{ 0.05, 0.05, 0.05, 0.05 };
-    Math::Mat lCorr = Math::unitMat( 4, 1.0 );
-    Math::Vec lCorrSV{ -0.1, 0.1, 0.2, 0.1 };
+    std::vector<std::size_t> lIndTenor{ 0, 200, 400 };
+    Math::Vec lInitFR{ 0.0, 0.05 };
+    Math::Vec lInitVol{ 0.05, 0.05 };
+    Math::Mat lCorr = Math::unitMat( 2, 1.0 );
+    Math::Vec lCorrSV{ 0.0, 0.1 };
     double lExponent   = 0.8;
-    double lVolVol     = 0.8;
+    double lVolVol     = 0.15;
     std::size_t lNPath = 400000;
-    double lMaturity   = 1.0;
+    double lMaturity   = 2.0;
 
     EXPECT_NEAR( 0.0,
                  testImpVolSABR<LIBOR::Forward::StepCalc::NormalTerminalMeas>(

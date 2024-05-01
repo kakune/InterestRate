@@ -38,12 +38,12 @@ public:
 template <Process::RandomVec::C_StdBrown StdBrownVecGenerator_> class SABR
 {
 private:
-    const std::shared_ptr<std::vector<std::vector<Math::Vec>>> msVols;
+    const std::shared_ptr<std::vector<Math::Vec>> msVols;
     const double mExponent;
     const double mVolVol;
     const Math::Vec mCorrSV, mCorrSVInv;
     mutable std::size_t mTmpIndTerm;
-    mutable double mVolVolDt;
+    mutable double mVolVolSqrtDt;
     const Process::MarketData::Terms mTerms;
     const std::shared_ptr<StdBrownVecGenerator_> msStdBrownGen;
 
