@@ -39,9 +39,30 @@ public:
     OneTerm& setCorr( double inCorr );
     OneTerm& setVolVol( double inVolVol );
     OneTerm& setStrike( double inStrike );
+    const OneTerm& printAllParam() const;
     double approxBlackImpVolByHagan() const;
     double approxNormalImpVolByHagan() const;
 };
+
+OneTerm calibrateAllParam(
+    double inTime, const std::vector<double>& inInitPrices,
+    const std::vector<double>& inStrikes, const std::vector<double>& inImpVols,
+    std::vector<double> inInitialParam = { -1.0, 0.3, 0.0, 0.05 } );
+OneTerm calibrateAllParam( double inTime, double inInitPrice,
+                           const std::vector<double>& inStrikes,
+                           const std::vector<double>& inImpVols,
+                           std::vector<double> inInitialParam = { -1.0, 0.3,
+                                                                  0.0, 0.05 } );
+
+OneTerm calibrateParamWithFixedExponent(
+    double inTime, const std::vector<double>& inInitPrices,
+    const std::vector<double>& inStrikes, const std::vector<double>& inImpVols,
+    double inExponent,
+    std::vector<double> inInitialParam = { -1.0, 0.0, 0.05 } );
+OneTerm calibrateParamWithFixedExponent(
+    double inTime, double inInitPrice, const std::vector<double>& inStrikes,
+    const std::vector<double>& inImpVols, double inExponent,
+    std::vector<double> inInitialParam = { -1.0, 0.0, 0.05 } );
 
 }  // namespace Analytical::SABR
 
