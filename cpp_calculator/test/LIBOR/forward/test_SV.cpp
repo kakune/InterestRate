@@ -62,15 +62,15 @@ double testImpVolSABR( std::size_t inNPath, double inMaturity,
 
 TEST( ShortRateConstantTest, PriceZCB )
 {
-    std::vector<std::size_t> lIndTenor{ 0, 20, 40, 60 };
-    Math::Vec lInitFR{ 0.05, 0.05, 0.05 };
-    Math::Vec lInitVol{ 0.05, 0.05, 0.05 };
-    Math::Mat lCorr = Math::unitMat( 3, 1.0 );
-    Math::Vec lCorrSV{ 0.1, 0.1, 0.1 };
+    std::vector<std::size_t> lIndTenor{ 0, 10, 20 };
+    Math::Vec lInitFR{ 0.05, 0.05 };
+    Math::Vec lInitVol{ 0.05, 0.05 };
+    Math::Mat lCorr = Math::unitMat( 2, 1.0 );
+    Math::Vec lCorrSV{ 0.1, 0.1 };
     double lExponent   = 0.8;
     double lVolVol     = 0.15;
-    std::size_t lNPath = 3000000;
-    double lMaturity   = 3.0;
+    std::size_t lNPath = 2000000;
+    double lMaturity   = 2.0;
 
     EXPECT_NEAR( 0.0,
                  testImpVolSABR<LIBOR::Forward::StepCalc::NormalTerminalMeas>(

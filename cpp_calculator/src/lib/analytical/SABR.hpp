@@ -42,6 +42,7 @@ public:
     const OneTerm& printAllParam() const;
     double approxBlackImpVolByHagan() const;
     double approxNormalImpVolByHagan() const;
+    double approxBlackImpVolByAntonov() const;
 };
 
 OneTerm calibrateAllParam(

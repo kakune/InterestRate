@@ -16,6 +16,9 @@ namespace Analytical
 namespace Black76
 {
 
+double funcBlackPositive( double inStrike, double inPrice, double inVol );
+double funcBlackNegative( double inStrike, double inPrice, double inVol );
+
 class Model
 {
 private:

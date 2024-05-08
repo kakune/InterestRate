@@ -7,9 +7,14 @@
 
 #include "analytical/SABR.hpp"
 
+#include <cmath>
 #include <iostream>
 #include <stdexcept>
 
+#include "analytical/Black76.hpp"
+#include "math/findroot_1d.hpp"
+#include "math/integral_1d.hpp"
+#include "math/interpolate_1d.hpp"
 #include "math/matrix.hpp"
 #include "math/optimize.hpp"
 
@@ -137,6 +142,187 @@ double OneTerm::approxNormalImpVolByHagan() const
                        lSquareLogPriceStrike ) /
            ( lXi * lInvInitPriceStrikePow *
              ( 1.0 + ( gInv24 + gInv1920 * lDenomFactor ) * lDenomFactor ) );
+}
+
+static constexpr double gSqrt8      = 2.82842712475;
+static constexpr double gDoublePI   = 2.0 * M_PI;
+static constexpr double gMaxKernelS = 20.0;
+static double kernelG( double inTau, double inS )
+{
+    if ( inS > gMaxKernelS ) { return 0.0; }
+    const double lFactor = gSqrt8 * exp( -0.125 * inTau ) /
+                           ( inTau * std::sqrt( gDoublePI * inTau ) );
+    const double lCoshS        = cosh( inS );
+    const double lInvDoubleTau = 0.5 / inTau;
+    auto lIntegrand            = [lCoshS, lInvDoubleTau]( double inU ) -> double
+    {
+        if ( inU > gMaxKernelS ) { return 0.0; }
+        return inU * exp( -inU * inU * lInvDoubleTau ) *
+               std::sqrt( std::max( { 0.0, cosh( inU ) - lCoshS } ) );
+    };
+    return lFactor * Math::Integral::UpperInfiniteInterval::DEFormulaForExp(
+                         lIntegrand, inS, 0.001 );
+}
+
+static auto makeKernelG( double inTau, double inMin, double inEpsRel = 1e-8,
+                         std::size_t inNDeg = 3 )
+{
+    double lDx = std::sqrt( std::abs( inTau ) ) / 200.0;
+    std::vector<double> lXs;
+    for ( double lX = inMin - 0.001; lX < gMaxKernelS; lX += lDx )
+    {
+        lXs.emplace_back( lX );
+    }
+    lXs.emplace_back( gMaxKernelS + 0.001 );
+    std::vector<double> lYs( lXs.size(), 0.0 );
+
+    double lMaxX = gMaxKernelS;
+    for ( std::size_t iX = 0; iX < lXs.size() - 1; ++iX )
+    {
+        lYs[iX] = kernelG( inTau, lXs[iX] );
+        if ( lYs[iX] < lYs[0] * inEpsRel )
+        {
+            lMaxX = lXs[iX + 1];
+            break;
+        }
+    }
+    Math::Interpolate1D::NewtonSpline lSpline(
+        std::make_shared<std::vector<double>>( lXs ),
+        std::make_shared<std::vector<double>>( lYs ), inNDeg );
+
+    auto lResult = [lSpline, lMaxX]( double inS )
+    {
+        if ( inS >= lMaxX ) { return 0.0; }
+        return lSpline( inS );
+    };
+    return lResult;
+}
+
+double OneTerm::approxBlackImpVolByAntonov() const
+{
+    if ( mStrike == mInitPrice )
+    {
+        OneTerm lTmpModelPlus  = *this;
+        OneTerm lTmpModelMinus = *this;
+        double lDStrike        = mStrike * 1e-2;
+        lTmpModelMinus.setStrike( mStrike - lDStrike );
+        lTmpModelPlus.setStrike( mStrike + lDStrike );
+        return 0.5 * ( lTmpModelMinus.approxBlackImpVolByAntonov() +
+                       lTmpModelPlus.approxBlackImpVolByAntonov() );
+    }
+    const double lOneMinusExponent    = 1.0 - mExponent;
+    const double lInvOneMinusExponent = 1.0 / lOneMinusExponent;
+    const double lPowInitPrice = std::pow( mInitPrice, lOneMinusExponent );
+    const double lPowStrike    = std::pow( mStrike, lOneMinusExponent );
+    const double lSquareTildeVolVol =
+        ( mVolVol - 1.5 * mCorr *
+                        ( mVolVol * mCorr +
+                          mInitVol * lOneMinusExponent / lPowInitPrice ) );
+    if ( lSquareTildeVolVol <= 0.0 )
+    {
+        throw std::invalid_argument(
+            std::string(
+                "Analytical::SABR::OneTerm::approxBlackImpVolByAntonov()\n" ) +
+            std::string( "Correlation is too large." ) );
+    }
+    const double lTildeVolVol = std::sqrt( lSquareTildeVolVol );
+    const double lQ           = lPowStrike * lInvOneMinusExponent;
+    const double lQZero       = lPowInitPrice * lInvOneMinusExponent;
+    const double lEta         = std::abs( 0.5 * lInvOneMinusExponent );
+
+    const double lDeltaQ       = lQ - lQZero;
+    const double lVolVolDeltaQ = mVolVol * lDeltaQ;
+    const double lMinInitVol =
+        std::sqrt( lVolVolDeltaQ * ( lVolVolDeltaQ + 2.0 * mCorr * mInitVol ) +
+                   mInitVol * mInitVol );
+    const double lPhi =
+        std::pow( ( lMinInitVol + mCorr * mInitVol + mVolVol * lDeltaQ ) /
+                      ( ( 1.0 + mCorr ) * mInitVol ),
+                  lTildeVolVol / mVolVol );
+    const double lTildeAlphaZero =
+        2.0 * lPhi * lDeltaQ * lTildeVolVol / ( lPhi * lPhi - 1.0 );
+
+    const double lSqrtCorr = std::sqrt( 1.0 - mCorr * mCorr );
+    const double lUZero =
+        ( lDeltaQ * mVolVol * mCorr + mInitVol - lMinInitVol ) /
+        ( lDeltaQ * mVolVol * lSqrtCorr );
+    const double lL =
+        lMinInitVol * lOneMinusExponent / ( lPowStrike * mVolVol * lSqrtCorr );
+    const double lInvSqrtL = 1.0 / std::sqrt( std::abs( 1.0 - lL * lL ) );
+    const double lI =
+        ( lL < 1 )
+            ? 2.0 * lInvSqrtL *
+                  ( atan( ( lUZero + lL ) * lInvSqrtL ) -
+                    atan( lL * lInvSqrtL ) )
+            : lInvSqrtL * log( ( ( 1.0 + lUZero * lL ) * lInvSqrtL + lUZero ) /
+                               ( ( 1.0 + lUZero * lL ) * lInvSqrtL - lUZero ) );
+    const double lPhiZero =
+        acos( -( lDeltaQ * mVolVol + mInitVol * mCorr ) / lMinInitVol );
+    const double lMinB =
+        -0.5 * ( ( mExponent * mCorr ) / ( lOneMinusExponent * lSqrtCorr ) ) *
+        ( M_PI - lPhiZero - acos( mCorr ) - lI );
+
+    const double lTildeAlphaOne =
+        ( 0.5 * lTildeAlphaZero * lTildeVolVol * lTildeVolVol /
+          ( log( lPhi ) * ( lPhi * lPhi - 1.0 ) / ( lPhi * lPhi + 1.0 ) ) ) *
+        ( log( mInitVol * lMinInitVol ) -
+          log( lTildeAlphaZero *
+               std::sqrt( lDeltaQ * lDeltaQ * lTildeVolVol * lTildeVolVol +
+                          lTildeAlphaZero * lTildeAlphaZero ) ) -
+          2.0 * lMinB );
+
+    const double lTildeAlpha    = lTildeAlphaZero + mTime * lTildeAlphaOne;
+    const double lInvTildeAlpha = 1.0 / lTildeAlpha;
+    const double lSMinus =
+        asinh( lTildeVolVol * std::abs( lDeltaQ ) * lInvTildeAlpha );
+    const double lSPlus =
+        asinh( lTildeVolVol * std::abs( lQ + lQZero ) * lInvTildeAlpha );
+    const double lSquareSinhSMinus = sinh( lSMinus ) * sinh( lSMinus );
+    const double lSquareSinhSPlus  = sinh( lSPlus ) * sinh( lSPlus );
+
+    const auto lKernelG =
+        makeKernelG( mTime * lTildeVolVol * lTildeVolVol, lSMinus );
+    // std::cout << "Kernel created." << std::endl;
+    auto lIntegrand1 = [&]( double inS ) -> double
+    {
+        const double lG = lKernelG( inS );
+        if ( lG == 0.0 ) { return 0.0; }
+        const double lSinh       = sinh( inS );
+        const double lSquareSinh = lSinh * lSinh;
+        const double lKappa =
+            2.0 * atan( std::sqrt( std::max(
+                      { 0.0, ( lSquareSinh - lSquareSinhSMinus ) /
+                                 ( lSquareSinhSPlus - lSquareSinh ) } ) ) );
+        return lG * sin( lEta * lKappa ) / lSinh;
+    };
+
+    const double lSinEtaPi = sin( lEta * M_PI );
+    auto lIntegrand2       = [&]( double inS ) -> double
+    {
+        const double lG = lKernelG( inS );
+        if ( lG == 0.0 ) { return 0.0; }
+        const double lSinh       = sinh( inS );
+        const double lSquareSinh = lSinh * lSinh;
+        const double lPsi =
+            2.0 * atanh( std::sqrt( ( lSquareSinh - lSquareSinhSPlus ) /
+                                    ( lSquareSinh - lSquareSinhSMinus ) ) );
+        return lSinEtaPi * std::exp( -lEta * lPsi ) * lG / lSinh;
+    };
+
+    const double lPriceBlack =
+        std::max( { 0.0, mInitPrice - mStrike } ) +
+        M_2_PI * std::sqrt( mInitPrice * mStrike ) *
+            ( Math::Integral::FiniteInterval::DEFormula( lIntegrand1, lSMinus,
+                                                         lSPlus, 0.001 ) +
+              Math::Integral::UpperInfiniteInterval::DEFormula(
+                  lIntegrand2, lSPlus, 0.001 ) );
+    auto lRootGrand = [this, lPriceBlack]( double inVol )
+    {
+        return Black76::funcBlackPositive( mStrike, mInitPrice,
+                                           inVol * std::sqrt( mTime ) ) -
+               lPriceBlack;
+    };
+    return Math::FindRoot1D::Brent( lRootGrand, 1e-10, 100 );
 }
 
 static std::vector<OneTerm> prepareModels(

@@ -19,7 +19,7 @@ namespace Analytical
 namespace Black76
 {
 
-static double funcBlackPositive( double inStrike, double inPrice, double inVol )
+double funcBlackPositive( double inStrike, double inPrice, double inVol )
 {
     if ( inVol == 0.0 ) { return std::max( { inPrice - inStrike, 0.0 } ); }
     double lDPlus  = std::log( inPrice / inStrike ) / inVol + 0.5 * inVol;
@@ -28,7 +28,7 @@ static double funcBlackPositive( double inStrike, double inPrice, double inVol )
              inStrike * Math::SpecialFunctions::normalCDF( lDMinus ) );
 }
 
-static double funcBlackNegative( double inStrike, double inPrice, double inVol )
+double funcBlackNegative( double inStrike, double inPrice, double inVol )
 {
     if ( inVol == 0.0 ) { return std::max( { inStrike - inPrice, 0.0 } ); }
     double lDPlus  = std::log( inPrice / inStrike ) / inVol + 0.5 * inVol;
