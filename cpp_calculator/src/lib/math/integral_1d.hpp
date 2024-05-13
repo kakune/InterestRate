@@ -7,6 +7,9 @@
 
 #ifndef MATH_INTEGRAL_1D_HPP
 #define MATH_INTEGRAL_1D_HPP
+
+#define MATH_INTEGRAL_ADAPTIVE_DEFAULT_MAX_SIZE_INTERVAL 1000
+#define MATH_INTEGRAL_ADAPTIVE_DEFAULT_MAX_EVAL_FUNC 10000
 #include <cstddef>
 
 namespace Math::Integral
@@ -22,7 +25,11 @@ template <typename TypeY_ = double>
 TypeY_ DEFormula( auto inFunc, double inMin, double inMax,
                   double inTolRel = 1e-6 );
 
-template <typename TypeY_ = double>
+template <
+    typename TypeY_ = double,
+    std::size_t MaxNInterval_ =
+        MATH_INTEGRAL_ADAPTIVE_DEFAULT_MAX_SIZE_INTERVAL,
+    std::size_t MaxNFuncEval_ = MATH_INTEGRAL_ADAPTIVE_DEFAULT_MAX_EVAL_FUNC>
 TypeY_ doublyAdaptiveNewtonCotes( auto inFunc, double inMin, double inMax,
                                   double inTolAbs = 0.0,
                                   double inTolRel = 1e-6 );
@@ -35,7 +42,11 @@ namespace InfiniteInterval
 template <typename TypeY_ = double>
 TypeY_ DEFormula( auto inFunc, double inTolRel = 1e-6 );
 
-template <typename TypeY_ = double>
+template <
+    typename TypeY_ = double,
+    std::size_t MaxNInterval_ =
+        MATH_INTEGRAL_ADAPTIVE_DEFAULT_MAX_SIZE_INTERVAL,
+    std::size_t MaxNFuncEval_ = MATH_INTEGRAL_ADAPTIVE_DEFAULT_MAX_EVAL_FUNC>
 TypeY_ doublyAdaptiveNewtonCotes( auto inFunc, double inTolAbs = 0.0,
                                   double inTolRel = 1e-6 );
 
@@ -55,10 +66,15 @@ TypeY_ DEFormulaForGaussian( auto inFunc, double inMin,
                              double inTolRel = 1e-6 );
 
 template <typename TypeY_ = double>
-TypeY_ DEFormulaForVibration( auto inFunc, double inMin, double inTolRel = 1e-6,
-                              double inFactorK = 6.0 );
+TypeY_ DEFormulaForOscillation( auto inFunc, double inMin,
+                                double inTolRel  = 1e-6,
+                                double inFactorK = 6.0 );
 
-template <typename TypeY_ = double>
+template <
+    typename TypeY_ = double,
+    std::size_t MaxNInterval_ =
+        MATH_INTEGRAL_ADAPTIVE_DEFAULT_MAX_SIZE_INTERVAL,
+    std::size_t MaxNFuncEval_ = MATH_INTEGRAL_ADAPTIVE_DEFAULT_MAX_EVAL_FUNC>
 TypeY_ doublyAdaptiveNewtonCotes( auto inFunc, double inMin,
                                   double inTolAbs = 0.0,
                                   double inTolRel = 1e-6 );

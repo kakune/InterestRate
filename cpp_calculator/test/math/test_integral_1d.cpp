@@ -185,7 +185,7 @@ TEST( Integral1DTest, DoublyAdaptive )
     EXPECT_NEAR( lRes18, dblAdaptFinite( batteryTest18, 0.0, M_PI ), gTolAbs );
     EXPECT_NEAR( lRes19, dblAdaptFinite( batteryTest19, 0.0, 1.0 ), gTolAbs );
     EXPECT_NEAR( lRes20, dblAdaptFinite( batteryTest20, -1.0, 1.0 ), gTolAbs );
-    EXPECT_NEAR( lRes21, dblAdaptFinite( batteryTest21, 0.0, 1.0 ), 1e-3 );
+    EXPECT_NEAR( lRes21, dblAdaptFinite( batteryTest21, 0.0, 1.0 ), gTolAbs );
     EXPECT_NEAR( lRes22, dblAdaptFinite( batteryTest22, 0.0, 1.0 ), gTolAbs );
     EXPECT_NEAR( lRes23, dblAdaptFinite( batteryTest23, 0.0, 1.0 ), gTolAbs );
 }

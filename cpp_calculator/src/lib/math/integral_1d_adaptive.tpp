@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cmath>
 #include <queue>
+#include <stdexcept>
 #include <tuple>
 #include <vector>
 #ifdef NINCLUDE_TPP
@@ -18,35 +19,209 @@
 
 namespace Math::Integral
 {
+
 namespace FiniteInterval
 {
 
-#define MATH_INTEGRAL_ADAPTIVE_DEFAULT_MAX_SIZE_INTERVAL 1000
-#define MATH_INTEGRAL_ADAPTIVE_DEFAULT_MAX_EVAL_FUNC 10000
-constexpr double gCoeffC    = 32.0;
-constexpr double gCoeffD    = 32.0;
-constexpr double gFactorEps = 50.0 * std::numeric_limits<double>::epsilon();
+template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
+          std::size_t MaxNFuncEval_>
+class DoublyAdaptiveNewtonCotes;
+
+}  // namespace FiniteInterval
+
+namespace FiniteInterval
+{
+template <typename TypeY_, std::size_t MaxNInterval_, std::size_t MaxNFuncEval_>
+TypeY_ doublyAdaptiveNewtonCotes( auto inFunc, double inMin, double inMax,
+                                  double inTolAbs, double inTolRel )
+{
+    DoublyAdaptiveNewtonCotes<decltype( inFunc ), TypeY_, MaxNInterval_,
+                              MaxNFuncEval_>
+        lIntegralObject( inFunc, inMin, inMax );
+    return lIntegralObject( inTolAbs, inTolRel );
+}
+}  // namespace FiniteInterval
+
+namespace InfiniteInterval
+{
+template <typename TypeY_, std::size_t MaxNInterval_, std::size_t MaxNFuncEval_>
+TypeY_ doublyAdaptiveNewtonCotes( auto inFunc, double inTolAbs,
+                                  double inTolRel )
+{
+    auto lTransfFunc = [inFunc]( double inX ) -> TypeY_
+    {
+        const double lInvX = 1.0 / inX;
+        const double lArg  = ( 1.0 - inX ) * lInvX;
+        return ( inFunc( lArg ) + inFunc( -lArg ) ) * lInvX * lInvX;
+    };
+    return FiniteInterval::doublyAdaptiveNewtonCotes<TypeY_, MaxNInterval_,
+                                                     MaxNFuncEval_>(
+        lTransfFunc, std::numeric_limits<double>::epsilon(), 1.0, inTolAbs,
+        inTolRel );
+}
+}  // namespace InfiniteInterval
+
+namespace UpperInfiniteInterval
+{
+template <typename TypeY_, std::size_t MaxNInterval_, std::size_t MaxNFuncEval_>
+TypeY_ doublyAdaptiveNewtonCotes( auto inFunc, double inMin, double inTolAbs,
+                                  double inTolRel )
+{
+    auto lTransfFunc = [inFunc, inMin]( double inX ) -> TypeY_
+    {
+        const double lInvX = 1.0 / inX;
+        return inFunc( inMin + ( 1.0 - inX ) * lInvX ) * lInvX * lInvX;
+    };
+    return FiniteInterval::doublyAdaptiveNewtonCotes<TypeY_, MaxNInterval_,
+                                                     MaxNFuncEval_>(
+        lTransfFunc, std::numeric_limits<double>::epsilon(), 1.0, inTolAbs,
+        inTolRel );
+}
+}  // namespace UpperInfiniteInterval
+
+// Helpers for DoublyAdaptiveNewtonCotes
+namespace FiniteInterval
+{
+
+template <typename TypeY_, std::size_t MaxNInterval_>
+class DataForDoublyAdaptive;
 
 template <std::size_t NPoints_, typename TypeY_>
 std::tuple<TypeY_, double, double, double> evalNewtonCotesIntegralAndErr(
     double inLeft, double inRight, const std::vector<TypeY_>& inVals );
 
-template <std::size_t MaxNInterval_ =
-              MATH_INTEGRAL_ADAPTIVE_DEFAULT_MAX_SIZE_INTERVAL>
-class Errors;
+}  // namespace FiniteInterval
 
-template <typename Func_, typename TypeY_ = double,
-          std::size_t MaxNInterval_ =
-              MATH_INTEGRAL_ADAPTIVE_DEFAULT_MAX_SIZE_INTERVAL,
-          std::size_t MaxNFuncEval_ =
-              MATH_INTEGRAL_ADAPTIVE_DEFAULT_MAX_EVAL_FUNC>
-class DoublyAdaptiveNewtonCotes;
+static constexpr double gFactorEps =
+    50.0 * std::numeric_limits<double>::epsilon();
 
-constexpr std::array<double, 5> gWeightForCotes5 = {
+// declare contents of classes
+namespace FiniteInterval
+{
+
+template <typename T> struct CompareSecondElementOfPair
+{
+    bool operator()( const T& inLeft, const T& inRight )
+    {
+        return inLeft.second < inRight.second;
+    }
+};
+
+template <typename TypeY_, std::size_t MaxNInterval_>
+class DataForDoublyAdaptive
+{
+private:
+    std::size_t mSizeInterval;
+
+    std::vector<double> mLeftPos;
+    std::vector<double> mRightPos;
+    std::vector<TypeY_> mIntegral;
+    std::vector<double> mAbsIntegral;
+    std::priority_queue<
+        std::pair<std::size_t, double>,
+        std::vector<std::pair<std::size_t, double>>,
+        CompareSecondElementOfPair<std::pair<std::size_t, double>>>
+        mQueErrors;
+    std::vector<std::vector<TypeY_>> mVals;
+
+    double mTotalError;
+    TypeY_ mTotalIntegral;
+    double mTotalAbsIntegral;
+
+    std::size_t mTmpIndMaxErr;
+
+    template <std::size_t NVal_>
+    void addInterval( double inLeftPos, double inRightPos, double inInt,
+                      double inAbsInt, double inErr,
+                      const std::vector<TypeY_>& inVals );
+
+public:
+    DataForDoublyAdaptive();
+
+    template <std::size_t NVal_>
+    void initInterval( double inLeftPos, double inRightPos, double inInt,
+                       double inAbsInt, double inErr,
+                       const std::vector<TypeY_>& inVals );
+
+    template <std::size_t NEachVals_>
+    std::pair<std::vector<TypeY_>, std::vector<TypeY_>>
+    getSplitedValsMaxErrorInterval() const;
+
+    template <std::size_t NAddVals_>
+    void addValsMaxErrorInterval( const std::vector<TypeY_>& inAddVals );
+
+    void updateMaxErrorInterval( double inInt, double inAbsInt, double inErr );
+
+    template <std::size_t NEachVals_>
+    void splitMaxErrorInterval( double inInt, double inAbsInt, double inErr,
+                                const std::vector<TypeY_>& inVals,
+                                double inAddInt, double inAddAbsInt,
+                                double inAddErr,
+                                const std::vector<TypeY_>& inAddVals );
+
+    double getNoise() const { return gFactorEps * mTotalAbsIntegral; }
+    double getTotalError() const { return mTotalError; }
+    double getTotalIntegral() const { return mTotalIntegral; }
+    double getTotalAbsIntegral() const { return mTotalAbsIntegral; }
+    const std::size_t& getSizeInterval() const { return mSizeInterval; }
+    const std::size_t& getIndexMaxError() const { return mTmpIndMaxErr; }
+    const std::vector<double>& getLeftPos() const { return mLeftPos; }
+    const std::vector<double>& getRightPos() const { return mRightPos; }
+    const std::vector<std::vector<TypeY_>>& getVals() const { return mVals; }
+    const std::pair<std::size_t, double>& getMaxError()
+    {
+        const auto& lResult = mQueErrors.top();
+        mTmpIndMaxErr       = lResult.first;
+        return lResult;
+    }
+    const std::vector<double>& getVals( std::size_t inIndex ) const
+    {
+        return mVals[inIndex];
+    }
+};
+
+template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
+          std::size_t MaxNFuncEval_>
+class DoublyAdaptiveNewtonCotes
+{
+private:
+    Func_ mFunc;
+    std::size_t mNEvalFunc;
+
+    std::vector<short> mFlags;
+    DataForDoublyAdaptive<TypeY_, MaxNInterval_> mData;
+
+    template <std::size_t NX_>
+    std::vector<TypeY_> applyFunc( const std::vector<double>& inXs );
+
+    template <std::size_t NEachVals_>
+    std::pair<std::tuple<TypeY_, double, double, double>,
+              std::tuple<TypeY_, double, double, double>>
+    calcBisectCotesMaxErrorInterval( const std::vector<TypeY_>& inLeftVals,
+                                     const std::vector<TypeY_>& inRightVals );
+
+    template <std::size_t NPointForCotes_>
+    std::tuple<TypeY_, double, double, double> calcCotesMaxErrorInterval();
+
+    void stepIntegral();
+    void initialize( double inMin, double inMax );
+    bool isContinue( double inTolAbs, double inTolRel ) const;
+
+public:
+    DoublyAdaptiveNewtonCotes( Func_ inFunc, double inMin, double inMax );
+    double operator()( double inTolAbs, double inTolRel );
+};
+}  // namespace FiniteInterval
+
+// define constants
+static constexpr double gCoeffC = 32.0;
+static constexpr double gCoeffD = 32.0;
+
+static constexpr std::array<double, 5> gWeightForCotes5 = {
     1.5555555555555556e-01, 7.1111111111111114e-01, 2.6666666666666666e-01,
     7.1111111111111114e-01, 1.5555555555555556e-01,
 };
-constexpr std::array<double, 20> gNullWeightForCotes5 = {
+static constexpr std::array<double, 20> gNullWeightForCotes5 = {
     1.2710311885185779e-01,  -5.0841247540743117e-01, 7.6261871311114682e-01,
     -5.0841247540743117e-01, 1.2710311885185779e-01,  -3.3628324334270127e-01,
     6.7256648668540253e-01,  0.0000000000000000e+00,  -6.7256648668540253e-01,
@@ -55,12 +230,12 @@ constexpr std::array<double, 20> gNullWeightForCotes5 = {
     -6.7256648668540253e-01, -3.3628324334270127e-01, 0.0000000000000000e+00,
     3.3628324334270127e-01,  6.7256648668540253e-01,
 };
-constexpr std::array<double, 9> gWeightForCotes9 = {
+static constexpr std::array<double, 9> gWeightForCotes9 = {
     6.9770723104056437e-02,  4.1537918871252205e-01,  -6.5467372134038804e-02,
     7.4045855379188708e-01,  -3.2028218694885363e-01, 7.4045855379188708e-01,
     -6.5467372134038804e-02, 4.1537918871252205e-01,  6.9770723104056437e-02,
 };
-constexpr std::array<double, 72> gNullWeightForCotes9 = {
+static constexpr std::array<double, 72> gNullWeightForCotes9 = {
     1.1018547692345270e-02,  -8.8148381538762158e-02, 3.0851933538566756e-01,
     -6.1703867077133512e-01, 7.7129833846416884e-01,  -6.1703867077133512e-01,
     3.0851933538566756e-01,  -8.8148381538762158e-02, 1.1018547692345270e-02,
@@ -86,7 +261,7 @@ constexpr std::array<double, 72> gNullWeightForCotes9 = {
     -1.6137564981062205e-01, 0.0000000000000000e+00,  1.6137564981062205e-01,
     3.2275129962124410e-01,  4.8412694943186613e-01,  6.4550259924248821e-01,
 };
-constexpr std::array<double, 17> gWeightForCotes17 = {
+static constexpr std::array<double, 17> gWeightForCotes17 = {
     3.0797894233299011e-02,  2.6128238288028033e-01,  -3.6795289329867603e-01,
     1.7037379778090087e+00,  -3.9501480717783930e+00, 8.5525299934402952e+00,
     -1.3934614237197881e+01, 1.9180342211078734e+01,  -2.0951950514333333e+01,
@@ -94,7 +269,7 @@ constexpr std::array<double, 17> gWeightForCotes17 = {
     -3.9501480717783930e+00, 1.7037379778090087e+00,  -3.6795289329867603e-01,
     2.6128238288028033e-01,  3.0797894233299011e-02,
 };
-constexpr std::array<double, 255> gNullWeightForCotes17 = {
+static constexpr std::array<double, 255> gNullWeightForCotes17 = {
     1.7047365484036969e-03,  -2.7275784774459150e-02, 2.0456838580844364e-01,
     -9.5465246710607032e-01, 3.1026205180947288e+00,  -7.4462892434273487e+00,
     1.3651530279616807e+01,  -1.9502186113738293e+01, 2.1939959377955578e+01,
@@ -181,7 +356,7 @@ constexpr std::array<double, 255> gNullWeightForCotes17 = {
     -7.1204579988967787e+00, -3.7975775994116150e+00, 4.7469719992645187e-01,
     5.6963663991174229e+00,  1.1867429998161299e+01,  1.8987887997058074e+01,
 };
-constexpr std::array<double, 33> gWeightForCotes33 = {
+static constexpr std::array<double, 33> gWeightForCotes33 = {
     1.4695535312430933e-02,  1.4401180552105430e-01,  -3.0306061552847280e-01,
     1.5082956203676328e+00,  -4.4611013899969842e+00, 1.1036738075229430e+01,
     -2.0246745867038545e+01, 2.7624501654321350e+01,  -2.4354757093571234e+01,
@@ -194,7 +369,7 @@ constexpr std::array<double, 33> gWeightForCotes33 = {
     1.1036738075229430e+01,  -4.4611013899969842e+00, 1.5082956203676328e+00,
     -3.0306061552847280e-01, 1.4401180552105430e-01,  1.4695535312430933e-02,
 };
-constexpr std::array<double, 495> gNullWeightForCotes33 = {
+static constexpr std::array<double, 495> gNullWeightForCotes33 = {
     5.8715078831162645e-08,  -1.8788825225972046e-06, 2.9122679100256674e-05,
     -2.9122679100256673e-04, 2.1113942347686090e-03,  -1.1823807714704208e-02,
     5.3207134716168940e-02,  -1.9762650037434179e-01, 6.1758281366981804e-01,
@@ -362,388 +537,370 @@ constexpr std::array<double, 495> gNullWeightForCotes33 = {
     1.3227584021376350e+01,  -3.3515366601304244e+00, 3.4596507459410830e-01,
 };
 
-template <typename T> struct CompareSecondElementOfPair
+namespace FiniteInterval
 {
-    bool operator()( const T& inLeft, const T& inRight )
-    {
-        return inLeft.second < inRight.second;
-    }
-};
 
-template <std::size_t MaxNInterval_> class Errors
+template <typename TypeY_, std::size_t MaxNInterval_>
+template <std::size_t NVal_>
+void DataForDoublyAdaptive<TypeY_, MaxNInterval_>::addInterval(
+    double inLeftPos, double inRightPos, double inInt, double inAbsInt,
+    double inErr, const std::vector<TypeY_>& inVals )
 {
-private:
-    std::array<double, MaxNInterval_> mData;
-    std::priority_queue<
-        std::pair<std::size_t, double>,
-        std::vector<std::pair<std::size_t, double>>,
-        CompareSecondElementOfPair<std::pair<std::size_t, double>>>
-        mQue;
+    mLeftPos[mSizeInterval]     = inLeftPos;
+    mRightPos[mSizeInterval]    = inRightPos;
+    mIntegral[mSizeInterval]    = inInt;
+    mAbsIntegral[mSizeInterval] = inAbsInt;
+    mQueErrors.push( { mSizeInterval, inErr } );
+    for ( std::size_t iVal = 0, iRef = 0; iVal < NVal_;
+          ++iVal, iRef += ( 32 / ( NVal_ - 1 ) ) )
+    {
+        mVals[mSizeInterval][iRef] = inVals[iVal];
+    }
 
-public:
-    Errors() {}
-    void set( std::size_t inInd, double inVal )
+    mTotalIntegral += inInt;
+    mTotalAbsIntegral += inAbsInt;
+    mTotalError += inErr;
+
+    ++mSizeInterval;
+}
+
+template <typename TypeY_, std::size_t MaxNInterval_>
+DataForDoublyAdaptive<TypeY_, MaxNInterval_>::DataForDoublyAdaptive() :
+    mSizeInterval( 0 ),
+    mLeftPos( MaxNInterval_ ),
+    mRightPos( MaxNInterval_ ),
+    mIntegral( MaxNInterval_ ),
+    mAbsIntegral( MaxNInterval_ ),
+    mVals( MaxNInterval_, std::vector<double>( 33, 0.0 ) ),
+    mTotalError( 0.0 ),
+    mTotalIntegral( 0.0 ),
+    mTotalAbsIntegral( 0.0 )
+{
+}
+
+template <typename TypeY_, std::size_t MaxNInterval_>
+template <std::size_t NVal_>
+void DataForDoublyAdaptive<TypeY_, MaxNInterval_>::initInterval(
+    double inLeftPos, double inRightPos, double inInt, double inAbsInt,
+    double inErr, const std::vector<TypeY_>& inVals )
+{
+    if ( mSizeInterval > 0 ) { throw std::invalid_argument( "initInterval" ); }
+    addInterval<NVal_>( inLeftPos, inRightPos, inInt, inAbsInt, inErr, inVals );
+}
+
+template <typename TypeY_, std::size_t MaxNInterval_>
+template <std::size_t NEachVals_>
+std::pair<std::vector<TypeY_>, std::vector<TypeY_>> DataForDoublyAdaptive<
+    TypeY_, MaxNInterval_>::getSplitedValsMaxErrorInterval() const
+{
+    std::vector<double> lLeftVals( NEachVals_ ), lRightVals( NEachVals_ );
+    constexpr std::size_t lIntervalRef = ( ( 16 + NEachVals_ ) / NEachVals_ );
+    for ( std::size_t iVal = 0, iRef = 0; iVal < NEachVals_;
+          ++iVal, iRef += lIntervalRef )
     {
-        mQue.push( { inInd, inVal } );
-        mData[inInd] = inVal;
+        assert( iRef + 16 < 33 );
+        lLeftVals[iVal]  = mVals[mTmpIndMaxErr][iRef];
+        lRightVals[iVal] = mVals[mTmpIndMaxErr][iRef + 16];
     }
-    std::pair<std::size_t, double> maxError()
+    return { lLeftVals, lRightVals };
+}
+
+template <typename TypeY_, std::size_t MaxNInterval_>
+template <std::size_t NAddVals_>
+void DataForDoublyAdaptive<TypeY_, MaxNInterval_>::addValsMaxErrorInterval(
+    const std::vector<TypeY_>& inAddVals )
+{
+    constexpr std::size_t lStartRef = 16 / NAddVals_;
+    constexpr std::size_t lStepRef  = 32 / NAddVals_;
+    for ( std::size_t iVal = 0, iRef = lStartRef; iVal < NAddVals_;
+          ++iVal, iRef += lStepRef )
     {
-        // auto lItr = std::max_element( mData.begin(), mData.end() );
-        // return { lItr - mData.begin(), *lItr };
-        std::pair<std::size_t, double> lResult = mQue.top();
-        while ( !mQue.empty() )
-        {
-            lResult = mQue.top();
-            if ( mData[lResult.first] == lResult.second ) { break; }
-            mQue.pop();
-        }
-        return lResult;
+        mVals[mTmpIndMaxErr][iRef] = inAddVals[iVal];
     }
-};
+}
+
+template <typename TypeY_, std::size_t MaxNInterval_>
+void DataForDoublyAdaptive<TypeY_, MaxNInterval_>::updateMaxErrorInterval(
+    double inInt, double inAbsInt, double inErr )
+{
+    const auto& lPreviousErrPair = mQueErrors.top();
+    assert( lPreviousErrPair.first == mTmpIndMaxErr );
+
+    mTotalError += inErr - lPreviousErrPair.second;
+    mQueErrors.pop();
+    mQueErrors.push( { mTmpIndMaxErr, inErr } );
+
+    mTotalIntegral += inInt - mIntegral[mTmpIndMaxErr];
+    mTotalAbsIntegral += inAbsInt - mAbsIntegral[mTmpIndMaxErr];
+
+    mIntegral[mTmpIndMaxErr]    = inInt;
+    mAbsIntegral[mTmpIndMaxErr] = inAbsInt;
+}
+
+template <typename TypeY_, std::size_t MaxNInterval_>
+template <std::size_t NEachVals_>
+void DataForDoublyAdaptive<TypeY_, MaxNInterval_>::splitMaxErrorInterval(
+    double inInt, double inAbsInt, double inErr,
+    const std::vector<TypeY_>& inVals, double inAddInt, double inAddAbsInt,
+    double inAddErr, const std::vector<TypeY_>& inAddVals )
+{
+    updateMaxErrorInterval( inInt, inAbsInt, inErr );
+    constexpr std::size_t lStepRef = ( 32 / ( NEachVals_ - 1 ) );
+    for ( std::size_t iVal = 0, iRef = 0; iVal < NEachVals_;
+          ++iVal, iRef += lStepRef )
+    {
+        assert( iRef < 33 );
+        mVals[mTmpIndMaxErr][iRef] = inVals[iVal];
+    }
+
+    const double lMidPos =
+        0.5 * ( mLeftPos[mTmpIndMaxErr] + mRightPos[mTmpIndMaxErr] );
+    addInterval<NEachVals_>( lMidPos, mRightPos[mTmpIndMaxErr], inAddInt,
+                             inAddAbsInt, inAddErr, inAddVals );
+    mRightPos[mTmpIndMaxErr] = lMidPos;
+}
 
 template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
           std::size_t MaxNFuncEval_>
-class DoublyAdaptiveNewtonCotes
+template <std::size_t NX_>
+std::vector<TypeY_> DoublyAdaptiveNewtonCotes<
+    Func_, TypeY_, MaxNInterval_,
+    MaxNFuncEval_>::applyFunc( const std::vector<double>& inXs )
 {
-private:
-    Func_ mFunc;
-    std::size_t mNEvalFunc;
-    std::size_t mSizeInterval;
+    std::vector<TypeY_> lResult( NX_ );
+    for ( std::size_t iX = 0; iX < NX_; ++iX )
+    {
+        lResult[iX] = mFunc( inXs[iX] );
+    }
+    mNEvalFunc += NX_;
+    return lResult;
+}
 
-    std::vector<short> mFlags;
-    std::vector<double> mLeftPos;
-    std::vector<double> mRightPos;
-    std::vector<TypeY_> mIntegral;
-    std::vector<double> mAbsIntegral;
-    Errors<MaxNInterval_> mErrors;
-    std::vector<std::vector<TypeY_>> mVals;
+template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
+          std::size_t MaxNFuncEval_>
+template <std::size_t NEachVals_>
+std::pair<std::tuple<TypeY_, double, double, double>,
+          std::tuple<TypeY_, double, double, double>>
+DoublyAdaptiveNewtonCotes<Func_, TypeY_, MaxNInterval_, MaxNFuncEval_>::
+    calcBisectCotesMaxErrorInterval( const std::vector<TypeY_>& inLeftVals,
+                                     const std::vector<TypeY_>& inRightVals )
+{
+    assert( inLeftVals.size() == NEachVals_ &&
+            inRightVals.size() == NEachVals_ );
 
-    double mTotalError;
-    TypeY_ mTotalIntegral;
-    double mTotalAbsIntegral;
+    const std::size_t& lTmpIndex        = mData.getIndexMaxError();
+    const double& lTmpLeft              = mData.getLeftPos()[lTmpIndex];
+    const double& lTmpRight             = mData.getRightPos()[lTmpIndex];
+    const std::vector<double>& lTmpVals = mData.getVals()[lTmpIndex];
 
-    std::vector<TypeY_> applyFunc( const std::vector<double>& inXs )
-    {
-        std::vector<TypeY_> lResult( inXs.size() );
-        for ( std::size_t iX = 0; iX < inXs.size(); ++iX )
-        {
-            lResult[iX] = mFunc( inXs[iX] );
-        }
-        mNEvalFunc += inXs.size();
-        return lResult;
-    }
-    double getNoise() const { return gFactorEps * mTotalAbsIntegral; }
-    void subtractTotal( std::size_t inIndInterval, double inErr )
-    {
-        assert( inIndInterval < MaxNInterval_ );
-        mTotalError -= inErr;
-        mTotalIntegral -= mIntegral[inIndInterval];
-        mTotalAbsIntegral -= mAbsIntegral[inIndInterval];
-    }
-    void updateElement( std::size_t inIndInterval, double inErr, double inInt,
-                        double inAbsInt )
-    {
-        assert( inIndInterval < MaxNInterval_ );
-        mIntegral[inIndInterval]    = inInt;
-        mAbsIntegral[inIndInterval] = inAbsInt;
-        addTotal( inIndInterval, inErr );
-    }
-    void addTotal( std::size_t inIndInterval, double inErr )
-    {
-        assert( inIndInterval < MaxNInterval_ );
-        mErrors.set( inIndInterval, inErr );
-        mTotalError += inErr;
-        mTotalIntegral += mIntegral[inIndInterval];
-        mTotalAbsIntegral += mAbsIntegral[inIndInterval];
-    }
-    template <std::size_t NEach_>
-    std::pair<std::vector<TypeY_>, std::vector<TypeY_>>
-    previousValsForBisectCotes( std::size_t inIndInterval )
-    {
-        assert( inIndInterval < MaxNInterval_ );
-        std::vector<double> lLeftVals( NEach_ ), lRightVals( NEach_ );
-        constexpr std::size_t lIntervalRef = ( ( 16 + NEach_ ) / NEach_ );
-        for ( std::size_t iVal = 0, iRef = 0; iVal < NEach_;
-              ++iVal, iRef += lIntervalRef )
-        {
-            assert( iRef + 16 < 33 );
-            lLeftVals[iVal]  = mVals[inIndInterval][iRef];
-            lRightVals[iVal] = mVals[inIndInterval][iRef + 16];
-        }
-        return { lLeftVals, lRightVals };
-    }
-    template <std::size_t NPoints_>
-    std::pair<std::tuple<TypeY_, double, double, double>,
-              std::tuple<TypeY_, double, double, double>>
-    bisectCotes( std::size_t inIndInterval,
-                 const std::vector<TypeY_>& inLeftVals,
-                 const std::vector<TypeY_>& inRightVals )
-    {
-        assert( inIndInterval < MaxNInterval_ );
-        assert( inLeftVals.size() == NPoints_ &&
-                inRightVals.size() == NPoints_ );
-        const double lTmpMid =
-            0.5 * ( mLeftPos[inIndInterval] + mRightPos[inIndInterval] );
-        return { evalNewtonCotesIntegralAndErr<NPoints_, TypeY_>(
-                     mLeftPos[inIndInterval], lTmpMid, inLeftVals ),
-                 evalNewtonCotesIntegralAndErr<NPoints_, TypeY_>(
-                     lTmpMid, mRightPos[inIndInterval], inRightVals ) };
-    }
-    std::tuple<TypeY_, double, double, double> intervalCotes9(
-        std::size_t inIndInterval )
-    {
-        assert( inIndInterval < MaxNInterval_ );
-        std::vector<double> lTmpX( 4 );
-        std::vector<TypeY_> lCotesVals( 9 );
-        const double lDif =
-            0.25 * ( mRightPos[inIndInterval] - mLeftPos[inIndInterval] );
-        lTmpX[0] = mLeftPos[inIndInterval] + 0.5 * lDif;
-        for ( std::size_t iX = 0; iX < 3; ++iX )
-        {
-            lTmpX[iX + 1] = lTmpX[iX] + lDif;
-        }
-        auto lTmpY = applyFunc( lTmpX );
-        for ( std::size_t iY = 0, iRef = 4; iY < 4; ++iY, iRef += 8 )
-        {
-            mVals[inIndInterval][iRef] = lTmpY[iY];
-        }
-        for ( std::size_t iVal = 0, iRef = 0; iVal < 9; ++iVal, iRef += 4 )
-        {
-            lCotesVals[iVal] = mVals[inIndInterval][iRef];
-        }
-        return evalNewtonCotesIntegralAndErr<9, TypeY_>(
-            mLeftPos[inIndInterval], mRightPos[inIndInterval], lCotesVals );
-    }
-    std::tuple<TypeY_, double, double, double> intervalCotes17(
-        std::size_t inIndInterval )
-    {
-        assert( inIndInterval < MaxNInterval_ );
-        std::vector<double> lTmpX( 8 );
-        std::vector<TypeY_> lCotesVals( 17 );
-        const double lDif =
-            0.125 * ( mRightPos[inIndInterval] - mLeftPos[inIndInterval] );
-        lTmpX[0] = mLeftPos[inIndInterval] + 0.5 * lDif;
-        for ( std::size_t iX = 0; iX < 7; ++iX )
-        {
-            lTmpX[iX + 1] = lTmpX[iX] + lDif;
-        }
-        auto lTmpY = applyFunc( lTmpX );
-        for ( std::size_t iY = 0, iRef = 2; iY < 8; ++iY, iRef += 4 )
-        {
-            mVals[inIndInterval][iRef] = lTmpY[iY];
-        }
-        for ( std::size_t iVal = 0, iRef = 0; iVal < 17; ++iVal, iRef += 2 )
-        {
-            lCotesVals[iVal] = mVals[inIndInterval][iRef];
-        }
-        return evalNewtonCotesIntegralAndErr<17, TypeY_>(
-            mLeftPos[inIndInterval], mRightPos[inIndInterval], lCotesVals );
-    }
-    std::tuple<TypeY_, double, double, double> intervalCotes33(
-        std::size_t inIndInterval )
-    {
-        assert( inIndInterval < MaxNInterval_ );
-        std::vector<double> lTmpX( 16 );
-        std::vector<TypeY_> lCotesVals( 33 );
-        const double lDif =
-            0.0625 * ( mRightPos[inIndInterval] - mLeftPos[inIndInterval] );
-        lTmpX[0] = mLeftPos[inIndInterval] + 0.5 * lDif;
-        for ( std::size_t iX = 0; iX < 15; ++iX )
-        {
-            lTmpX[iX + 1] = lTmpX[iX] + lDif;
-        }
-        auto lTmpY = applyFunc( lTmpX );
-        for ( std::size_t iY = 0, iRef = 1; iY < 16; ++iY, iRef += 2 )
-        {
-            mVals[inIndInterval][iRef] = lTmpY[iY];
-        }
-        return evalNewtonCotesIntegralAndErr<33, TypeY_>(
-            mLeftPos[inIndInterval], mRightPos[inIndInterval],
-            mVals[inIndInterval] );
-    }
-    template <std::size_t NEach_, short Flag_>
-    void addInterval( std::size_t inIndInterval, double inLErr, double inLInt,
-                      double inLAbsInt, const std::vector<TypeY_>& inLeftVals,
-                      double inRErr, double inRInt, double inRAbsInt,
-                      const std::vector<TypeY_>& inRightVals )
-    {
-        assert( inIndInterval < MaxNInterval_ );
-        updateElement( inIndInterval, inLErr, inLInt, inLAbsInt );
-        updateElement( mSizeInterval, inRErr, inRInt, inRAbsInt );
+    const double lTmpMid = 0.5 * ( lTmpLeft + lTmpRight );
+    return { evalNewtonCotesIntegralAndErr<NEachVals_, TypeY_>(
+                 lTmpLeft, lTmpMid, inLeftVals ),
+             evalNewtonCotesIntegralAndErr<NEachVals_, TypeY_>(
+                 lTmpMid, lTmpRight, inRightVals ) };
+}
 
-        mVals[inIndInterval].assign( 33, 0.0 );
-        for ( std::size_t iVal = 0, iRef = 0; iVal < NEach_;
-              ++iVal, iRef += ( 32 / ( NEach_ - 1 ) ) )
-        {
-            assert( iRef < 33 );
-            mVals[inIndInterval][iRef] = inLeftVals[iVal];
-            mVals[mSizeInterval][iRef] = inRightVals[iVal];
-        }
+template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
+          std::size_t MaxNFuncEval_>
+template <std::size_t NPointForCotes_>
+std::tuple<TypeY_, double, double, double> DoublyAdaptiveNewtonCotes<
+    Func_, TypeY_, MaxNInterval_, MaxNFuncEval_>::calcCotesMaxErrorInterval()
+{
+    constexpr std::size_t lNAdditionalPoints = NPointForCotes_ / 2;
+    constexpr double lFactorDif = 1.0 / double( lNAdditionalPoints );
+    std::vector<double> lAdditionalValsX( lNAdditionalPoints );
 
-        mRightPos[mSizeInterval] = mRightPos[inIndInterval];
-        mRightPos[inIndInterval] =
-            0.5 * ( mLeftPos[inIndInterval] + mRightPos[inIndInterval] );
-        mLeftPos[mSizeInterval] = mRightPos[inIndInterval];
+    const std::size_t& lTmpIndex        = mData.getIndexMaxError();
+    const double& lTmpLeft              = mData.getLeftPos()[lTmpIndex];
+    const double& lTmpRight             = mData.getRightPos()[lTmpIndex];
+    const std::vector<double>& lTmpVals = mData.getVals()[lTmpIndex];
 
-        mFlags[inIndInterval] = Flag_;
-        mFlags[mSizeInterval] = Flag_;
-
-        ++mSizeInterval;
-    }
-    void step()
+    const double lDif   = lFactorDif * ( lTmpRight - lTmpLeft );
+    lAdditionalValsX[0] = lTmpLeft + 0.5 * lDif;
+    for ( std::size_t iX = 0; iX < lNAdditionalPoints - 1; ++iX )
     {
-        auto [lIndInterval, lErr] = mErrors.maxError();
-        subtractTotal( lIndInterval, lErr );
-        const short lTmpFlag = mFlags[lIndInterval];
-        if ( lTmpFlag == 1 || lTmpFlag == 2 )
+        lAdditionalValsX[iX + 1] = lAdditionalValsX[iX] + lDif;
+    }
+    const auto lAdditionalValsY =
+        applyFunc<lNAdditionalPoints>( lAdditionalValsX );
+    mData.template addValsMaxErrorInterval<lNAdditionalPoints>(
+        lAdditionalValsY );
+    if constexpr ( NPointForCotes_ == 33 )
+    {
+        return evalNewtonCotesIntegralAndErr<33, TypeY_>( lTmpLeft, lTmpRight,
+                                                          lTmpVals );
+    }
+
+    std::vector<TypeY_> lCotesVals( NPointForCotes_ );
+    constexpr std::size_t lStepRef = 32 / ( NPointForCotes_ - 1 );
+    for ( std::size_t iVal = 0, iRef = 0; iVal < NPointForCotes_;
+          ++iVal, iRef += lStepRef )
+    {
+        lCotesVals[iVal] = lTmpVals[iRef];
+    }
+    return evalNewtonCotesIntegralAndErr<NPointForCotes_, TypeY_>(
+        lTmpLeft, lTmpRight, lCotesVals );
+}
+
+template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
+          std::size_t MaxNFuncEval_>
+void DoublyAdaptiveNewtonCotes<Func_, TypeY_, MaxNInterval_,
+                               MaxNFuncEval_>::stepIntegral()
+{
+    const auto [lIndInterval, lErr] = mData.getMaxError();
+    const short lTmpFlag            = mFlags[lIndInterval];
+    switch ( lTmpFlag )
+    {
+        case 0:
+        {
+            const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
+                calcCotesMaxErrorInterval<9>();
+            mData.updateMaxErrorInterval( lNewInt, lNewAbsInt, lNewErr );
+            mFlags[lIndInterval] = 1 + ( lNewRMax < 0.25 );
+            break;
+        }
+        case 1:
+        case 2:
         {
             const auto [lLeftVals, lRightVals] =
-                previousValsForBisectCotes<5>( lIndInterval );
+                mData.template getSplitedValsMaxErrorInterval<5>();
             const auto [lLeftTuple, lRightTuple] =
-                bisectCotes<5>( lIndInterval, lLeftVals, lRightVals );
-            auto& [lLInt, lLAbsInt, lLErr, lLRMax] = lLeftTuple;
-            auto& [lRInt, lRAbsInt, lRErr, lRRMax] = lRightTuple;
+                calcBisectCotesMaxErrorInterval<5>( lLeftVals, lRightVals );
+            const auto& [lLInt, lLAbsInt, lLErr, lLRMax] = lLeftTuple;
+            const auto& [lRInt, lRAbsInt, lRErr, lRRMax] = lRightTuple;
             if ( lTmpFlag == 2 && ( lLErr + lRErr >= lErr ) )
             {
-                double lRMax;
-                std::tie( mIntegral[lIndInterval], mAbsIntegral[lIndInterval],
-                          lErr, lRMax ) = intervalCotes17( lIndInterval );
-                addTotal( lIndInterval, lErr );
+                const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
+                    calcCotesMaxErrorInterval<17>();
+                mData.updateMaxErrorInterval( lNewInt, lNewAbsInt, lNewRMax );
                 mFlags[lIndInterval] = 4;
             }
             else
             {
-                addInterval<5, 0>( lIndInterval, lLErr, lLInt, lLAbsInt,
-                                   lLeftVals, lRErr, lRInt, lRAbsInt,
-                                   lRightVals );
+                mFlags[lIndInterval]            = 0;
+                mFlags[mData.getSizeInterval()] = 0;
+                mData.template splitMaxErrorInterval<5>(
+                    lLInt, lLAbsInt, lLErr, lLeftVals, lRInt, lRAbsInt, lRErr,
+                    lRightVals );
             }
+            break;
         }
-        else if ( lTmpFlag == 0 )
+        case 3:
         {
-            double lRMax;
-            std::tie( mIntegral[lIndInterval], mAbsIntegral[lIndInterval], lErr,
-                      lRMax ) = intervalCotes9( lIndInterval );
-            addTotal( lIndInterval, lErr );
-            mFlags[lIndInterval] = 1 + ( lRMax < 0.25 );
+            const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
+                calcCotesMaxErrorInterval<17>();
+            mData.updateMaxErrorInterval( lNewInt, lNewAbsInt, lNewErr );
+            mFlags[lIndInterval] = 4 + ( lNewRMax < 0.125 );
+            break;
         }
-        else if ( lTmpFlag == 3 )
+        case 4:
+        case 5:
         {
-            double lRMax;
-            std::tie( mIntegral[lIndInterval], mAbsIntegral[lIndInterval], lErr,
-                      lRMax ) = intervalCotes17( lIndInterval );
-            addTotal( lIndInterval, lErr );
-            mFlags[lIndInterval] = 4 + ( lRMax < 0.125 );
-        }
-        else if ( lTmpFlag == 4 || lTmpFlag == 5 )
-        {
-            auto [lLeftVals, lRightVals] =
-                previousValsForBisectCotes<9>( lIndInterval );
-            auto [lLeftTuple, lRightTuple] =
-                bisectCotes<9>( lIndInterval, lLeftVals, lRightVals );
-            auto& [lLInt, lLAbsInt, lLErr, lLRMax] = lLeftTuple;
-            auto& [lRInt, lRAbsInt, lRErr, lRRMax] = lRightTuple;
+            const auto [lLeftVals, lRightVals] =
+                mData.template getSplitedValsMaxErrorInterval<9>();
+            const auto [lLeftTuple, lRightTuple] =
+                calcBisectCotesMaxErrorInterval<9>( lLeftVals, lRightVals );
+            const auto& [lLInt, lLAbsInt, lLErr, lLRMax] = lLeftTuple;
+            const auto& [lRInt, lRAbsInt, lRErr, lRRMax] = lRightTuple;
             if ( lTmpFlag == 5 && ( lLErr + lRErr >= lErr ) )
             {
-                std::tie( mIntegral[lIndInterval], mAbsIntegral[lIndInterval],
-                          lErr, std::ignore ) = intervalCotes33( lIndInterval );
-                addTotal( lIndInterval, lErr );
+                const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
+                    calcCotesMaxErrorInterval<33>();
+                mData.updateMaxErrorInterval( lNewInt, lNewAbsInt, lNewErr );
                 mFlags[lIndInterval] = 7;
             }
             else
             {
-                addInterval<9, 3>( lIndInterval, lLErr, lLInt, lLAbsInt,
-                                   lLeftVals, lRErr, lRInt, lRAbsInt,
-                                   lRightVals );
+                mFlags[lIndInterval]            = 3;
+                mFlags[mData.getSizeInterval()] = 3;
+                mData.template splitMaxErrorInterval<9>(
+                    lLInt, lLAbsInt, lLErr, lLeftVals, lRInt, lRAbsInt, lRErr,
+                    lRightVals );
             }
+            break;
         }
-        else if ( lTmpFlag == 6 )
+        case 6:
         {
-            std::tie( mIntegral[lIndInterval], mAbsIntegral[lIndInterval], lErr,
-                      std::ignore ) = intervalCotes33( lIndInterval );
-            addTotal( lIndInterval, lErr );
+            const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
+                calcCotesMaxErrorInterval<33>();
+            mData.updateMaxErrorInterval( lNewInt, lNewAbsInt, lNewErr );
             mFlags[lIndInterval] = 7;
+            break;
         }
-        else if ( lTmpFlag == 7 )
+        case 7:
         {
-            auto [lLeftVals, lRightVals] =
-                previousValsForBisectCotes<17>( lIndInterval );
-            auto [lLeftTuple, lRightTuple] =
-                bisectCotes<17>( lIndInterval, lLeftVals, lRightVals );
-            auto& [lLInt, lLAbsInt, lLErr, lLRMax] = lLeftTuple;
-            auto& [lRInt, lRAbsInt, lRErr, lRRMax] = lRightTuple;
-            addInterval<17, 6>( lIndInterval, lLErr, lLInt, lLAbsInt, lLeftVals,
-                                lRErr, lRInt, lRAbsInt, lRightVals );
+            const auto [lLeftVals, lRightVals] =
+                mData.template getSplitedValsMaxErrorInterval<17>();
+            const auto [lLeftTuple, lRightTuple] =
+                calcBisectCotesMaxErrorInterval<17>( lLeftVals, lRightVals );
+            const auto& [lLInt, lLAbsInt, lLErr, lLRMax] = lLeftTuple;
+            const auto& [lRInt, lRAbsInt, lRErr, lRRMax] = lRightTuple;
+            mFlags[lIndInterval]                         = 6;
+            mFlags[mData.getSizeInterval()]              = 6;
+            mData.template splitMaxErrorInterval<17>(
+                lLInt, lLAbsInt, lLErr, lLeftVals, lRInt, lRAbsInt, lRErr,
+                lRightVals );
+            break;
         }
     }
+}
 
-public:
-    ~DoublyAdaptiveNewtonCotes() {}
-    DoublyAdaptiveNewtonCotes( Func_ inFunc, double inMin, double inMax ) :
-        mFunc( inFunc ),
-        mNEvalFunc( 0 ),
-        mSizeInterval( 1 ),
-        mFlags( MaxNInterval_, 0 ),
-        mLeftPos( MaxNInterval_ ),
-        mRightPos( MaxNInterval_ ),
-        mIntegral( MaxNInterval_ ),
-        mAbsIntegral( MaxNInterval_ ),
-        mErrors(),
-        mVals( MaxNInterval_, std::vector<double>( 33, 0.0 ) )
-    {
-        std::vector<double> lTmpX( 9 );
-        const double lTmpDif = 0.125 * ( inMax - inMin );
-        lTmpX[0]             = inMin;
-        for ( std::size_t j = 0; j < 8; ++j )
-        {
-            lTmpX[j + 1] = lTmpX[j] + lTmpDif;
-        }
-        const auto lTmpY = applyFunc( lTmpX );
-
-        double lTmpErr, lTmpRMax;
-        std::tie( mIntegral[0], mAbsIntegral[0], lTmpErr, lTmpRMax ) =
-            evalNewtonCotesIntegralAndErr<9, TypeY_>( inMin, inMax, lTmpY );
-
-        mErrors.set( 0, lTmpErr );
-        mTotalError       = lTmpErr;
-        mTotalIntegral    = mIntegral[0];
-        mTotalAbsIntegral = mAbsIntegral[0];
-        for ( std::size_t iY = 0, iVal = 0; iY < 9; ++iY, iVal += 4 )
-        {
-            mVals[0][iVal] = lTmpY[iY];
-        }
-        mLeftPos[0]  = inMin;
-        mRightPos[0] = inMax;
-        mFlags[0]    = 1 + ( lTmpRMax < 0.25 );
-    }
-    double operator()( double inTolAbs, double inTolRel )
-    {
-        while (
-            ( mTotalError > std::max( { std::abs( mTotalIntegral ) * inTolRel,
-                                        inTolAbs, getNoise() } ) ) &&
-            ( mNEvalFunc < MaxNFuncEval_ - 3 ) &&
-            ( mSizeInterval < MaxNInterval_ - 3 ) )
-        {
-            step();
-        }
-        return mTotalIntegral;
-    }
-};
-
-template <typename TypeY_>
-TypeY_ doublyAdaptiveNewtonCotes( auto inFunc, double inMin, double inMax,
-                                  double inTolAbs, double inTolRel )
+template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
+          std::size_t MaxNFuncEval_>
+void DoublyAdaptiveNewtonCotes<Func_, TypeY_, MaxNInterval_,
+                               MaxNFuncEval_>::initialize( double inMin,
+                                                           double inMax )
 {
-    DoublyAdaptiveNewtonCotes<decltype( inFunc ), TypeY_> lObj( inFunc, inMin,
-                                                                inMax );
-    return lObj( inTolAbs, inTolRel );
+    std::vector<double> lTmpX( 9 );
+    const double lTmpDif = 0.125 * ( inMax - inMin );
+    lTmpX[0]             = inMin;
+    for ( std::size_t j = 0; j < 8; ++j ) { lTmpX[j + 1] = lTmpX[j] + lTmpDif; }
+    const auto lTmpY = applyFunc<9>( lTmpX );
+
+    const auto [lTmpInt, lTmpAbsInt, lTmpErr, lTmpRMax] =
+        evalNewtonCotesIntegralAndErr<9, TypeY_>( inMin, inMax, lTmpY );
+
+    mData.template initInterval<9>( inMin, inMax, lTmpInt, lTmpAbsInt, lTmpErr,
+                                    lTmpY );
+    mFlags[0] = 1 + ( lTmpRMax < 0.25 );
+}
+template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
+          std::size_t MaxNFuncEval_>
+bool DoublyAdaptiveNewtonCotes<Func_, TypeY_, MaxNInterval_,
+                               MaxNFuncEval_>::isContinue( double inTolAbs,
+                                                           double inTolRel )
+    const
+{
+    return ( mData.getTotalError() >
+             std::max( { std::abs( mData.getTotalIntegral() ) * inTolRel,
+                         inTolAbs, mData.getNoise() } ) ) &&
+           ( mNEvalFunc < MaxNFuncEval_ - 3 ) &&
+           ( mData.getSizeInterval() < MaxNInterval_ - 3 );
+}
+
+template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
+          std::size_t MaxNFuncEval_>
+DoublyAdaptiveNewtonCotes<Func_, TypeY_, MaxNInterval_, MaxNFuncEval_>::
+    DoublyAdaptiveNewtonCotes( Func_ inFunc, double inMin, double inMax ) :
+    mFunc( inFunc ), mNEvalFunc( 0 ), mFlags( MaxNInterval_, 0 ), mData()
+{
+    initialize( inMin, inMax );
+}
+template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
+          std::size_t MaxNFuncEval_>
+double DoublyAdaptiveNewtonCotes<Func_, TypeY_, MaxNInterval_,
+                                 MaxNFuncEval_>::operator()( double inTolAbs,
+                                                             double inTolRel )
+{
+    while ( isContinue( inTolAbs, inTolRel ) ) { stepIntegral(); }
+    return mData.getTotalIntegral();
 }
 
 template <std::size_t N_, std::array<double, N_> const& Weight_,
           typename TypeY_>
 double weightedSum( const std::vector<TypeY_>& inVals )
 {
-    assert( values.size() == N_ );
+    assert( inVals.size() == N_ );
     double lSum = 0.0;
     for ( std::size_t i = 0; i < N_; ++i ) { lSum += Weight_[i] * inVals[i]; }
     return lSum;
@@ -753,7 +910,7 @@ template <std::size_t N_, std::array<double, N_> const& Weight_,
           typename TypeY_>
 double weightedAbsSum( const std::vector<TypeY_>& inVals )
 {
-    assert( values.size() == N_ );
+    assert( inVals.size() == N_ );
     double lSum = 0.0;
     for ( std::size_t i = 0; i < N_; ++i )
     {
@@ -766,7 +923,7 @@ template <std::size_t N1_, std::size_t N2_,
           std::array<double, N1_ * N2_> const& Weight_, typename TypeY_>
 std::vector<double> weightedSum2D( const std::vector<TypeY_>& inVals )
 {
-    assert( values.size() == N2_ );
+    assert( inVals.size() == N2_ );
     std::vector<double> lResult( N1_ );
     for ( std::size_t i = 0, iN2 = 0; i < N1_; ++i, iN2 += N2_ )
     {
@@ -924,41 +1081,5 @@ std::tuple<TypeY_, double, double, double> evalNewtonCotesIntegralAndErr(
     }
 }
 }  // namespace FiniteInterval
-
-namespace InfiniteInterval
-{
-template <typename TypeY_>
-TypeY_ doublyAdaptiveNewtonCotes( auto inFunc, double inTolAbs,
-                                  double inTolRel )
-{
-    auto lTransfFunc = [inFunc]( double inX ) -> TypeY_
-    {
-        const double lInvX = 1.0 / inX;
-        const double lArg  = ( 1.0 - inX ) * lInvX;
-        return ( inFunc( lArg ) + inFunc( -lArg ) ) * lInvX * lInvX;
-    };
-    return FiniteInterval::doublyAdaptiveNewtonCotes(
-        lTransfFunc, std::numeric_limits<double>::epsilon(), 1.0, inTolAbs,
-        inTolRel );
-}
-}  // namespace InfiniteInterval
-
-namespace UpperInfiniteInterval
-{
-template <typename TypeY_>
-TypeY_ doublyAdaptiveNewtonCotes( auto inFunc, double inMin, double inTolAbs,
-                                  double inTolRel )
-{
-    auto lTransfFunc = [inFunc, inMin]( double inX ) -> TypeY_
-    {
-        const double lInvX = 1.0 / inX;
-        return inFunc( inMin + ( 1.0 - inX ) * lInvX ) * lInvX * lInvX;
-    };
-    return FiniteInterval::doublyAdaptiveNewtonCotes(
-        lTransfFunc, std::numeric_limits<double>::epsilon(), 1.0, inTolAbs,
-        inTolRel );
-}
-
-}  // namespace UpperInfiniteInterval
 
 }  // namespace Math::Integral

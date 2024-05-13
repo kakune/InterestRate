@@ -36,7 +36,7 @@ TypeY_ trapz( auto inFunc, TypeX_ inMin, TypeX_ inMax, std::size_t inNDivision )
 }  // namespace FiniteInterval
 
 // https://www.st.nanzan-u.ac.jp/info/gr-thesis/ms/2010/05mm044.pdf
-static double weightForOura( double inX )
+static inline double weightForOura( double inX )
 {
     const double lCosh = cosh( M_PI_2 * sinh( inX ) );
     return 2.0 / ( lCosh * lCosh );
@@ -207,8 +207,8 @@ TypeY_ DEFormulaForGaussian( auto inFunc, double inMin, double inTolRel )
 }
 
 template <typename TypeY_>
-TypeY_ DEFormulaForVibration( auto inFunc, double inMin, double inTolRel,
-                              double inFactorK )
+TypeY_ DEFormulaForOscillation( auto inFunc, double inMin, double inTolRel,
+                                double inFactorK )
 {
     // make interval 0~infty
     auto lFuncForAdaptive = [&inFunc, inMin]( double inX ) -> TypeY_
