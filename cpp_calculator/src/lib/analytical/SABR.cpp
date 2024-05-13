@@ -160,8 +160,9 @@ static double kernelG( double inTau, double inS )
         return inU * exp( -inU * inU * lInvDoubleTau ) *
                std::sqrt( std::max( { 0.0, cosh( inU ) - lCoshS } ) );
     };
-    return lFactor * Math::Integral::UpperInfiniteInterval::DEFormulaForExp(
-                         lIntegrand, inS, 0.001 );
+    return lFactor *
+           Math::Integral::UpperInfiniteInterval::doublyAdaptiveNewtonCotes(
+               lIntegrand, inS, 1e-8 );
 }
 
 static auto makeKernelG( double inTau, double inMin, double inEpsRel = 1e-8,
@@ -312,10 +313,10 @@ double OneTerm::approxBlackImpVolByAntonov() const
     const double lPriceBlack =
         std::max( { 0.0, mInitPrice - mStrike } ) +
         M_2_PI * std::sqrt( mInitPrice * mStrike ) *
-            ( Math::Integral::FiniteInterval::DEFormula( lIntegrand1, lSMinus,
-                                                         lSPlus, 0.001 ) +
-              Math::Integral::UpperInfiniteInterval::DEFormula(
-                  lIntegrand2, lSPlus, 0.001 ) );
+            ( Math::Integral::FiniteInterval::doublyAdaptiveNewtonCotes(
+                  lIntegrand1, lSMinus, lSPlus, 1e-8 ) +
+              Math::Integral::UpperInfiniteInterval::doublyAdaptiveNewtonCotes(
+                  lIntegrand2, lSPlus, 1e-8 ) );
     auto lRootGrand = [this, lPriceBlack]( double inVol )
     {
         return Black76::funcBlackPositive( mStrike, mInitPrice,
