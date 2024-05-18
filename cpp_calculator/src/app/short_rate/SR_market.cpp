@@ -33,9 +33,10 @@ int main( int argc, char* argv[] )
         Utils::CSV::readFile( lPathCSVMarket );
     Utils::CSV::prepareZCBColumn( lMapMarket, lParamsMarket );
 
-    Process::MarketData::ZCB lMarketZCB(
-        Process::MarketData::Terms( lMapMarket[std::string( "Maturity" )] ),
-        lMapMarket[std::string( "ZCB" )] );
+    Process::MarketData::Terms lTmpTerm(
+        lMapMarket[std::string( "Maturity" )] );
+    Process::MarketData::ZCB lMarketZCB( lTmpTerm,
+                                         lMapMarket[std::string( "ZCB" )] );
 
     Process::MarketData::Terms lTerms = APP::prepareTerms( lParams );
     ShortRate::SpotRates lSpots =
