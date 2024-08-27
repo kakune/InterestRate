@@ -144,9 +144,12 @@
         "*.snm",
     ],
     "C_Cpp.errorSquiggles": "disabled",
-    "C_Cpp.intelliSenseEngine": "disabled",
+    "C_Cpp.intelliSenseEngine": "default",
     "clangd.arguments": [
         "--compile-commands-dir=${workspaceFolder}/cpp_calculator/build_clang",
         // "--log=verbose"
     ],
+    "cmake.configureOnOpen": true,
+    "cmake.sourceDirectory": "${workspaceFolder}/cpp_calculator",
+    "cmake.buildDirectory": "${workspaceFolder}/cpp_calculator/build",
 }

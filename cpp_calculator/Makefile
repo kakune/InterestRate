@@ -25,8 +25,8 @@ build:
 	@echo $(DEBUG)
 	@echo "Building project..."
 	@mkdir -p $(BUILD_CLANG_DIR)
-	cmake -G Ninja -S $(PROJECT_ROOT) -B $(BUILD_CLANG_DIR) -DCMAKE_BUILD_TYPE=$(MAKE_BUILD_TYPE) -DCUDA_ENABLED=$(CUDA_ENABLED) -DUSE_CLANG=ON
-	ninja -C $(BUILD_CLANG_DIR) -t compdb > $(BUILD_CLANG_DIR)/compile_commands.json
+	# cmake -G Ninja -S $(PROJECT_ROOT) -B $(BUILD_CLANG_DIR) -DCMAKE_BUILD_TYPE=$(MAKE_BUILD_TYPE) -DCUDA_ENABLED=$(CUDA_ENABLED) -DUSE_CLANG=ON
+	# ninja -C $(BUILD_CLANG_DIR) -t compdb > $(BUILD_CLANG_DIR)/compile_commands.json
 	@mkdir -p $(BUILD_DIR)
 	cmake -S $(PROJECT_ROOT) -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=$(MAKE_BUILD_TYPE) -DCUDA_ENABLED=$(CUDA_ENABLED) -DCMAKE_VERBOSE_MAKEFILE=0
 	cmake --build $(BUILD_DIR)

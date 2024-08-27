@@ -1,0 +1,9 @@
+[
+    {
+        "name": "Intel",
+        "compilers": {
+            "CXX": "/opt/intel/oneapi/compiler/latest/bin/icpx",
+            "CC": "/opt/intel/oneapi/compiler/latest/bin/icc"
+        }
+    }
+]
