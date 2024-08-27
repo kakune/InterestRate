@@ -9,6 +9,7 @@
 #include <array>
 #include <cassert>
 #include <cmath>
+#include <memory>
 #include <queue>
 #include <stdexcept>
 #include <tuple>
@@ -17,11 +18,9 @@
 #include "math/integral_1d.hpp"
 #endif
 
-namespace Math::Integral
-{
+namespace Math::Integral {
 
-namespace FiniteInterval
-{
+namespace FiniteInterval {
 
 template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
           std::size_t MaxNFuncEval_>
@@ -29,66 +28,57 @@ class DoublyAdaptiveNewtonCotes;
 
 }  // namespace FiniteInterval
 
-namespace FiniteInterval
-{
+namespace FiniteInterval {
 template <typename TypeY_, std::size_t MaxNInterval_, std::size_t MaxNFuncEval_>
-TypeY_ doublyAdaptiveNewtonCotes( auto inFunc, double inMin, double inMax,
-                                  double inTolAbs, double inTolRel )
-{
-    DoublyAdaptiveNewtonCotes<decltype( inFunc ), TypeY_, MaxNInterval_,
-                              MaxNFuncEval_>
-        lIntegralObject( inFunc, inMin, inMax );
-    return lIntegralObject( inTolAbs, inTolRel );
+TypeY_ doublyAdaptiveNewtonCotes(auto inFunc, double inMin, double inMax,
+                                 double inTolAbs, double inTolRel) {
+  DoublyAdaptiveNewtonCotes<decltype(inFunc), TypeY_, MaxNInterval_,
+                            MaxNFuncEval_>
+      lIntegralObject(inFunc, inMin, inMax);
+  return lIntegralObject(inTolAbs, inTolRel);
 }
 }  // namespace FiniteInterval
 
-namespace InfiniteInterval
-{
+namespace InfiniteInterval {
 template <typename TypeY_, std::size_t MaxNInterval_, std::size_t MaxNFuncEval_>
-TypeY_ doublyAdaptiveNewtonCotes( auto inFunc, double inTolAbs,
-                                  double inTolRel )
-{
-    auto lTransfFunc = [inFunc]( double inX ) -> TypeY_
-    {
-        const double lInvX = 1.0 / inX;
-        const double lArg  = ( 1.0 - inX ) * lInvX;
-        return ( inFunc( lArg ) + inFunc( -lArg ) ) * lInvX * lInvX;
-    };
-    return FiniteInterval::doublyAdaptiveNewtonCotes<TypeY_, MaxNInterval_,
-                                                     MaxNFuncEval_>(
-        lTransfFunc, std::numeric_limits<double>::epsilon(), 1.0, inTolAbs,
-        inTolRel );
+TypeY_ doublyAdaptiveNewtonCotes(auto inFunc, double inTolAbs,
+                                 double inTolRel) {
+  auto lTransfFunc = [inFunc](double inX) -> TypeY_ {
+    const double lInvX = 1.0 / inX;
+    const double lArg = (1.0 - inX) * lInvX;
+    return (inFunc(lArg) + inFunc(-lArg)) * lInvX * lInvX;
+  };
+  return FiniteInterval::doublyAdaptiveNewtonCotes<TypeY_, MaxNInterval_,
+                                                   MaxNFuncEval_>(
+      lTransfFunc, std::numeric_limits<double>::epsilon(), 1.0, inTolAbs,
+      inTolRel);
 }
 }  // namespace InfiniteInterval
 
-namespace UpperInfiniteInterval
-{
+namespace UpperInfiniteInterval {
 template <typename TypeY_, std::size_t MaxNInterval_, std::size_t MaxNFuncEval_>
-TypeY_ doublyAdaptiveNewtonCotes( auto inFunc, double inMin, double inTolAbs,
-                                  double inTolRel )
-{
-    auto lTransfFunc = [inFunc, inMin]( double inX ) -> TypeY_
-    {
-        const double lInvX = 1.0 / inX;
-        return inFunc( inMin + ( 1.0 - inX ) * lInvX ) * lInvX * lInvX;
-    };
-    return FiniteInterval::doublyAdaptiveNewtonCotes<TypeY_, MaxNInterval_,
-                                                     MaxNFuncEval_>(
-        lTransfFunc, std::numeric_limits<double>::epsilon(), 1.0, inTolAbs,
-        inTolRel );
+TypeY_ doublyAdaptiveNewtonCotes(auto inFunc, double inMin, double inTolAbs,
+                                 double inTolRel) {
+  auto lTransfFunc = [inFunc, inMin](double inX) -> TypeY_ {
+    const double lInvX = 1.0 / inX;
+    return inFunc(inMin + (1.0 - inX) * lInvX) * lInvX * lInvX;
+  };
+  return FiniteInterval::doublyAdaptiveNewtonCotes<TypeY_, MaxNInterval_,
+                                                   MaxNFuncEval_>(
+      lTransfFunc, std::numeric_limits<double>::epsilon(), 1.0, inTolAbs,
+      inTolRel);
 }
 }  // namespace UpperInfiniteInterval
 
 // Helpers for DoublyAdaptiveNewtonCotes
-namespace FiniteInterval
-{
+namespace FiniteInterval {
 
 template <typename TypeY_, std::size_t MaxNInterval_>
 class DataForDoublyAdaptive;
 
 template <std::size_t NPoints_, typename TypeY_>
 std::tuple<TypeY_, double, double, double> evalNewtonCotesIntegralAndErr(
-    double inLeft, double inRight, const std::vector<TypeY_>& inVals );
+    double inLeft, double inRight, const std::array<TypeY_, NPoints_>& inVals);
 
 }  // namespace FiniteInterval
 
@@ -96,120 +86,121 @@ static constexpr double gFactorEps =
     50.0 * std::numeric_limits<double>::epsilon();
 
 // declare contents of classes
-namespace FiniteInterval
-{
+namespace FiniteInterval {
 
-template <typename T> struct CompareSecondElementOfPair
-{
-    bool operator()( const T& inLeft, const T& inRight )
-    {
-        return inLeft.second < inRight.second;
-    }
+template <typename T>
+struct CompareSecondElementOfPair {
+  bool operator()(const T& inLeft, const T& inRight) {
+    return inLeft.second < inRight.second;
+  }
 };
 
 template <typename TypeY_, std::size_t MaxNInterval_>
-class DataForDoublyAdaptive
-{
-private:
-    std::size_t mSizeInterval;
+class DataForDoublyAdaptive {
+ private:
+  std::size_t mSizeInterval;
 
-    std::vector<double> mLeftPos;
-    std::vector<double> mRightPos;
-    std::vector<TypeY_> mIntegral;
-    std::vector<double> mAbsIntegral;
-    std::priority_queue<
-        std::pair<std::size_t, double>,
-        std::vector<std::pair<std::size_t, double>>,
-        CompareSecondElementOfPair<std::pair<std::size_t, double>>>
-        mQueErrors;
-    std::vector<std::vector<TypeY_>> mVals;
+  std::array<double, MaxNInterval_> mLeftPos;
+  std::array<double, MaxNInterval_> mRightPos;
+  std::array<TypeY_, MaxNInterval_> mIntegral;
+  std::array<double, MaxNInterval_> mAbsIntegral;
+  std::priority_queue<
+      std::pair<std::size_t, double>,
+      std::vector<std::pair<std::size_t, double>>,
+      CompareSecondElementOfPair<std::pair<std::size_t, double>>>
+      mQueErrors;
+  std::array<std::array<TypeY_, 33>, MaxNInterval_> mVals;
 
-    double mTotalError;
-    TypeY_ mTotalIntegral;
-    double mTotalAbsIntegral;
+  double mTotalError;
+  TypeY_ mTotalIntegral;
+  double mTotalAbsIntegral;
 
-    std::size_t mTmpIndMaxErr;
+  std::size_t mTmpIndMaxErr;
 
-    template <std::size_t NVal_>
-    void addInterval( double inLeftPos, double inRightPos, double inInt,
-                      double inAbsInt, double inErr,
-                      const std::vector<TypeY_>& inVals );
+  template <std::size_t NVal_>
+  void addInterval(double inLeftPos, double inRightPos, double inInt,
+                   double inAbsInt, double inErr,
+                   const std::array<TypeY_, NVal_>& inVals);
 
-public:
-    DataForDoublyAdaptive();
+ public:
+  DataForDoublyAdaptive();
 
-    template <std::size_t NVal_>
-    void initInterval( double inLeftPos, double inRightPos, double inInt,
-                       double inAbsInt, double inErr,
-                       const std::vector<TypeY_>& inVals );
+  template <std::size_t NVal_>
+  void initInterval(double inLeftPos, double inRightPos, double inInt,
+                    double inAbsInt, double inErr,
+                    const std::array<TypeY_, NVal_>& inVals);
 
-    template <std::size_t NEachVals_>
-    std::pair<std::vector<TypeY_>, std::vector<TypeY_>>
-    getSplitedValsMaxErrorInterval() const;
+  template <std::size_t NEachVals_>
+  std::pair<std::array<TypeY_, NEachVals_>, std::array<TypeY_, NEachVals_>>
+  getSplitedValsMaxErrorInterval() const;
 
-    template <std::size_t NAddVals_>
-    void addValsMaxErrorInterval( const std::vector<TypeY_>& inAddVals );
+  template <std::size_t NAddVals_>
+  void addValsMaxErrorInterval(const std::array<TypeY_, NAddVals_>& inAddVals);
 
-    void updateMaxErrorInterval( double inInt, double inAbsInt, double inErr );
+  void updateMaxErrorInterval(double inInt, double inAbsInt, double inErr);
 
-    template <std::size_t NEachVals_>
-    void splitMaxErrorInterval( double inInt, double inAbsInt, double inErr,
-                                const std::vector<TypeY_>& inVals,
-                                double inAddInt, double inAddAbsInt,
-                                double inAddErr,
-                                const std::vector<TypeY_>& inAddVals );
+  template <std::size_t NEachVals_>
+  void splitMaxErrorInterval(double inInt, double inAbsInt, double inErr,
+                             const std::array<TypeY_, NEachVals_>& inVals,
+                             double inAddInt, double inAddAbsInt,
+                             double inAddErr,
+                             const std::array<TypeY_, NEachVals_>& inAddVals);
 
-    double getNoise() const { return gFactorEps * mTotalAbsIntegral; }
-    double getTotalError() const { return mTotalError; }
-    double getTotalIntegral() const { return mTotalIntegral; }
-    double getTotalAbsIntegral() const { return mTotalAbsIntegral; }
-    const std::size_t& getSizeInterval() const { return mSizeInterval; }
-    const std::size_t& getIndexMaxError() const { return mTmpIndMaxErr; }
-    const std::vector<double>& getLeftPos() const { return mLeftPos; }
-    const std::vector<double>& getRightPos() const { return mRightPos; }
-    const std::vector<std::vector<TypeY_>>& getVals() const { return mVals; }
-    const std::pair<std::size_t, double>& getMaxError()
-    {
-        const auto& lResult = mQueErrors.top();
-        mTmpIndMaxErr       = lResult.first;
-        return lResult;
-    }
-    const std::vector<double>& getVals( std::size_t inIndex ) const
-    {
-        return mVals[inIndex];
-    }
+  double getNoise() const { return gFactorEps * mTotalAbsIntegral; }
+  double getTotalError() const { return mTotalError; }
+  double getTotalIntegral() const { return mTotalIntegral; }
+  double getTotalAbsIntegral() const { return mTotalAbsIntegral; }
+  const std::size_t& getSizeInterval() const { return mSizeInterval; }
+  const std::size_t& getIndexMaxError() const { return mTmpIndMaxErr; }
+  const std::array<double, MaxNInterval_>& getLeftPos() const {
+    return mLeftPos;
+  }
+  const std::array<double, MaxNInterval_>& getRightPos() const {
+    return mRightPos;
+  }
+  const std::array<std::array<TypeY_, 33>, MaxNInterval_>& getVals() const {
+    return mVals;
+  }
+  const std::pair<std::size_t, double>& getMaxError() {
+    const auto& lResult = mQueErrors.top();
+    mTmpIndMaxErr = lResult.first;
+    return lResult;
+  }
+  const std::array<TypeY_, 33>& getVals(std::size_t inIndex) const {
+    return mVals[inIndex];
+  }
 };
 
 template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
           std::size_t MaxNFuncEval_>
-class DoublyAdaptiveNewtonCotes
-{
-private:
-    Func_ mFunc;
-    std::size_t mNEvalFunc;
+class DoublyAdaptiveNewtonCotes {
+ private:
+  Func_ mFunc;
+  std::size_t mNEvalFunc;
 
-    std::vector<short> mFlags;
-    DataForDoublyAdaptive<TypeY_, MaxNInterval_> mData;
+  std::array<short, MaxNInterval_> mFlags;
+  DataForDoublyAdaptive<TypeY_, MaxNInterval_> mData;
 
-    template <std::size_t NX_>
-    std::vector<TypeY_> applyFunc( const std::vector<double>& inXs );
+  template <std::size_t NX_>
+  std::array<TypeY_, NX_> applyFunc(const std::array<double, NX_>& inXs);
 
-    template <std::size_t NEachVals_>
-    std::pair<std::tuple<TypeY_, double, double, double>,
-              std::tuple<TypeY_, double, double, double>>
-    calcBisectCotesMaxErrorInterval( const std::vector<TypeY_>& inLeftVals,
-                                     const std::vector<TypeY_>& inRightVals );
+  template <std::size_t NEachVals_>
+  std::pair<std::tuple<TypeY_, double, double, double>,
+            std::tuple<TypeY_, double, double, double>>
+  calcBisectCotesMaxErrorInterval(
+      const std::array<TypeY_, NEachVals_>& inLeftVals,
+      const std::array<TypeY_, NEachVals_>& inRightVals);
 
-    template <std::size_t NPointForCotes_>
-    std::tuple<TypeY_, double, double, double> calcCotesMaxErrorInterval();
+  template <std::size_t NPointForCotes_>
+  std::tuple<TypeY_, double, double, double> calcCotesMaxErrorInterval();
 
-    void stepIntegral();
-    void initialize( double inMin, double inMax );
-    bool isContinue( double inTolAbs, double inTolRel ) const;
+  void stepIntegral();
+  void initialize(double inMin, double inMax);
+  bool isContinue(double inTolAbs, double inTolRel) const;
 
-public:
-    DoublyAdaptiveNewtonCotes( Func_ inFunc, double inMin, double inMax );
-    double operator()( double inTolAbs, double inTolRel );
+ public:
+  DoublyAdaptiveNewtonCotes(Func_ inFunc, double inMin, double inMax);
+  double operator()(double inTolAbs, double inTolRel);
 };
 }  // namespace FiniteInterval
 
@@ -537,143 +528,141 @@ static constexpr std::array<double, 495> gNullWeightForCotes33 = {
     1.3227584021376350e+01,  -3.3515366601304244e+00, 3.4596507459410830e-01,
 };
 
-namespace FiniteInterval
-{
+namespace FiniteInterval {
 
 template <typename TypeY_, std::size_t MaxNInterval_>
 template <std::size_t NVal_>
 void DataForDoublyAdaptive<TypeY_, MaxNInterval_>::addInterval(
     double inLeftPos, double inRightPos, double inInt, double inAbsInt,
-    double inErr, const std::vector<TypeY_>& inVals )
-{
-    mLeftPos[mSizeInterval]     = inLeftPos;
-    mRightPos[mSizeInterval]    = inRightPos;
-    mIntegral[mSizeInterval]    = inInt;
-    mAbsIntegral[mSizeInterval] = inAbsInt;
-    mQueErrors.push( { mSizeInterval, inErr } );
-    for ( std::size_t iVal = 0, iRef = 0; iVal < NVal_;
-          ++iVal, iRef += ( 32 / ( NVal_ - 1 ) ) )
-    {
-        mVals[mSizeInterval][iRef] = inVals[iVal];
-    }
+    double inErr, const std::array<TypeY_, NVal_>& inVals) {
+  mLeftPos[mSizeInterval] = inLeftPos;
+  mRightPos[mSizeInterval] = inRightPos;
+  mIntegral[mSizeInterval] = inInt;
+  mAbsIntegral[mSizeInterval] = inAbsInt;
+  mQueErrors.push({mSizeInterval, inErr});
+  for (std::size_t iVal = 0, iRef = 0; iVal < NVal_;
+       ++iVal, iRef += (32 / (NVal_ - 1))) {
+    mVals[mSizeInterval][iRef] = inVals[iVal];
+  }
 
-    mTotalIntegral += inInt;
-    mTotalAbsIntegral += inAbsInt;
-    mTotalError += inErr;
+  mTotalIntegral += inInt;
+  mTotalAbsIntegral += inAbsInt;
+  mTotalError += inErr;
 
-    ++mSizeInterval;
+  ++mSizeInterval;
 }
 
 template <typename TypeY_, std::size_t MaxNInterval_>
-DataForDoublyAdaptive<TypeY_, MaxNInterval_>::DataForDoublyAdaptive() :
-    mSizeInterval( 0 ),
-    mLeftPos( MaxNInterval_ ),
-    mRightPos( MaxNInterval_ ),
-    mIntegral( MaxNInterval_ ),
-    mAbsIntegral( MaxNInterval_ ),
-    mVals( MaxNInterval_, std::vector<double>( 33, 0.0 ) ),
-    mTotalError( 0.0 ),
-    mTotalIntegral( 0.0 ),
-    mTotalAbsIntegral( 0.0 )
-{
+DataForDoublyAdaptive<TypeY_, MaxNInterval_>::DataForDoublyAdaptive()
+    : mSizeInterval(0),
+      mTotalError(0.0),
+      mTotalIntegral(0.0),
+      mTotalAbsIntegral(0.0) {
+  //   for (std::size_t iInterval = 0; iInterval < MaxNInterval_; ++iInterval) {
+  //     mLeftPos[iInterval] = 0.0;
+  //     mRightPos[iInterval] = 0.0;
+  //     mIntegral[iInterval] = 0.0;
+  //     mAbsIntegral[iInterval] = 0.0;
+  //     for (std::size_t iVal = 0; iVal < 33; ++iVal) {
+  //       mVals[iInterval][iVal] = 0.0;
+  //     }
+  // }
 }
 
 template <typename TypeY_, std::size_t MaxNInterval_>
 template <std::size_t NVal_>
 void DataForDoublyAdaptive<TypeY_, MaxNInterval_>::initInterval(
     double inLeftPos, double inRightPos, double inInt, double inAbsInt,
-    double inErr, const std::vector<TypeY_>& inVals )
-{
-    if ( mSizeInterval > 0 ) { throw std::invalid_argument( "initInterval" ); }
-    addInterval<NVal_>( inLeftPos, inRightPos, inInt, inAbsInt, inErr, inVals );
+    double inErr, const std::array<TypeY_, NVal_>& inVals) {
+  if (mSizeInterval > 0) {
+    throw std::invalid_argument("initInterval");
+  }
+  addInterval<NVal_>(inLeftPos, inRightPos, inInt, inAbsInt, inErr, inVals);
 }
 
 template <typename TypeY_, std::size_t MaxNInterval_>
 template <std::size_t NEachVals_>
-std::pair<std::vector<TypeY_>, std::vector<TypeY_>> DataForDoublyAdaptive<
-    TypeY_, MaxNInterval_>::getSplitedValsMaxErrorInterval() const
-{
-    std::vector<double> lLeftVals( NEachVals_ ), lRightVals( NEachVals_ );
-    constexpr std::size_t lIntervalRef = ( ( 16 + NEachVals_ ) / NEachVals_ );
-    for ( std::size_t iVal = 0, iRef = 0; iVal < NEachVals_;
-          ++iVal, iRef += lIntervalRef )
-    {
-        assert( iRef + 16 < 33 );
-        lLeftVals[iVal]  = mVals[mTmpIndMaxErr][iRef];
-        lRightVals[iVal] = mVals[mTmpIndMaxErr][iRef + 16];
-    }
-    return { lLeftVals, lRightVals };
+std::pair<std::array<TypeY_, NEachVals_>, std::array<TypeY_, NEachVals_>>
+DataForDoublyAdaptive<TypeY_, MaxNInterval_>::getSplitedValsMaxErrorInterval()
+    const {
+  std::array<double, NEachVals_> lLeftVals, lRightVals;
+  for (std::size_t iVal = 0; iVal < NEachVals_; ++iVal) {
+    lLeftVals[iVal] = 0.0;
+    lRightVals[iVal] = 0.0;
+  }
+  constexpr std::size_t lIntervalRef = ((16 + NEachVals_) / NEachVals_);
+  for (std::size_t iVal = 0, iRef = 0; iVal < NEachVals_;
+       ++iVal, iRef += lIntervalRef) {
+    assert(iRef + 16 < 33);
+    lLeftVals[iVal] = mVals[mTmpIndMaxErr][iRef];
+    lRightVals[iVal] = mVals[mTmpIndMaxErr][iRef + 16];
+  }
+  return {lLeftVals, lRightVals};
 }
 
 template <typename TypeY_, std::size_t MaxNInterval_>
 template <std::size_t NAddVals_>
 void DataForDoublyAdaptive<TypeY_, MaxNInterval_>::addValsMaxErrorInterval(
-    const std::vector<TypeY_>& inAddVals )
-{
-    constexpr std::size_t lStartRef = 16 / NAddVals_;
-    constexpr std::size_t lStepRef  = 32 / NAddVals_;
-    for ( std::size_t iVal = 0, iRef = lStartRef; iVal < NAddVals_;
-          ++iVal, iRef += lStepRef )
-    {
-        mVals[mTmpIndMaxErr][iRef] = inAddVals[iVal];
-    }
+    const std::array<TypeY_, NAddVals_>& inAddVals) {
+  constexpr std::size_t lStartRef = 16 / NAddVals_;
+  constexpr std::size_t lStepRef = 32 / NAddVals_;
+  for (std::size_t iVal = 0, iRef = lStartRef; iVal < NAddVals_;
+       ++iVal, iRef += lStepRef) {
+    mVals[mTmpIndMaxErr][iRef] = inAddVals[iVal];
+  }
 }
 
 template <typename TypeY_, std::size_t MaxNInterval_>
 void DataForDoublyAdaptive<TypeY_, MaxNInterval_>::updateMaxErrorInterval(
-    double inInt, double inAbsInt, double inErr )
-{
-    const auto& lPreviousErrPair = mQueErrors.top();
-    assert( lPreviousErrPair.first == mTmpIndMaxErr );
+    double inInt, double inAbsInt, double inErr) {
+  const auto& lPreviousErrPair = mQueErrors.top();
+  assert(lPreviousErrPair.first == mTmpIndMaxErr);
 
-    mTotalError += inErr - lPreviousErrPair.second;
-    mQueErrors.pop();
-    mQueErrors.push( { mTmpIndMaxErr, inErr } );
+  mTotalError += inErr - lPreviousErrPair.second;
+  mQueErrors.pop();
+  mQueErrors.push({mTmpIndMaxErr, inErr});
 
-    mTotalIntegral += inInt - mIntegral[mTmpIndMaxErr];
-    mTotalAbsIntegral += inAbsInt - mAbsIntegral[mTmpIndMaxErr];
+  mTotalIntegral += inInt - mIntegral[mTmpIndMaxErr];
+  mTotalAbsIntegral += inAbsInt - mAbsIntegral[mTmpIndMaxErr];
 
-    mIntegral[mTmpIndMaxErr]    = inInt;
-    mAbsIntegral[mTmpIndMaxErr] = inAbsInt;
+  mIntegral[mTmpIndMaxErr] = inInt;
+  mAbsIntegral[mTmpIndMaxErr] = inAbsInt;
 }
 
 template <typename TypeY_, std::size_t MaxNInterval_>
 template <std::size_t NEachVals_>
 void DataForDoublyAdaptive<TypeY_, MaxNInterval_>::splitMaxErrorInterval(
     double inInt, double inAbsInt, double inErr,
-    const std::vector<TypeY_>& inVals, double inAddInt, double inAddAbsInt,
-    double inAddErr, const std::vector<TypeY_>& inAddVals )
-{
-    updateMaxErrorInterval( inInt, inAbsInt, inErr );
-    constexpr std::size_t lStepRef = ( 32 / ( NEachVals_ - 1 ) );
-    for ( std::size_t iVal = 0, iRef = 0; iVal < NEachVals_;
-          ++iVal, iRef += lStepRef )
-    {
-        assert( iRef < 33 );
-        mVals[mTmpIndMaxErr][iRef] = inVals[iVal];
-    }
+    const std::array<TypeY_, NEachVals_>& inVals, double inAddInt,
+    double inAddAbsInt, double inAddErr,
+    const std::array<TypeY_, NEachVals_>& inAddVals) {
+  updateMaxErrorInterval(inInt, inAbsInt, inErr);
+  constexpr std::size_t lStepRef = (32 / (NEachVals_ - 1));
+  for (std::size_t iVal = 0, iRef = 0; iVal < NEachVals_;
+       ++iVal, iRef += lStepRef) {
+    assert(iRef < 33);
+    mVals[mTmpIndMaxErr][iRef] = inVals[iVal];
+  }
 
-    const double lMidPos =
-        0.5 * ( mLeftPos[mTmpIndMaxErr] + mRightPos[mTmpIndMaxErr] );
-    addInterval<NEachVals_>( lMidPos, mRightPos[mTmpIndMaxErr], inAddInt,
-                             inAddAbsInt, inAddErr, inAddVals );
-    mRightPos[mTmpIndMaxErr] = lMidPos;
+  const double lMidPos =
+      0.5 * (mLeftPos[mTmpIndMaxErr] + mRightPos[mTmpIndMaxErr]);
+  addInterval<NEachVals_>(lMidPos, mRightPos[mTmpIndMaxErr], inAddInt,
+                          inAddAbsInt, inAddErr, inAddVals);
+  mRightPos[mTmpIndMaxErr] = lMidPos;
 }
 
 template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
           std::size_t MaxNFuncEval_>
 template <std::size_t NX_>
-std::vector<TypeY_> DoublyAdaptiveNewtonCotes<
+std::array<TypeY_, NX_> DoublyAdaptiveNewtonCotes<
     Func_, TypeY_, MaxNInterval_,
-    MaxNFuncEval_>::applyFunc( const std::vector<double>& inXs )
-{
-    std::vector<TypeY_> lResult( NX_ );
-    for ( std::size_t iX = 0; iX < NX_; ++iX )
-    {
-        lResult[iX] = mFunc( inXs[iX] );
-    }
-    mNEvalFunc += NX_;
-    return lResult;
+    MaxNFuncEval_>::applyFunc(const std::array<double, NX_>& inXs) {
+  std::array<TypeY_, NX_> lResult;
+  for (std::size_t iX = 0; iX < NX_; ++iX) {
+    lResult[iX] = mFunc(inXs[iX]);
+  }
+  mNEvalFunc += NX_;
+  return lResult;
 }
 
 template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
@@ -682,403 +671,364 @@ template <std::size_t NEachVals_>
 std::pair<std::tuple<TypeY_, double, double, double>,
           std::tuple<TypeY_, double, double, double>>
 DoublyAdaptiveNewtonCotes<Func_, TypeY_, MaxNInterval_, MaxNFuncEval_>::
-    calcBisectCotesMaxErrorInterval( const std::vector<TypeY_>& inLeftVals,
-                                     const std::vector<TypeY_>& inRightVals )
-{
-    assert( inLeftVals.size() == NEachVals_ &&
-            inRightVals.size() == NEachVals_ );
+    calcBisectCotesMaxErrorInterval(
+        const std::array<TypeY_, NEachVals_>& inLeftVals,
+        const std::array<TypeY_, NEachVals_>& inRightVals) {
+  assert(inLeftVals.size() == NEachVals_ && inRightVals.size() == NEachVals_);
 
-    const std::size_t& lTmpIndex        = mData.getIndexMaxError();
-    const double& lTmpLeft              = mData.getLeftPos()[lTmpIndex];
-    const double& lTmpRight             = mData.getRightPos()[lTmpIndex];
-    const std::vector<double>& lTmpVals = mData.getVals()[lTmpIndex];
+  const std::size_t& lTmpIndex = mData.getIndexMaxError();
+  const double& lTmpLeft = mData.getLeftPos()[lTmpIndex];
+  const double& lTmpRight = mData.getRightPos()[lTmpIndex];
+  const std::array<double, 33>& lTmpVals = mData.getVals()[lTmpIndex];
 
-    const double lTmpMid = 0.5 * ( lTmpLeft + lTmpRight );
-    return { evalNewtonCotesIntegralAndErr<NEachVals_, TypeY_>(
-                 lTmpLeft, lTmpMid, inLeftVals ),
-             evalNewtonCotesIntegralAndErr<NEachVals_, TypeY_>(
-                 lTmpMid, lTmpRight, inRightVals ) };
+  const double lTmpMid = 0.5 * (lTmpLeft + lTmpRight);
+  return {evalNewtonCotesIntegralAndErr<NEachVals_, TypeY_>(lTmpLeft, lTmpMid,
+                                                            inLeftVals),
+          evalNewtonCotesIntegralAndErr<NEachVals_, TypeY_>(lTmpMid, lTmpRight,
+                                                            inRightVals)};
 }
 
 template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
           std::size_t MaxNFuncEval_>
 template <std::size_t NPointForCotes_>
 std::tuple<TypeY_, double, double, double> DoublyAdaptiveNewtonCotes<
-    Func_, TypeY_, MaxNInterval_, MaxNFuncEval_>::calcCotesMaxErrorInterval()
-{
-    constexpr std::size_t lNAdditionalPoints = NPointForCotes_ / 2;
-    constexpr double lFactorDif = 1.0 / double( lNAdditionalPoints );
-    std::vector<double> lAdditionalValsX( lNAdditionalPoints );
+    Func_, TypeY_, MaxNInterval_, MaxNFuncEval_>::calcCotesMaxErrorInterval() {
+  constexpr std::size_t lNAdditionalPoints = NPointForCotes_ / 2;
+  constexpr double lFactorDif = 1.0 / double(lNAdditionalPoints);
+  std::array<double, lNAdditionalPoints> lAdditionalValsX;
+  for (std::size_t iX = 0; iX < lNAdditionalPoints; ++iX) {
+    lAdditionalValsX[iX] = 0.0;
+  }
 
-    const std::size_t& lTmpIndex        = mData.getIndexMaxError();
-    const double& lTmpLeft              = mData.getLeftPos()[lTmpIndex];
-    const double& lTmpRight             = mData.getRightPos()[lTmpIndex];
-    const std::vector<double>& lTmpVals = mData.getVals()[lTmpIndex];
+  const std::size_t& lTmpIndex = mData.getIndexMaxError();
+  const double& lTmpLeft = mData.getLeftPos()[lTmpIndex];
+  const double& lTmpRight = mData.getRightPos()[lTmpIndex];
+  const std::array<double, 33>& lTmpVals = mData.getVals()[lTmpIndex];
 
-    const double lDif   = lFactorDif * ( lTmpRight - lTmpLeft );
-    lAdditionalValsX[0] = lTmpLeft + 0.5 * lDif;
-    for ( std::size_t iX = 0; iX < lNAdditionalPoints - 1; ++iX )
-    {
-        lAdditionalValsX[iX + 1] = lAdditionalValsX[iX] + lDif;
-    }
-    const auto lAdditionalValsY =
-        applyFunc<lNAdditionalPoints>( lAdditionalValsX );
-    mData.template addValsMaxErrorInterval<lNAdditionalPoints>(
-        lAdditionalValsY );
-    if constexpr ( NPointForCotes_ == 33 )
-    {
-        return evalNewtonCotesIntegralAndErr<33, TypeY_>( lTmpLeft, lTmpRight,
-                                                          lTmpVals );
-    }
+  const double lDif = lFactorDif * (lTmpRight - lTmpLeft);
+  lAdditionalValsX[0] = lTmpLeft + 0.5 * lDif;
+  for (std::size_t iX = 0; iX < lNAdditionalPoints - 1; ++iX) {
+    lAdditionalValsX[iX + 1] = lAdditionalValsX[iX] + lDif;
+  }
+  const auto lAdditionalValsY = applyFunc<lNAdditionalPoints>(lAdditionalValsX);
+  mData.template addValsMaxErrorInterval<lNAdditionalPoints>(lAdditionalValsY);
+  if constexpr (NPointForCotes_ == 33) {
+    return evalNewtonCotesIntegralAndErr<33, TypeY_>(lTmpLeft, lTmpRight,
+                                                     lTmpVals);
+  }
 
-    std::vector<TypeY_> lCotesVals( NPointForCotes_ );
-    constexpr std::size_t lStepRef = 32 / ( NPointForCotes_ - 1 );
-    for ( std::size_t iVal = 0, iRef = 0; iVal < NPointForCotes_;
-          ++iVal, iRef += lStepRef )
-    {
-        lCotesVals[iVal] = lTmpVals[iRef];
-    }
-    return evalNewtonCotesIntegralAndErr<NPointForCotes_, TypeY_>(
-        lTmpLeft, lTmpRight, lCotesVals );
+  std::array<TypeY_, NPointForCotes_> lCotesVals;
+  constexpr std::size_t lStepRef = 32 / (NPointForCotes_ - 1);
+  for (std::size_t iVal = 0, iRef = 0; iVal < NPointForCotes_;
+       ++iVal, iRef += lStepRef) {
+    lCotesVals[iVal] = lTmpVals[iRef];
+  }
+  return evalNewtonCotesIntegralAndErr<NPointForCotes_, TypeY_>(
+      lTmpLeft, lTmpRight, lCotesVals);
 }
 
 template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
           std::size_t MaxNFuncEval_>
 void DoublyAdaptiveNewtonCotes<Func_, TypeY_, MaxNInterval_,
-                               MaxNFuncEval_>::stepIntegral()
-{
-    const auto [lIndInterval, lErr] = mData.getMaxError();
-    const short lTmpFlag            = mFlags[lIndInterval];
-    switch ( lTmpFlag )
-    {
-        case 0:
-        {
-            const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
-                calcCotesMaxErrorInterval<9>();
-            mData.updateMaxErrorInterval( lNewInt, lNewAbsInt, lNewErr );
-            mFlags[lIndInterval] = 1 + ( lNewRMax < 0.25 );
-            break;
-        }
-        case 1:
-        case 2:
-        {
-            const auto [lLeftVals, lRightVals] =
-                mData.template getSplitedValsMaxErrorInterval<5>();
-            const auto [lLeftTuple, lRightTuple] =
-                calcBisectCotesMaxErrorInterval<5>( lLeftVals, lRightVals );
-            const auto& [lLInt, lLAbsInt, lLErr, lLRMax] = lLeftTuple;
-            const auto& [lRInt, lRAbsInt, lRErr, lRRMax] = lRightTuple;
-            if ( lTmpFlag == 2 && ( lLErr + lRErr >= lErr ) )
-            {
-                const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
-                    calcCotesMaxErrorInterval<17>();
-                mData.updateMaxErrorInterval( lNewInt, lNewAbsInt, lNewRMax );
-                mFlags[lIndInterval] = 4;
-            }
-            else
-            {
-                mFlags[lIndInterval]            = 0;
-                mFlags[mData.getSizeInterval()] = 0;
-                mData.template splitMaxErrorInterval<5>(
-                    lLInt, lLAbsInt, lLErr, lLeftVals, lRInt, lRAbsInt, lRErr,
-                    lRightVals );
-            }
-            break;
-        }
-        case 3:
-        {
-            const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
-                calcCotesMaxErrorInterval<17>();
-            mData.updateMaxErrorInterval( lNewInt, lNewAbsInt, lNewErr );
-            mFlags[lIndInterval] = 4 + ( lNewRMax < 0.125 );
-            break;
-        }
-        case 4:
-        case 5:
-        {
-            const auto [lLeftVals, lRightVals] =
-                mData.template getSplitedValsMaxErrorInterval<9>();
-            const auto [lLeftTuple, lRightTuple] =
-                calcBisectCotesMaxErrorInterval<9>( lLeftVals, lRightVals );
-            const auto& [lLInt, lLAbsInt, lLErr, lLRMax] = lLeftTuple;
-            const auto& [lRInt, lRAbsInt, lRErr, lRRMax] = lRightTuple;
-            if ( lTmpFlag == 5 && ( lLErr + lRErr >= lErr ) )
-            {
-                const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
-                    calcCotesMaxErrorInterval<33>();
-                mData.updateMaxErrorInterval( lNewInt, lNewAbsInt, lNewErr );
-                mFlags[lIndInterval] = 7;
-            }
-            else
-            {
-                mFlags[lIndInterval]            = 3;
-                mFlags[mData.getSizeInterval()] = 3;
-                mData.template splitMaxErrorInterval<9>(
-                    lLInt, lLAbsInt, lLErr, lLeftVals, lRInt, lRAbsInt, lRErr,
-                    lRightVals );
-            }
-            break;
-        }
-        case 6:
-        {
-            const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
-                calcCotesMaxErrorInterval<33>();
-            mData.updateMaxErrorInterval( lNewInt, lNewAbsInt, lNewErr );
-            mFlags[lIndInterval] = 7;
-            break;
-        }
-        case 7:
-        {
-            const auto [lLeftVals, lRightVals] =
-                mData.template getSplitedValsMaxErrorInterval<17>();
-            const auto [lLeftTuple, lRightTuple] =
-                calcBisectCotesMaxErrorInterval<17>( lLeftVals, lRightVals );
-            const auto& [lLInt, lLAbsInt, lLErr, lLRMax] = lLeftTuple;
-            const auto& [lRInt, lRAbsInt, lRErr, lRRMax] = lRightTuple;
-            mFlags[lIndInterval]                         = 6;
-            mFlags[mData.getSizeInterval()]              = 6;
-            mData.template splitMaxErrorInterval<17>(
-                lLInt, lLAbsInt, lLErr, lLeftVals, lRInt, lRAbsInt, lRErr,
-                lRightVals );
-            break;
-        }
+                               MaxNFuncEval_>::stepIntegral() {
+  const auto [lIndInterval, lErr] = mData.getMaxError();
+  const short lTmpFlag = mFlags[lIndInterval];
+  switch (lTmpFlag) {
+    case 0: {
+      const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
+          calcCotesMaxErrorInterval<9>();
+      mData.updateMaxErrorInterval(lNewInt, lNewAbsInt, lNewErr);
+      mFlags[lIndInterval] = 1 + (lNewRMax < 0.25);
+      break;
     }
+    case 1:
+    case 2: {
+      const auto [lLeftVals, lRightVals] =
+          mData.template getSplitedValsMaxErrorInterval<5>();
+      const auto [lLeftTuple, lRightTuple] =
+          calcBisectCotesMaxErrorInterval<5>(lLeftVals, lRightVals);
+      const auto& [lLInt, lLAbsInt, lLErr, lLRMax] = lLeftTuple;
+      const auto& [lRInt, lRAbsInt, lRErr, lRRMax] = lRightTuple;
+      if (lTmpFlag == 2 && (lLErr + lRErr >= lErr)) {
+        const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
+            calcCotesMaxErrorInterval<17>();
+        mData.updateMaxErrorInterval(lNewInt, lNewAbsInt, lNewRMax);
+        mFlags[lIndInterval] = 4;
+      } else {
+        mFlags[lIndInterval] = 0;
+        mFlags[mData.getSizeInterval()] = 0;
+        mData.template splitMaxErrorInterval<5>(lLInt, lLAbsInt, lLErr,
+                                                lLeftVals, lRInt, lRAbsInt,
+                                                lRErr, lRightVals);
+      }
+      break;
+    }
+    case 3: {
+      const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
+          calcCotesMaxErrorInterval<17>();
+      mData.updateMaxErrorInterval(lNewInt, lNewAbsInt, lNewErr);
+      mFlags[lIndInterval] = 4 + (lNewRMax < 0.125);
+      break;
+    }
+    case 4:
+    case 5: {
+      const auto [lLeftVals, lRightVals] =
+          mData.template getSplitedValsMaxErrorInterval<9>();
+      const auto [lLeftTuple, lRightTuple] =
+          calcBisectCotesMaxErrorInterval<9>(lLeftVals, lRightVals);
+      const auto& [lLInt, lLAbsInt, lLErr, lLRMax] = lLeftTuple;
+      const auto& [lRInt, lRAbsInt, lRErr, lRRMax] = lRightTuple;
+      if (lTmpFlag == 5 && (lLErr + lRErr >= lErr)) {
+        const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
+            calcCotesMaxErrorInterval<33>();
+        mData.updateMaxErrorInterval(lNewInt, lNewAbsInt, lNewErr);
+        mFlags[lIndInterval] = 7;
+      } else {
+        mFlags[lIndInterval] = 3;
+        mFlags[mData.getSizeInterval()] = 3;
+        mData.template splitMaxErrorInterval<9>(lLInt, lLAbsInt, lLErr,
+                                                lLeftVals, lRInt, lRAbsInt,
+                                                lRErr, lRightVals);
+      }
+      break;
+    }
+    case 6: {
+      const auto [lNewInt, lNewAbsInt, lNewErr, lNewRMax] =
+          calcCotesMaxErrorInterval<33>();
+      mData.updateMaxErrorInterval(lNewInt, lNewAbsInt, lNewErr);
+      mFlags[lIndInterval] = 7;
+      break;
+    }
+    case 7: {
+      const auto [lLeftVals, lRightVals] =
+          mData.template getSplitedValsMaxErrorInterval<17>();
+      const auto [lLeftTuple, lRightTuple] =
+          calcBisectCotesMaxErrorInterval<17>(lLeftVals, lRightVals);
+      const auto& [lLInt, lLAbsInt, lLErr, lLRMax] = lLeftTuple;
+      const auto& [lRInt, lRAbsInt, lRErr, lRRMax] = lRightTuple;
+      mFlags[lIndInterval] = 6;
+      mFlags[mData.getSizeInterval()] = 6;
+      mData.template splitMaxErrorInterval<17>(lLInt, lLAbsInt, lLErr,
+                                               lLeftVals, lRInt, lRAbsInt,
+                                               lRErr, lRightVals);
+      break;
+    }
+  }
 }
 
 template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
           std::size_t MaxNFuncEval_>
 void DoublyAdaptiveNewtonCotes<Func_, TypeY_, MaxNInterval_,
-                               MaxNFuncEval_>::initialize( double inMin,
-                                                           double inMax )
-{
-    std::vector<double> lTmpX( 9 );
-    const double lTmpDif = 0.125 * ( inMax - inMin );
-    lTmpX[0]             = inMin;
-    for ( std::size_t j = 0; j < 8; ++j ) { lTmpX[j + 1] = lTmpX[j] + lTmpDif; }
-    const auto lTmpY = applyFunc<9>( lTmpX );
+                               MaxNFuncEval_>::initialize(double inMin,
+                                                          double inMax) {
+  std::array<double, 9> lTmpX;
+  const double lTmpDif = 0.125 * (inMax - inMin);
+  lTmpX[0] = inMin;
+  for (std::size_t j = 0; j < 8; ++j) {
+    lTmpX[j + 1] = lTmpX[j] + lTmpDif;
+  }
+  const auto lTmpY = applyFunc<9>(lTmpX);
 
-    const auto [lTmpInt, lTmpAbsInt, lTmpErr, lTmpRMax] =
-        evalNewtonCotesIntegralAndErr<9, TypeY_>( inMin, inMax, lTmpY );
+  const auto [lTmpInt, lTmpAbsInt, lTmpErr, lTmpRMax] =
+      evalNewtonCotesIntegralAndErr<9, TypeY_>(inMin, inMax, lTmpY);
 
-    mData.template initInterval<9>( inMin, inMax, lTmpInt, lTmpAbsInt, lTmpErr,
-                                    lTmpY );
-    mFlags[0] = 1 + ( lTmpRMax < 0.25 );
+  mData.template initInterval<9>(inMin, inMax, lTmpInt, lTmpAbsInt, lTmpErr,
+                                 lTmpY);
+  mFlags[0] = 1 + (lTmpRMax < 0.25);
 }
 template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
           std::size_t MaxNFuncEval_>
 bool DoublyAdaptiveNewtonCotes<Func_, TypeY_, MaxNInterval_,
-                               MaxNFuncEval_>::isContinue( double inTolAbs,
-                                                           double inTolRel )
-    const
-{
-    return ( mData.getTotalError() >
-             std::max( { std::abs( mData.getTotalIntegral() ) * inTolRel,
-                         inTolAbs, mData.getNoise() } ) ) &&
-           ( mNEvalFunc < MaxNFuncEval_ - 3 ) &&
-           ( mData.getSizeInterval() < MaxNInterval_ - 3 );
+                               MaxNFuncEval_>::isContinue(double inTolAbs,
+                                                          double inTolRel)
+    const {
+  return (mData.getTotalError() >
+          std::max({std::abs(mData.getTotalIntegral()) * inTolRel, inTolAbs,
+                    mData.getNoise()})) &&
+         (mNEvalFunc < MaxNFuncEval_ - 3) &&
+         (mData.getSizeInterval() < MaxNInterval_ - 3);
 }
 
 template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
           std::size_t MaxNFuncEval_>
 DoublyAdaptiveNewtonCotes<Func_, TypeY_, MaxNInterval_, MaxNFuncEval_>::
-    DoublyAdaptiveNewtonCotes( Func_ inFunc, double inMin, double inMax ) :
-    mFunc( inFunc ), mNEvalFunc( 0 ), mFlags( MaxNInterval_, 0 ), mData()
-{
-    initialize( inMin, inMax );
+    DoublyAdaptiveNewtonCotes(Func_ inFunc, double inMin, double inMax)
+    : mFunc(inFunc), mNEvalFunc(0), mData() {
+  initialize(inMin, inMax);
 }
 template <typename Func_, typename TypeY_, std::size_t MaxNInterval_,
           std::size_t MaxNFuncEval_>
 double DoublyAdaptiveNewtonCotes<Func_, TypeY_, MaxNInterval_,
-                                 MaxNFuncEval_>::operator()( double inTolAbs,
-                                                             double inTolRel )
-{
-    while ( isContinue( inTolAbs, inTolRel ) ) { stepIntegral(); }
-    return mData.getTotalIntegral();
+                                 MaxNFuncEval_>::operator()(double inTolAbs,
+                                                            double inTolRel) {
+  while (isContinue(inTolAbs, inTolRel)) {
+    stepIntegral();
+  }
+  return mData.getTotalIntegral();
 }
 
 template <std::size_t N_, std::array<double, N_> const& Weight_,
           typename TypeY_>
-double weightedSum( const std::vector<TypeY_>& inVals )
-{
-    assert( inVals.size() == N_ );
-    double lSum = 0.0;
-    for ( std::size_t i = 0; i < N_; ++i ) { lSum += Weight_[i] * inVals[i]; }
-    return lSum;
+double weightedSum(const std::array<TypeY_, N_>& inVals) {
+  assert(inVals.size() == N_);
+  double lSum = 0.0;
+  for (std::size_t i = 0; i < N_; ++i) {
+    lSum += Weight_[i] * inVals[i];
+  }
+  return lSum;
 }
 
 template <std::size_t N_, std::array<double, N_> const& Weight_,
           typename TypeY_>
-double weightedAbsSum( const std::vector<TypeY_>& inVals )
-{
-    assert( inVals.size() == N_ );
-    double lSum = 0.0;
-    for ( std::size_t i = 0; i < N_; ++i )
-    {
-        lSum += std::abs( Weight_[i] * inVals[i] );
-    }
-    return lSum;
+double weightedAbsSum(const std::array<TypeY_, N_>& inVals) {
+  assert(inVals.size() == N_);
+  double lSum = 0.0;
+  for (std::size_t i = 0; i < N_; ++i) {
+    lSum += std::abs(Weight_[i] * inVals[i]);
+  }
+  return lSum;
 }
 
 template <std::size_t N1_, std::size_t N2_,
           std::array<double, N1_ * N2_> const& Weight_, typename TypeY_>
-std::vector<double> weightedSum2D( const std::vector<TypeY_>& inVals )
-{
-    assert( inVals.size() == N2_ );
-    std::vector<double> lResult( N1_ );
-    for ( std::size_t i = 0, iN2 = 0; i < N1_; ++i, iN2 += N2_ )
-    {
-        for ( std::size_t j = 0; j < N2_; ++j )
-        {
-            lResult[i] += Weight_[iN2 + j] * inVals[j];
-        }
+std::array<double, N1_> weightedSum2D(const std::array<TypeY_, N2_>& inVals) {
+  assert(inVals.size() == N2_);
+  std::array<double, N1_> lResult;
+  for (std::size_t i = 0; i < N1_; ++i) {
+    lResult[i] = 0.0;
+  }
+  for (std::size_t i = 0, iN2 = 0; i < N1_; ++i, iN2 += N2_) {
+    for (std::size_t j = 0; j < N2_; ++j) {
+      lResult[i] += Weight_[iN2 + j] * inVals[j];
     }
-    return lResult;
+  }
+  return lResult;
 }
 
 template <std::size_t N_, std::array<double, N_> const& Weight_,
           typename TypeY_>
-std::tuple<double, double> evalIntAndAbsInt( double lHalfDif,
-                                             const std::vector<TypeY_>& inVals )
-{
-    return {
-        lHalfDif * weightedSum<N_, Weight_>( inVals ),
-        lHalfDif * weightedAbsSum<N_, Weight_>( inVals ),
-    };
+std::tuple<double, double> evalIntAndAbsInt(
+    double lHalfDif, const std::array<TypeY_, N_>& inVals) {
+  return {
+      lHalfDif * weightedSum<N_, Weight_>(inVals),
+      lHalfDif * weightedAbsSum<N_, Weight_>(inVals),
+  };
 }
+
+template <std::size_t N1_>
+struct CalculateArraySize {
+  static constexpr std::size_t value = (N1_ < 5)   ? N1_
+                                       : (N1_ < 9) ? (N1_ / 2)
+                                                   : 5;
+};
 
 template <std::size_t N1_, std::size_t N2_,
           std::array<double, N1_ * N2_> const& Weight_, double const& Coeff_,
           typename TypeY_>
-std::pair<double, double> evalErrAndRMax( double inHalfDif, double inAbsInt,
-                                          const std::vector<TypeY_>& inVals )
-{
-    std::vector<double> lTmpErrVec = weightedSum2D<N1_, N2_, Weight_>( inVals );
+std::pair<double, double> evalErrAndRMax(
+    double inHalfDif, double inAbsInt, const std::array<TypeY_, N2_>& inVals) {
+  std::array<double, N1_> lTmpErrVec = weightedSum2D<N1_, N2_, Weight_>(inVals);
 
-    std::size_t lNErrVec;
-    if constexpr ( N1_ < 5 ) { lNErrVec = N1_; }
-    else if constexpr ( N1_ < 9 ) { lNErrVec = N1_ / 2; }
-    else { lNErrVec = 5; }
+  constexpr std::size_t lNErrVec = CalculateArraySize<N1_>::value;
+  std::array<double, lNErrVec> lErrVec;
 
-    std::vector<double> lErrVec( lNErrVec );
-    if constexpr ( N1_ < 5 )
-    {
-        for ( std::size_t iRes = 0; iRes < N1_; ++iRes )
-        {
-            lErrVec[iRes] = inHalfDif * std::abs( lTmpErrVec[iRes] );
-        }
+  if constexpr (N1_ < 5) {
+    for (std::size_t iRes = 0; iRes < N1_; ++iRes) {
+      lErrVec[iRes] = inHalfDif * std::abs(lTmpErrVec[iRes]);
     }
-    else if constexpr ( N1_ < 9 )
-    {
-        for ( std::size_t iRes = 0, iE = 0; iRes < lNErrVec; ++iRes, iE += 2 )
-        {
-            lErrVec[iRes] =
-                inHalfDif *
-                std::sqrt( lTmpErrVec[iE] * lTmpErrVec[iE] +
-                           lTmpErrVec[iE + 1] * lTmpErrVec[iE + 1] );
-        }
+  } else if constexpr (N1_ < 9) {
+    for (std::size_t iRes = 0, iE = 0; iRes < lNErrVec; ++iRes, iE += 2) {
+      lErrVec[iRes] =
+          inHalfDif * std::sqrt(lTmpErrVec[iE] * lTmpErrVec[iE] +
+                                lTmpErrVec[iE + 1] * lTmpErrVec[iE + 1]);
     }
-    else
-    {
-        for ( std::size_t iRes = 0, iE = 0; iRes < 5; ++iRes, iE += 3 )
-        {
-            lErrVec[iRes] =
-                inHalfDif *
-                std::sqrt( lTmpErrVec[iE] * lTmpErrVec[iE] +
-                           lTmpErrVec[iE + 1] * lTmpErrVec[iE + 1] +
-                           lTmpErrVec[iE + 2] * lTmpErrVec[iE + 2] );
-        }
+  } else {
+    for (std::size_t iRes = 0, iE = 0; iRes < 5; ++iRes, iE += 3) {
+      lErrVec[iRes] =
+          inHalfDif * std::sqrt(lTmpErrVec[iE] * lTmpErrVec[iE] +
+                                lTmpErrVec[iE + 1] * lTmpErrVec[iE + 1] +
+                                lTmpErrVec[iE + 2] * lTmpErrVec[iE + 2]);
     }
+  }
 
-    double lRMax = 0.0;
-    for ( std::size_t i = 0; i < lNErrVec - 1; ++i )
-    {
-        if ( lErrVec[i + 1] == 0.0 )
-        {
-            lRMax = 2.0;
-            break;
-        }
-        lRMax = std::max( { lRMax, lErrVec[i] / lErrVec[i + 1] } );
+  double lRMax = 0.0;
+  for (std::size_t i = 0; i < lNErrVec - 1; ++i) {
+    if (lErrVec[i + 1] == 0.0) {
+      lRMax = 2.0;
+      break;
     }
-    const double lNoise = gFactorEps * inAbsInt;
-    if ( lErrVec[0] < lNoise && lErrVec[1] < lNoise ) { return { 0.0, lRMax }; }
-    if ( inHalfDif <= gFactorEps ) { return { 0.0, lRMax }; }
-    if ( lRMax > 1.0 )
-    {
-        return {
-            Coeff_ * ( *std::max_element( lErrVec.begin(), lErrVec.end() ) ),
-            lRMax };
-    }
+    lRMax = std::max({lRMax, lErrVec[i] / lErrVec[i + 1]});
+  }
+  const double lNoise = gFactorEps * inAbsInt;
+  if (lErrVec[0] < lNoise && lErrVec[1] < lNoise) {
+    return {0.0, lRMax};
+  }
+  if (inHalfDif <= gFactorEps) {
+    return {0.0, lRMax};
+  }
+  if (lRMax > 1.0) {
+    return {Coeff_ * (*std::max_element(lErrVec.begin(), lErrVec.end())),
+            lRMax};
+  }
 
-    if constexpr ( N1_ < 5 )
-    {
-        if ( lRMax > 0.5 ) { return { Coeff_ * lRMax * lErrVec[1], lRMax }; }
-        return { Coeff_ * std::pow( 2 * lRMax, 3 ) * lRMax * lErrVec[1],
-                 lRMax };
+  if constexpr (N1_ < 5) {
+    if (lRMax > 0.5) {
+      return {Coeff_ * lRMax * lErrVec[1], lRMax};
     }
-    else if constexpr ( N1_ < 9 )
-    {
-        if ( lRMax > 0.25 ) { return { Coeff_ * lRMax * lErrVec[0], lRMax }; }
-        return { 4.0 * Coeff_ * lRMax * lRMax * lErrVec[0], lRMax };
+    return {Coeff_ * std::pow(2 * lRMax, 3) * lRMax * lErrVec[1], lRMax};
+  } else if constexpr (N1_ < 9) {
+    if (lRMax > 0.25) {
+      return {Coeff_ * lRMax * lErrVec[0], lRMax};
     }
-    else if constexpr ( N2_ < 33 )
-    {
-        if ( lRMax > 0.125 )
-        {
-            return { 4.0 * Coeff_ * lRMax * lRMax * lErrVec[0], lRMax };
-        }
-        return { Coeff_ * pow( 8.0 * lRMax, 2.0 / 3.0 ) * lRMax * lErrVec[0],
-                 lRMax };
+    return {4.0 * Coeff_ * lRMax * lRMax * lErrVec[0], lRMax};
+  } else if constexpr (N2_ < 33) {
+    if (lRMax > 0.125) {
+      return {4.0 * Coeff_ * lRMax * lRMax * lErrVec[0], lRMax};
     }
-    return { Coeff_ * inHalfDif *
-                 std::sqrt( lTmpErrVec[0] * lTmpErrVec[0] +
-                            lTmpErrVec[1] * lTmpErrVec[1] +
-                            lTmpErrVec[2] * lTmpErrVec[2] +
-                            lTmpErrVec[3] * lTmpErrVec[3] ),
-             lRMax };
+    return {Coeff_ * pow(8.0 * lRMax, 2.0 / 3.0) * lRMax * lErrVec[0], lRMax};
+  }
+  return {Coeff_ * inHalfDif *
+              std::sqrt(lTmpErrVec[0] * lTmpErrVec[0] +
+                        lTmpErrVec[1] * lTmpErrVec[1] +
+                        lTmpErrVec[2] * lTmpErrVec[2] +
+                        lTmpErrVec[3] * lTmpErrVec[3]),
+          lRMax};
 }
 
 template <std::size_t NPoints_, typename TypeY_>
 std::tuple<TypeY_, double, double, double> evalNewtonCotesIntegralAndErr(
-    double inLeft, double inRight, const std::vector<TypeY_>& inVals )
-{
-    assert( inVals.size() == NPoints_ );
-    const double lHalfDif = 0.5 * ( inRight - inLeft );
-    if constexpr ( NPoints_ == 5 )
-    {
-        const auto [lIntegral, lAbsIntegral] =
-            evalIntAndAbsInt<NPoints_, gWeightForCotes5>( lHalfDif, inVals );
-        const auto [lErr, lRMax] =
-            evalErrAndRMax<4, NPoints_, gNullWeightForCotes5, gCoeffD>(
-                lHalfDif, lAbsIntegral, inVals );
-        return { lIntegral, lAbsIntegral, lErr, lRMax };
-    }
-    else if constexpr ( NPoints_ == 9 )
-    {
-        const auto [lIntegral, lAbsIntegral] =
-            evalIntAndAbsInt<NPoints_, gWeightForCotes9>( lHalfDif, inVals );
-        const auto [lErr, lRMax] =
-            evalErrAndRMax<8, NPoints_, gNullWeightForCotes9, gCoeffD>(
-                lHalfDif, lAbsIntegral, inVals );
-        return { lIntegral, lAbsIntegral, lErr, lRMax };
-    }
-    else if constexpr ( NPoints_ == 17 )
-    {
-        const auto [lIntegral, lAbsIntegral] =
-            evalIntAndAbsInt<NPoints_, gWeightForCotes17>( lHalfDif, inVals );
-        const auto [lErr, lRMax] =
-            evalErrAndRMax<15, NPoints_, gNullWeightForCotes17, gCoeffD>(
-                lHalfDif, lAbsIntegral, inVals );
-        return { lIntegral, lAbsIntegral, lErr, lRMax };
-    }
-    else
-    {
-        const auto [lIntegral, lAbsIntegral] =
-            evalIntAndAbsInt<NPoints_, gWeightForCotes33>( lHalfDif, inVals );
-        const auto [lErr, lRMax] =
-            evalErrAndRMax<15, NPoints_, gNullWeightForCotes33, gCoeffD>(
-                lHalfDif, lAbsIntegral, inVals );
-        return { lIntegral, lAbsIntegral, lErr, lRMax };
-    }
+    double inLeft, double inRight, const std::array<TypeY_, NPoints_>& inVals) {
+  assert(inVals.size() == NPoints_);
+  const double lHalfDif = 0.5 * (inRight - inLeft);
+  if constexpr (NPoints_ == 5) {
+    const auto [lIntegral, lAbsIntegral] =
+        evalIntAndAbsInt<NPoints_, gWeightForCotes5>(lHalfDif, inVals);
+    const auto [lErr, lRMax] =
+        evalErrAndRMax<4, NPoints_, gNullWeightForCotes5, gCoeffD>(
+            lHalfDif, lAbsIntegral, inVals);
+    return {lIntegral, lAbsIntegral, lErr, lRMax};
+  } else if constexpr (NPoints_ == 9) {
+    const auto [lIntegral, lAbsIntegral] =
+        evalIntAndAbsInt<NPoints_, gWeightForCotes9>(lHalfDif, inVals);
+    const auto [lErr, lRMax] =
+        evalErrAndRMax<8, NPoints_, gNullWeightForCotes9, gCoeffD>(
+            lHalfDif, lAbsIntegral, inVals);
+    return {lIntegral, lAbsIntegral, lErr, lRMax};
+  } else if constexpr (NPoints_ == 17) {
+    const auto [lIntegral, lAbsIntegral] =
+        evalIntAndAbsInt<NPoints_, gWeightForCotes17>(lHalfDif, inVals);
+    const auto [lErr, lRMax] =
+        evalErrAndRMax<15, NPoints_, gNullWeightForCotes17, gCoeffD>(
+            lHalfDif, lAbsIntegral, inVals);
+    return {lIntegral, lAbsIntegral, lErr, lRMax};
+  } else {
+    const auto [lIntegral, lAbsIntegral] =
+        evalIntAndAbsInt<NPoints_, gWeightForCotes33>(lHalfDif, inVals);
+    const auto [lErr, lRMax] =
+        evalErrAndRMax<15, NPoints_, gNullWeightForCotes33, gCoeffD>(
+            lHalfDif, lAbsIntegral, inVals);
+    return {lIntegral, lAbsIntegral, lErr, lRMax};
+  }
 }
 }  // namespace FiniteInterval
 
