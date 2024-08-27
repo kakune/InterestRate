@@ -557,17 +557,7 @@ DataForDoublyAdaptive<TypeY_, MaxNInterval_>::DataForDoublyAdaptive()
     : mSizeInterval(0),
       mTotalError(0.0),
       mTotalIntegral(0.0),
-      mTotalAbsIntegral(0.0) {
-  //   for (std::size_t iInterval = 0; iInterval < MaxNInterval_; ++iInterval) {
-  //     mLeftPos[iInterval] = 0.0;
-  //     mRightPos[iInterval] = 0.0;
-  //     mIntegral[iInterval] = 0.0;
-  //     mAbsIntegral[iInterval] = 0.0;
-  //     for (std::size_t iVal = 0; iVal < 33; ++iVal) {
-  //       mVals[iInterval][iVal] = 0.0;
-  //     }
-  // }
-}
+      mTotalAbsIntegral(0.0) {}
 
 template <typename TypeY_, std::size_t MaxNInterval_>
 template <std::size_t NVal_>
