@@ -5,7 +5,7 @@
 
 ## 実行環境
 - C++ Compiler および CMake
-- Python 3.11.5  
+- Python 3.11
     - `python_wrapper/.venv`にvenv環境を作成することを推奨。
     - 必要なライブラリは`python_wrapper/requirements.txt`。
 - CUDA
@@ -48,19 +48,19 @@ $$
 ただし、 $\log F_{t}(T)$ および $\log \sigma_{t}$ についてのSDEにより実装されている。  
 パラメータは以下の通り。
 
-|  パラメータ名  |  意味  |
-| ---- | ---- |
-|  NPath  |  サンプルパスの数  |
-|  NTerms  |  時間の分割数  |
-|  TimeMaturity  |  満期までの時間 $\tau^{\mathrm{ex}}$  |
-|  MinStrike  |  ストライクの最小値  |
-|  MaxStrike  |  ストライクの最大値  |
-|  DStrike  |  ストライクの刻み幅  |
-|  InitPrice  |  最初のフォワード価格 $f$  |
-|  InitVol  |  最初のVolatility $\alpha$  |
-|  Volvol  |  $\nu$  |
-|  Exponent  |  $\beta$  |
-|  Corr  |  $\rho$  |
+| パラメータ名 | 意味                                |
+| ------------ | ----------------------------------- |
+| NPath        | サンプルパスの数                    |
+| NTerms       | 時間の分割数                        |
+| TimeMaturity | 満期までの時間 $\tau^{\mathrm{ex}}$ |
+| MinStrike    | ストライクの最小値                  |
+| MaxStrike    | ストライクの最大値                  |
+| DStrike      | ストライクの刻み幅                  |
+| InitPrice    | 最初のフォワード価格 $f$            |
+| InitVol      | 最初のVolatility $\alpha$           |
+| Volvol       | $\nu$                               |
+| Exponent     | $\beta$                             |
+| Corr         | $\rho$                              |
 
 - C++ファイル
     - 入力
